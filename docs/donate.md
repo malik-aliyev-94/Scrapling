@@ -20,10 +20,10 @@ Perks:
 2. The same logo will be featured at [the top of Scrapling's PyPI page](https://pypi.org/project/scrapling/) and [the top of Docker's image page](https://hub.docker.com/r/pyd4vinci/scrapling), the same way it was placed on the project's page.
 3. Your logo will be featured as a top sponsor on [Scrapling's website](https://scrapling.readthedocs.io/en/latest/) main page.
 
-### 3. [The Gold tier](https://github.com/sponsors/D4Vinci/sponsorships?tier_id=586646) ($100/month)
+### 3. [The Platinum tier](https://github.com/sponsors/D4Vinci/sponsorships?tier_id=586646) ($300/month)
 Perks:
 
-1. Your logo will have a special placement at [the very top of Scrapling's project page](https://github.com/D4Vinci/Scrapling?tab=readme-ov-file#sponsors) with an 80-word paragraph or less.
+1. Your logo will have a special placement at [the very top of Scrapling's project page](https://github.com/D4Vinci/Scrapling?tab=readme-ov-file#platinum-sponsors) with an 80-word paragraph or less.
 2. The same logo will be featured at [the top of Scrapling's PyPI page](https://pypi.org/project/scrapling/) and [the top of Docker's image page](https://hub.docker.com/r/pyd4vinci/scrapling), the same way it was placed on the project's page.
 3. Your logo will have a special placement as a top sponsor on [Scrapling's website](https://scrapling.readthedocs.io/en/latest/) main page.
 4. A Shoutout at the end of each [Release notes](https://github.com/D4Vinci/Scrapling/releases).
