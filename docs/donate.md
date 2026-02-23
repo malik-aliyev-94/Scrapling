@@ -25,5 +25,6 @@ Perks:
 
 1. Your logo will have a special placement at [the very top of Scrapling's project page](https://github.com/D4Vinci/Scrapling?tab=readme-ov-file#platinum-sponsors) with an 80-word paragraph or less.
 2. The same logo will be featured at [the top of Scrapling's PyPI page](https://pypi.org/project/scrapling/) and [the top of Docker's image page](https://hub.docker.com/r/pyd4vinci/scrapling), the same way it was placed on the project's page.
-3. Your logo will have a special placement as a top sponsor on [Scrapling's website](https://scrapling.readthedocs.io/en/latest/) main page.
-4. A Shoutout at the end of each [Release notes](https://github.com/D4Vinci/Scrapling/releases).
+3. Your logo will have a special placement as a top sponsor on [Scrapling's website](https://scrapling.readthedocs.io/en/latest/) main page. 
+4. A partner role at our Discord server. 
+5. A Shoutout at the end of each [Release notes](https://github.com/D4Vinci/Scrapling/releases).
