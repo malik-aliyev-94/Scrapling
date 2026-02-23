@@ -51,9 +51,9 @@ Blitzschnelle Crawls mit Echtzeit-Statistiken und Streaming. Von Web Scrapern f�
 ```python
 from scrapling.fetchers import Fetcher, AsyncFetcher, StealthyFetcher, DynamicFetcher
 StealthyFetcher.adaptive = True
-page = StealthyFetcher.fetch('https://example.com', headless=True, network_idle=True)  # Website unbemerkt abrufen!
-products = page.css('.product', auto_save=True)                                        # Daten scrapen, die Website-Designänderungen überleben!
-products = page.css('.product', adaptive=True)                                         # Später, wenn sich die Website-Struktur ändert, `adaptive=True` übergeben, um sie zu finden!
+p = StealthyFetcher.fetch('https://example.com', headless=True, network_idle=True)  # Website unbemerkt abrufen!
+products = p.css('.product', auto_save=True)                                        # Daten scrapen, die Website-Designänderungen überleben!
+products = p.css('.product', adaptive=True)                                         # Später, wenn sich die Website-Struktur ändert, `adaptive=True` übergeben, um sie zu finden!
 ```
 Oder auf vollständige Crawls hochskalieren
 ```python

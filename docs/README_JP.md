@@ -51,9 +51,9 @@ Scraplingは、単一のリクエストから本格的なクロールまです�
 ```python
 from scrapling.fetchers import Fetcher, AsyncFetcher, StealthyFetcher, DynamicFetcher
 StealthyFetcher.adaptive = True
-page = StealthyFetcher.fetch('https://example.com', headless=True, network_idle=True)  # レーダーの下でウェブサイトを取得！
-products = page.css('.product', auto_save=True)                                        # ウェブサイトのデザイン変更に耐えるデータをスクレイプ！
-products = page.css('.product', adaptive=True)                                         # 後でウェブサイトの構造が変わったら、`adaptive=True`を渡して見つける！
+p = StealthyFetcher.fetch('https://example.com', headless=True, network_idle=True)  # レーダーの下でウェブサイトを取得！
+products = p.css('.product', auto_save=True)                                        # ウェブサイトのデザイン変更に耐えるデータをスクレイプ！
+products = p.css('.product', adaptive=True)                                         # 後でウェブサイトの構造が変わったら、`adaptive=True`を渡して見つける！
 ```
 または本格的なクロールへスケールアップ
 ```python

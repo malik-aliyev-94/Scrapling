@@ -51,9 +51,9 @@ Scrapling是一个自适应Web Scraping框架，能处理从单个请求到大�
 ```python
 from scrapling.fetchers import Fetcher, AsyncFetcher, StealthyFetcher, DynamicFetcher
 StealthyFetcher.adaptive = True
-page = StealthyFetcher.fetch('https://example.com', headless=True, network_idle=True)  # 隐秘地获取网站！
-products = page.css('.product', auto_save=True)                                        # 抓取在网站设计变更后仍能存活的数据！
-products = page.css('.product', adaptive=True)                                         # 之后，如果网站结构改变，传递 `adaptive=True` 来找到它们！
+p = StealthyFetcher.fetch('https://example.com', headless=True, network_idle=True)  # 隐秘地获取网站！
+products = p.css('.product', auto_save=True)                                        # 抓取在网站设计变更后仍能存活的数据！
+products = p.css('.product', adaptive=True)                                         # 之后，如果网站结构改变，传递 `adaptive=True` 来找到它们！
 ```
 或扩展为完整爬取
 ```python

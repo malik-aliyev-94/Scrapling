@@ -51,9 +51,9 @@ Scrapling — это адаптивный фреймворк для Web Scraping
 ```python
 from scrapling.fetchers import Fetcher, AsyncFetcher, StealthyFetcher, DynamicFetcher
 StealthyFetcher.adaptive = True
-page = StealthyFetcher.fetch('https://example.com', headless=True, network_idle=True)  # Загрузите сайт незаметно!
-products = page.css('.product', auto_save=True)                                        # Скрапьте данные, которые переживут изменения дизайна сайта!
-products = page.css('.product', adaptive=True)                                         # Позже, если структура сайта изменится, передайте `adaptive=True`, чтобы найти их!
+p = StealthyFetcher.fetch('https://example.com', headless=True, network_idle=True)  # Загрузите сайт незаметно!
+products = p.css('.product', auto_save=True)                                        # Скрапьте данные, которые переживут изменения дизайна сайта!
+products = p.css('.product', adaptive=True)                                         # Позже, если структура сайта изменится, передайте `adaptive=True`, чтобы найти их!
 ```
 Или масштабируйте до полного обхода
 ```python

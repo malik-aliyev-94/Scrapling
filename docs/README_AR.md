@@ -51,9 +51,9 @@ Scrapling هو إطار عمل تكيفي لـ Web Scraping يتعامل مع ك
 ```python
 from scrapling.fetchers import Fetcher, AsyncFetcher, StealthyFetcher, DynamicFetcher
 StealthyFetcher.adaptive = True
-page = StealthyFetcher.fetch('https://example.com', headless=True, network_idle=True)  # احصل على الموقع بشكل خفي!
-products = page.css('.product', auto_save=True)                                        # استخرج بيانات تنجو من تغييرات تصميم الموقع!
-products = page.css('.product', adaptive=True)                                         # لاحقاً، إذا تغيرت بنية الموقع، مرر `adaptive=True` للعثور عليها!
+p = StealthyFetcher.fetch('https://example.com', headless=True, network_idle=True)  # احصل على الموقع بشكل خفي!
+products = p.css('.product', auto_save=True)                                        # استخرج بيانات تنجو من تغييرات تصميم الموقع!
+products = p.css('.product', adaptive=True)                                         # لاحقاً، إذا تغيرت بنية الموقع، مرر `adaptive=True` للعثور عليها!
 ```
 أو توسع إلى عمليات زحف كاملة
 ```python
