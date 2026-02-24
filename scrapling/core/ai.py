@@ -42,6 +42,20 @@ def _ContentTranslator(content: Generator[str, None, None], page: _ScraplingResp
     return ResponseModel(status=page.status, content=[result for result in content], url=page.url)
 
 
+def _NormalizeCredentials(credentials: Optional[Dict[str, str]]) -> Optional[Tuple[str, str]]:
+    """Convert a credentials dictionary to a tuple accepted by fetchers."""
+    if not credentials:
+        return None
+
+    username = credentials.get("username")
+    password = credentials.get("password")
+
+    if username is None or password is None:
+        return None
+
+    return username, password
+
+
 class ScraplingMCPServer:
     @staticmethod
     def get(
@@ -52,15 +66,15 @@ class ScraplingMCPServer:
         main_content_only: bool = True,
         params: Optional[Dict | List | Tuple] = None,
         headers: Optional[Mapping[str, Optional[str]]] = None,
-        cookies: Optional[Dict[str, str] | list[tuple[str, str]]] = None,
+        cookies: Optional[Dict[str, str]] = None,
         timeout: Optional[int | float] = 30,
         follow_redirects: bool = True,
         max_redirects: int = 30,
         retries: Optional[int] = 3,
         retry_delay: Optional[int] = 1,
         proxy: Optional[str] = None,
-        proxy_auth: Optional[Tuple[str, str]] = None,
-        auth: Optional[Tuple[str, str]] = None,
+        proxy_auth: Optional[Dict[str, str]] = None,
+        auth: Optional[Dict[str, str]] = None,
         verify: Optional[bool] = True,
         http3: Optional[bool] = False,
         stealthy_headers: Optional[bool] = True,
@@ -87,20 +101,23 @@ class ScraplingMCPServer:
         :param retry_delay: Number of seconds to wait between retry attempts. Defaults to 1 second.
         :param proxy: Proxy URL to use. Format: "http://username:password@localhost:8030".
                      Cannot be used together with the `proxies` parameter.
-        :param proxy_auth: HTTP basic auth for proxy, tuple of (username, password).
-        :param auth: HTTP basic auth tuple of (username, password). Only basic auth is supported.
+        :param proxy_auth: HTTP basic auth for proxy in dictionary format with `username` and `password` keys.
+        :param auth: HTTP basic auth in dictionary format with `username` and `password` keys.
         :param verify: Whether to verify HTTPS certificates.
         :param http3: Whether to use HTTP3. Defaults to False. It might be problematic if used it with `impersonate`.
         :param stealthy_headers: If enabled (default), it creates and adds real browser headers. It also sets the referer header as if this request came from a Google search of URL's domain.
         """
+        normalized_proxy_auth = _NormalizeCredentials(proxy_auth)
+        normalized_auth = _NormalizeCredentials(auth)
+
         page = Fetcher.get(
             url,
-            auth=auth,
+            auth=normalized_auth,
             proxy=proxy,
             http3=http3,
             verify=verify,
             params=params,
-            proxy_auth=proxy_auth,
+            proxy_auth=normalized_proxy_auth,
             retry_delay=retry_delay,
             stealthy_headers=stealthy_headers,
             impersonate=impersonate,
@@ -130,15 +147,15 @@ class ScraplingMCPServer:
         main_content_only: bool = True,
         params: Optional[Dict | List | Tuple] = None,
         headers: Optional[Mapping[str, Optional[str]]] = None,
-        cookies: Optional[Dict[str, str] | list[tuple[str, str]]] = None,
+        cookies: Optional[Dict[str, str]] = None,
         timeout: Optional[int | float] = 30,
         follow_redirects: bool = True,
         max_redirects: int = 30,
         retries: Optional[int] = 3,
         retry_delay: Optional[int] = 1,
         proxy: Optional[str] = None,
-        proxy_auth: Optional[Tuple[str, str]] = None,
-        auth: Optional[Tuple[str, str]] = None,
+        proxy_auth: Optional[Dict[str, str]] = None,
+        auth: Optional[Dict[str, str]] = None,
         verify: Optional[bool] = True,
         http3: Optional[bool] = False,
         stealthy_headers: Optional[bool] = True,
@@ -165,17 +182,20 @@ class ScraplingMCPServer:
         :param retry_delay: Number of seconds to wait between retry attempts. Defaults to 1 second.
         :param proxy: Proxy URL to use. Format: "http://username:password@localhost:8030".
                      Cannot be used together with the `proxies` parameter.
-        :param proxy_auth: HTTP basic auth for proxy, tuple of (username, password).
-        :param auth: HTTP basic auth tuple of (username, password). Only basic auth is supported.
+        :param proxy_auth: HTTP basic auth for proxy in dictionary format with `username` and `password` keys.
+        :param auth: HTTP basic auth in dictionary format with `username` and `password` keys.
         :param verify: Whether to verify HTTPS certificates.
         :param http3: Whether to use HTTP3. Defaults to False. It might be problematic if used it with `impersonate`.
         :param stealthy_headers: If enabled (default), it creates and adds real browser headers. It also sets the referer header as if this request came from a Google search of URL's domain.
         """
+        normalized_proxy_auth = _NormalizeCredentials(proxy_auth)
+        normalized_auth = _NormalizeCredentials(auth)
+
         async with FetcherSession() as session:
             tasks: List[Any] = [
                 session.get(
                     url,
-                    auth=auth,
+                    auth=normalized_auth,
                     proxy=proxy,
                     http3=http3,
                     verify=verify,
@@ -184,7 +204,7 @@ class ScraplingMCPServer:
                     cookies=cookies,
                     timeout=timeout,
                     retries=retries,
-                    proxy_auth=proxy_auth,
+                    proxy_auth=normalized_proxy_auth,
                     retry_delay=retry_delay,
                     impersonate=impersonate,
                     max_redirects=max_redirects,
