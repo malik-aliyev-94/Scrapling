@@ -78,8 +78,6 @@ MySpider().start()
 
 # Platinum Sponsors
 
-# Platinum Sponsors
-
 # Sponsors 
 
 <!-- sponsors -->
