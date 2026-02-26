@@ -364,10 +364,19 @@ pip install scrapling
     ```bash
     pip install "scrapling[fetchers]"
 
-    scrapling install
+    scrapling install           # normal install
+    scrapling install  --force  # force reinstall
     ```
 
     これにより、すべてのブラウザ、およびそれらのシステム依存関係とfingerprint操作依存関係がダウンロードされます。
+
+    または、コマンドを実行する代わりにコードからインストールすることもできます：
+    ```python
+    from scrapling.cli import install
+
+    install([], standalone_mode=False)          # normal install
+    install(["--force"], standalone_mode=False) # force reinstall
+    ```
 
 2. 追加機能：
    - MCPサーバー機能をインストール：

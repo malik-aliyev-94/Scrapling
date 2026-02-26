@@ -364,10 +364,19 @@ pip install scrapling
     ```bash
     pip install "scrapling[fetchers]"
 
-    scrapling install
+    scrapling install           # normal install
+    scrapling install  --force  # force reinstall
     ```
 
     这会下载所有浏览器，以及它们的系统依赖项和fingerprint操作依赖项。
+
+    或者你可以从代码中安装，而不是运行命令：
+    ```python
+    from scrapling.cli import install
+
+    install([], standalone_mode=False)          # normal install
+    install(["--force"], standalone_mode=False) # force reinstall
+    ```
 
 2. 额外功能：
    - 安装MCP服务器功能：

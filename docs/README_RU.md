@@ -364,10 +364,19 @@ pip install scrapling
     ```bash
     pip install "scrapling[fetchers]"
 
-    scrapling install
+    scrapling install           # normal install
+    scrapling install  --force  # force reinstall
     ```
 
     Это загрузит все браузеры вместе с их системными зависимостями и зависимостями для манипуляции fingerprint'ами.
+
+    Или вы можете установить их из кода вместо выполнения команды:
+    ```python
+    from scrapling.cli import install
+
+    install([], standalone_mode=False)          # normal install
+    install(["--force"], standalone_mode=False) # force reinstall
+    ```
 
 2. Дополнительные возможности:
    - Установить функцию MCP-сервера:
