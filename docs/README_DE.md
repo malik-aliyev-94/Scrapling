@@ -75,6 +75,7 @@ MySpider().start()
 
 # Platin-Sponsoren
 
+<i><sub>Möchten Sie das erste Unternehmen sein, das hier erscheint? Klicken Sie [hier](https://github.com/sponsors/D4Vinci/sponsorships?tier_id=586646)</sub></i>
 # Sponsoren
 
 <!-- sponsors -->

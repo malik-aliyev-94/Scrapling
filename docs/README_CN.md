@@ -75,6 +75,7 @@ MySpider().start()
 
 # 铂金赞助商
 
+<i><sub>想成为第一个出现在这里的公司吗？点击[这里](https://github.com/sponsors/D4Vinci/sponsorships?tier_id=586646)</sub></i>
 # 赞助商
 
 <!-- sponsors -->

@@ -75,6 +75,7 @@ MySpider().start()
 
 # الرعاة البلاتينيون
 
+<i><sub>هل تريد أن تكون أول شركة تظهر هنا؟ انقر [هنا](https://github.com/sponsors/D4Vinci/sponsorships?tier_id=586646)</sub></i>
 # الرعاة
 
 <!-- sponsors -->

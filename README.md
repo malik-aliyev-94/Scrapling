@@ -22,8 +22,6 @@
         <img alt="PyPI version" src="https://badge.fury.io/py/Scrapling.svg"></a>
     <a href="https://pepy.tech/project/scrapling" alt="PyPI Downloads">
         <img alt="PyPI Downloads" src="https://static.pepy.tech/personalized-badge/scrapling?period=total&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=GREEN&left_text=Downloads"></a>
-    <a href="https://modelcontextprotocol.io" alt="MCP Integrated">
-        <img alt="MCP Integrated" src="https://img.shields.io/badge/MCP-Integrated-green.svg"></a>
     <br/>
     <a href="https://discord.gg/EMgGbDceNQ" alt="Discord" target="_blank">
       <img alt="Discord" src="https://img.shields.io/discord/1360786381042880532?style=social&logo=discord&link=https%3A%2F%2Fdiscord.gg%2FEMgGbDceNQ">
@@ -80,6 +78,7 @@ MySpider().start()
 
 # Platinum Sponsors
 
+<i><sub>Do you want to be the first company to show up here? Click [here](https://github.com/sponsors/D4Vinci/sponsorships?tier_id=586646)</sub></i>
 # Sponsors 
 
 <!-- sponsors -->

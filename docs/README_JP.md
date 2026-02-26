@@ -75,6 +75,7 @@ MySpider().start()
 
 # プラチナスポンサー
 
+<i><sub>ここに最初に表示される企業になりませんか？[こちら](https://github.com/sponsors/D4Vinci/sponsorships?tier_id=586646)をクリック</sub></i>
 # スポンサー
 
 <!-- sponsors -->
