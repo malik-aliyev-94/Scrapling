@@ -127,7 +127,7 @@ class StealthySession(SyncSession, StealthySessionMixin):
         challenge_type = self._detect_cloudflare(ResponseFactory._get_page_content(page))
         if not challenge_type:
             log.error("No Cloudflare challenge found.")
-            return
+            return None
         else:
             log.info(f'The turnstile version discovered is "{challenge_type}"')
             if challenge_type == "non-interactive":
@@ -136,7 +136,7 @@ class StealthySession(SyncSession, StealthySessionMixin):
                     page.wait_for_timeout(1000)
                     page.wait_for_load_state()
                 log.info("Cloudflare captcha is solved")
-                return
+                return None
 
             else:
                 box_selector = "#cf_turnstile div, #cf-turnstile div, .turnstile>div>div"
@@ -161,7 +161,7 @@ class StealthySession(SyncSession, StealthySessionMixin):
                 if not iframe or not outer_box:
                     if "<title>Just a moment...</title>" not in (ResponseFactory._get_page_content(page)):
                         log.info("Cloudflare captcha is solved")
-                        return
+                        return None
 
                     outer_box = page.locator(box_selector).last.bounding_box()
 
@@ -171,22 +171,28 @@ class StealthySession(SyncSession, StealthySessionMixin):
                 # Move the mouse to the center of the window, then press and hold the left mouse button
                 page.mouse.click(captcha_x, captcha_y, delay=randint(100, 200), button="left")
                 self._wait_for_networkidle(page)
-                if iframe is not None:
-                    # Wait for the frame to be removed from the page (with 30s timeout = 300 iterations * 100 ms)
+
+                if challenge_type != "embedded":
                     attempts = 0
-                    while iframe in page.frames:
-                        if attempts >= 300:
-                            log.info("Cloudflare iframe didn't disappear after 30s, continuing...")
+                    while "<title>Just a moment...</title>" in ResponseFactory._get_page_content(page):
+                        # Wait for the page
+                        if attempts >= 100:
+                            log.info("Cloudflare page didn't disappear after 10s, continuing...")
                             break
                         page.wait_for_timeout(100)
                         attempts += 1
-                if challenge_type != "embedded":
-                    page.locator(box_selector).last.wait_for(state="detached")
-                    page.locator(".zone-name-title").wait_for(state="hidden")
+
+                    # page.locator(box_selector).last.wait_for(state="detached")
+                    # page.locator(".zone-name-title").wait_for(state="hidden")
+
                 self._wait_for_page_stability(page, True, False)
 
-                log.info("Cloudflare captcha is solved")
-                return
+                if "<title>Just a moment...</title>" not in (ResponseFactory._get_page_content(page)):
+                    log.info("Cloudflare captcha is solved")
+                    return None
+                else:
+                    log.info("Looks like Cloudflare captcha is still present, solving again")
+                    return self._cloudflare_solver(page)
 
     def fetch(self, url: str, **kwargs: Unpack[StealthFetchParams]) -> Response:
         """Opens up the browser and do your request based on your chosen options.
@@ -384,7 +390,7 @@ class AsyncStealthySession(AsyncSession, StealthySessionMixin):
         challenge_type = self._detect_cloudflare(await ResponseFactory._get_async_page_content(page))
         if not challenge_type:
             log.error("No Cloudflare challenge found.")
-            return
+            return None
         else:
             log.info(f'The turnstile version discovered is "{challenge_type}"')
             if challenge_type == "non-interactive":
@@ -393,7 +399,7 @@ class AsyncStealthySession(AsyncSession, StealthySessionMixin):
                     await page.wait_for_timeout(1000)
                     await page.wait_for_load_state()
                 log.info("Cloudflare captcha is solved")
-                return
+                return None
 
             else:
                 box_selector = "#cf_turnstile div, #cf-turnstile div, .turnstile>div>div"
@@ -418,7 +424,7 @@ class AsyncStealthySession(AsyncSession, StealthySessionMixin):
                 if not iframe or not outer_box:
                     if "<title>Just a moment...</title>" not in (await ResponseFactory._get_async_page_content(page)):
                         log.info("Cloudflare captcha is solved")
-                        return
+                        return None
 
                     outer_box = await page.locator(box_selector).last.bounding_box()
 
@@ -428,22 +434,28 @@ class AsyncStealthySession(AsyncSession, StealthySessionMixin):
                 # Move the mouse to the center of the window, then press and hold the left mouse button
                 await page.mouse.click(captcha_x, captcha_y, delay=randint(100, 200), button="left")
                 await self._wait_for_networkidle(page)
-                if iframe is not None:
-                    # Wait for the frame to be removed from the page (with 30s timeout = 300 iterations * 100 ms)
+
+                if challenge_type != "embedded":
                     attempts = 0
-                    while iframe in page.frames:
-                        if attempts >= 300:
-                            log.info("Cloudflare iframe didn't disappear after 30s, continuing...")
+                    while "<title>Just a moment...</title>" in (await ResponseFactory._get_async_page_content(page)):
+                        # Wait for the page
+                        if attempts >= 100:
+                            log.info("Cloudflare page didn't disappear after 10s, continuing...")
                             break
                         await page.wait_for_timeout(100)
                         attempts += 1
-                if challenge_type != "embedded":
-                    await page.locator(box_selector).last.wait_for(state="detached")
-                    await page.locator(".zone-name-title").wait_for(state="hidden")
+
+                    # await page.locator(box_selector).last.wait_for(state="detached")
+                    # await page.locator(".zone-name-title").wait_for(state="hidden")
+
                 await self._wait_for_page_stability(page, True, False)
 
-                log.info("Cloudflare captcha is solved")
-                return
+                if "<title>Just a moment...</title>" not in (await ResponseFactory._get_async_page_content(page)):
+                    log.info("Cloudflare captcha is solved")
+                    return None
+                else:
+                    log.info("Looks like Cloudflare captcha is still present, solving again")
+                    return await self._cloudflare_solver(page)
 
     async def fetch(self, url: str, **kwargs: Unpack[StealthFetchParams]) -> Response:
         """Opens up the browser and do your request based on your chosen options.
