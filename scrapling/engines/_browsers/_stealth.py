@@ -17,7 +17,6 @@ from scrapling.core._types import Any, Optional, ProxyType, Unpack
 from scrapling.engines.toolbelt.proxy_rotation import is_proxy_error
 from scrapling.engines.toolbelt.convertor import Response, ResponseFactory
 from scrapling.engines.toolbelt.fingerprints import generate_convincing_referer
-from scrapling.engines._browsers._config_tools import _compiled_stealth_scripts
 from scrapling.engines._browsers._types import StealthSession, StealthFetchParams
 from scrapling.engines._browsers._base import SyncSession, AsyncSession, StealthySessionMixin
 from scrapling.engines._browsers._validators import validate_fetch as _validate, StealthConfig
@@ -108,14 +107,6 @@ class StealthySession(SyncSession, StealthySessionMixin):
                 raise
         else:
             raise RuntimeError("Session has been already started")
-
-    def _initialize_context(self, config, ctx: BrowserContext) -> BrowserContext:
-        """Initialize the browser context."""
-        for script in _compiled_stealth_scripts():
-            ctx.add_init_script(script=script)
-
-        ctx = super()._initialize_context(config, ctx)
-        return ctx
 
     def _cloudflare_solver(self, page: Page) -> None:  # pragma: no cover
         """Solve the cloudflare challenge displayed on the playwright page passed
@@ -371,14 +362,6 @@ class AsyncStealthySession(AsyncSession, StealthySessionMixin):
                 raise
         else:
             raise RuntimeError("Session has been already started")
-
-    async def _initialize_context(self, config: Any, ctx: AsyncBrowserContext) -> AsyncBrowserContext:
-        """Initialize the browser context."""
-        for script in _compiled_stealth_scripts():
-            await ctx.add_init_script(script=script)
-
-        ctx = await super()._initialize_context(config, ctx)
-        return ctx
 
     async def _cloudflare_solver(self, page: async_Page) -> None:  # pragma: no cover
         """Solve the cloudflare challenge displayed on the playwright page passed
