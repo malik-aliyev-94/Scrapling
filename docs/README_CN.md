@@ -412,6 +412,18 @@ docker pull ghcr.io/d4vinci/scrapling:latest
 > [!CAUTION]
 > 此库仅用于教育和研究目的。使用此库即表示您同意遵守本地和国际数据抓取和隐私法律。作者和贡献者对本软件的任何滥用不承担责任。始终尊重网站的服务条款和robots.txt文件。
 
+## 🎓 引用
+如果您将我们的库用于研究目的，请使用以下参考文献引用我们：
+```text
+  @misc{scrapling,
+    author = {Karim Shoair},
+    title = {Scrapling},
+    year = {2024},
+    url = {https://github.com/D4Vinci/Scrapling},
+    note = {An adaptive Web Scraping framework that handles everything from a single request to a full-scale crawl!}
+  }
+```
+
 ## 许可证
 
 本作品根据BSD-3-Clause许可证授权。

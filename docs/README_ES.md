@@ -412,6 +412,18 @@ Esta imagen se construye y publica automáticamente usando GitHub Actions y la r
 > [!CAUTION]
 > Esta biblioteca se proporciona solo con fines educativos y de investigación. Al usar esta biblioteca, aceptas cumplir con las leyes locales e internacionales de scraping de datos y privacidad. Los autores y contribuyentes no son responsables de ningún mal uso de este software. Respeta siempre los términos de servicio de los sitios web y los archivos robots.txt.
 
+## 🎓 Citas
+Si has utilizado nuestra biblioteca con fines de investigación, por favor cítanos con la siguiente referencia:
+```text
+  @misc{scrapling,
+    author = {Karim Shoair},
+    title = {Scrapling},
+    year = {2024},
+    url = {https://github.com/D4Vinci/Scrapling},
+    note = {An adaptive Web Scraping framework that handles everything from a single request to a full-scale crawl!}
+  }
+```
+
 ## Licencia
 
 Este trabajo está licenciado bajo la Licencia BSD-3-Clause.

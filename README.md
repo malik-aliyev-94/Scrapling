@@ -415,6 +415,18 @@ We welcome contributions! Please read our [contributing guidelines](https://gith
 > [!CAUTION]
 > This library is provided for educational and research purposes only. By using this library, you agree to comply with local and international data scraping and privacy laws. The authors and contributors are not responsible for any misuse of this software. Always respect the terms of service of websites and robots.txt files.
 
+## 🎓 Citations
+If you have used our library for research purposes please quote us with the following reference:
+```text
+  @misc{scrapling,
+    author = {Karim Shoair},
+    title = {Scrapling},
+    year = {2024},
+    url = {https://github.com/D4Vinci/Scrapling},
+    note = {An adaptive Web Scraping framework that handles everything from a single request to a full-scale crawl!}
+  }
+```
+
 ## License
 
 This work is licensed under the BSD-3-Clause License.
