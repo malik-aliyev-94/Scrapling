@@ -7,9 +7,22 @@ on:
     paths-ignore:
       - '*.md'
       - '**/*.md'
-      - 'docs/*'
-      - 'images/*'
-      - '.github/*'
+      - 'docs/**'
+      - 'images/**'
+      - '.github/**'
+      - '*.yml'
+      - '*.yaml'
+      - 'ruff.toml'
+  pull_request:
+    branches:
+      - main
+      - dev
+    paths-ignore:
+      - '*.md'
+      - '**/*.md'
+      - 'docs/**'
+      - 'images/**'
+      - '.github/**'
       - '*.yml'
       - '*.yaml'
       - 'ruff.toml'

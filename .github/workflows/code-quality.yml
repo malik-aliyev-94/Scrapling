@@ -21,6 +21,10 @@ on:
       - '**/*.md'
       - 'docs/**'
       - 'images/**'
+      - '.github/**'
+      - '*.yml'
+      - '*.yaml'
+      - 'ruff.toml'
   workflow_dispatch:  # Allow manual triggering
 
 concurrency:
