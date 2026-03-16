@@ -34,17 +34,17 @@
 </p>
 
 <p align="center">
-    <a href="https://scrapling.readthedocs.io/en/latest/parsing/selection/"><strong>選択メソッド</strong></a>
+    <a href="https://scrapling.readthedocs.io/en/latest/parsing/selection.html"><strong>選択メソッド</strong></a>
     &middot;
-    <a href="https://scrapling.readthedocs.io/en/latest/fetching/choosing/"><strong>Fetcherの選び方</strong></a>
+    <a href="https://scrapling.readthedocs.io/en/latest/fetching/choosing.html"><strong>Fetcherの選び方</strong></a>
     &middot;
     <a href="https://scrapling.readthedocs.io/en/latest/spiders/architecture.html"><strong>スパイダー</strong></a>
     &middot;
     <a href="https://scrapling.readthedocs.io/en/latest/spiders/proxy-blocking.html"><strong>プロキシローテーション</strong></a>
     &middot;
-    <a href="https://scrapling.readthedocs.io/en/latest/cli/overview/"><strong>CLI</strong></a>
+    <a href="https://scrapling.readthedocs.io/en/latest/cli/overview.html"><strong>CLI</strong></a>
     &middot;
-    <a href="https://scrapling.readthedocs.io/en/latest/ai/mcp-server/"><strong>MCPモード</strong></a>
+    <a href="https://scrapling.readthedocs.io/en/latest/ai/mcp-server.html"><strong>MCPモード</strong></a>
 </p>
 
 Scraplingは、単一のリクエストから本格的なクロールまですべてを処理する適応型Web Scrapingフレームワークです。

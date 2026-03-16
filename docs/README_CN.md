@@ -34,17 +34,17 @@
 </p>
 
 <p align="center">
-    <a href="https://scrapling.readthedocs.io/en/latest/parsing/selection/"><strong>选择方法</strong></a>
+    <a href="https://scrapling.readthedocs.io/en/latest/parsing/selection.html"><strong>选择方法</strong></a>
     &middot;
-    <a href="https://scrapling.readthedocs.io/en/latest/fetching/choosing/"><strong>选择 Fetcher</strong></a>
+    <a href="https://scrapling.readthedocs.io/en/latest/fetching/choosing.html"><strong>选择 Fetcher</strong></a>
     &middot;
     <a href="https://scrapling.readthedocs.io/en/latest/spiders/architecture.html"><strong>爬虫</strong></a>
     &middot;
     <a href="https://scrapling.readthedocs.io/en/latest/spiders/proxy-blocking.html"><strong>代理轮换</strong></a>
     &middot;
-    <a href="https://scrapling.readthedocs.io/en/latest/cli/overview/"><strong>CLI</strong></a>
+    <a href="https://scrapling.readthedocs.io/en/latest/cli/overview.html"><strong>CLI</strong></a>
     &middot;
-    <a href="https://scrapling.readthedocs.io/en/latest/ai/mcp-server/"><strong>MCP 模式</strong></a>
+    <a href="https://scrapling.readthedocs.io/en/latest/ai/mcp-server.html"><strong>MCP 模式</strong></a>
 </p>
 
 Scrapling 是一个自适应 Web Scraping 框架，能处理从单个请求到大规模爬取的一切需求。

@@ -34,17 +34,17 @@
 </p>
 
 <p align="center">
-    <a href="https://scrapling.readthedocs.io/en/latest/parsing/selection/"><strong>Métodos de selección</strong></a>
+    <a href="https://scrapling.readthedocs.io/en/latest/parsing/selection.html"><strong>Métodos de selección</strong></a>
     &middot;
-    <a href="https://scrapling.readthedocs.io/en/latest/fetching/choosing/"><strong>Elegir un fetcher</strong></a>
+    <a href="https://scrapling.readthedocs.io/en/latest/fetching/choosing.html"><strong>Elegir un fetcher</strong></a>
     &middot;
     <a href="https://scrapling.readthedocs.io/en/latest/spiders/architecture.html"><strong>Spiders</strong></a>
     &middot;
     <a href="https://scrapling.readthedocs.io/en/latest/spiders/proxy-blocking.html"><strong>Rotación de proxy</strong></a>
     &middot;
-    <a href="https://scrapling.readthedocs.io/en/latest/cli/overview/"><strong>CLI</strong></a>
+    <a href="https://scrapling.readthedocs.io/en/latest/cli/overview.html"><strong>CLI</strong></a>
     &middot;
-    <a href="https://scrapling.readthedocs.io/en/latest/ai/mcp-server/"><strong>Modo MCP</strong></a>
+    <a href="https://scrapling.readthedocs.io/en/latest/ai/mcp-server.html"><strong>Modo MCP</strong></a>
 </p>
 
 Scrapling es un framework de Web Scraping adaptativo que se encarga de todo, desde una sola solicitud hasta un rastreo a gran escala.
