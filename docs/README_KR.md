@@ -159,6 +159,16 @@ MySpider().start()
     <a href="https://substack.thewebscraping.club/p/scrapling-hands-on-guide?utm_source=github&utm_medium=repo&utm_campaign=scrapling" target="_blank">The Web Scraping Club에서 Scrapling의 전체 리뷰</a>(2025년 11월)를 읽어보세요. 웹 스크래핑 전문 No.1 뉴스레터입니다.
     </td>
   </tr>
+  <tr>
+    <td width="200">
+      <a href="https://proxy-seller.com/?partner=CU9CAA5TBYFFT2" target="_blank" title="Proxy-Seller provides reliable proxy infrastructure for Web Scraping">
+        <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/ProxySeller.png">
+      </a>
+    </td>
+    <td>
+    <a href="https://proxy-seller.com/?partner=CU9CAA5TBYFFT2" target="_blank">Proxy-Seller</a>는 웹 스크래핑을 위한 안정적인 프록시 인프라를 제공합니다. IPv4, IPv6, ISP, 주거용 및 모바일 프록시를 지원하며, 안정적인 성능, 광범위한 지역 커버리지, 기업 규모의 데이터 수집을 위한 유연한 요금제를 갖추고 있습니다.
+    </td>
+  </tr>
 </table>
 
 <i><sub>여기에 광고를 게재하고 싶으신가요? [여기](https://github.com/sponsors/D4Vinci/sponsorships?tier_id=586646)를 클릭하세요</sub></i>

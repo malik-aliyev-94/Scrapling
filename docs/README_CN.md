@@ -159,6 +159,16 @@ MySpider().start()
     阅读 <a href="https://substack.thewebscraping.club/p/scrapling-hands-on-guide?utm_source=github&utm_medium=repo&utm_campaign=scrapling" target="_blank">The Web Scraping Club 上关于 Scrapling 的完整评测</a>（2025 年 11 月），这是排名第一的网页抓取专业通讯。
     </td>
   </tr>
+  <tr>
+    <td width="200">
+      <a href="https://proxy-seller.com/?partner=CU9CAA5TBYFFT2" target="_blank" title="Proxy-Seller provides reliable proxy infrastructure for Web Scraping">
+        <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/ProxySeller.png">
+      </a>
+    </td>
+    <td>
+    <a href="https://proxy-seller.com/?partner=CU9CAA5TBYFFT2" target="_blank">Proxy-Seller</a> 提供可靠的网页抓取代理基础设施，包括 IPv4、IPv6、ISP、住宅和移动代理，具备稳定性能、广泛的地理覆盖和灵活的企业级数据采集方案。
+    </td>
+  </tr>
 </table>
 
 <i><sub>想在这里展示您的广告吗？点击 [这里](https://github.com/sponsors/D4Vinci/sponsorships?tier_id=586646)</sub></i>
