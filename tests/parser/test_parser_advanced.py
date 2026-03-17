@@ -357,7 +357,7 @@ class TestTextHandlerAdvanced:
         """Test TextHandlers.extract() returns self"""
         handlers = TextHandlers([TextHandler("a"), TextHandler("b")])
         assert handlers.extract() is handlers
-        assert handlers.get_all() is handlers
+        assert handlers.getall() is handlers
 
 
 class TestSelectorsAdvanced:
