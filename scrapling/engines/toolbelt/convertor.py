@@ -187,11 +187,11 @@ class ResponseFactory:
         return history
 
     @classmethod
-    def _get_page_content(cls, page: SyncPage, max_retries: int = 10) -> str:
+    def _get_page_content(cls, page: SyncPage, max_retries: int = 20) -> str:
         """
         A workaround for the Playwright issue with `page.content()` on Windows. Ref.: https://github.com/microsoft/playwright/issues/16108
         :param page: The page to extract content from.
-        :param max_retries: Maximum number of retry attempts before returning empty string.
+        :param max_retries: Maximum number of retry attempts before raising `RuntimeError`.
         :return:
         """
         for _ in range(max_retries):
@@ -199,14 +199,14 @@ class ResponseFactory:
                 return page.content() or ""
             except PlaywrightError:
                 page.wait_for_timeout(500)
-        return ""
+        raise RuntimeError(f"Failed to retrieve the page content after retrying for {max_retries * 500}ms.")
 
     @classmethod
-    async def _get_async_page_content(cls, page: AsyncPage, max_retries: int = 10) -> str:
+    async def _get_async_page_content(cls, page: AsyncPage, max_retries: int = 20) -> str:
         """
         A workaround for the Playwright issue with `page.content()` on Windows. Ref.: https://github.com/microsoft/playwright/issues/16108
         :param page: The page to extract content from.
-        :param max_retries: Maximum number of retry attempts before returning empty string.
+        :param max_retries: Maximum number of retry attempts before raising `RuntimeError`.
         :return:
         """
         for _ in range(max_retries):
@@ -214,7 +214,7 @@ class ResponseFactory:
                 return (await page.content()) or ""
             except PlaywrightError:
                 await page.wait_for_timeout(500)
-        return ""
+        raise RuntimeError(f"Failed to retrieve the page content after retrying for {max_retries * 500}ms.")
 
     @classmethod
     async def from_async_playwright_response(
