@@ -44,7 +44,7 @@ Instead of launching a browser locally (Chromium/Google Chrome), you can connect
 
 **Notes:**
 * There was a `stealth` option here, but it was moved to the `StealthyFetcher` class, as explained on the next page, with additional features since version 0.3.13.
-* This makes it less confusing for new users, easier to maintain, and provides other benefits, as explained on the [StealthyFetcher page](fetching/stealthy.md).
+* This makes it less confusing for new users, easier to maintain, and provides other benefits, as explained on the [StealthyFetcher page](stealthy.md).
 
 ## Full list of arguments
 All arguments for `DynamicFetcher` and its session classes:
