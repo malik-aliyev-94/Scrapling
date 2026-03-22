@@ -112,10 +112,12 @@ class SessionManager:
                 client = session._client
 
                 if isinstance(client, _ASyncSessionLogic):
+                    kwargs = request._session_kwargs.copy()
+                    method = cast(SUPPORTED_HTTP_METHODS, kwargs.pop("method", "GET"))
                     response = await client._make_request(
-                        method=cast(SUPPORTED_HTTP_METHODS, request._session_kwargs.pop("method", "GET")),
+                        method=method,
                         url=request.url,
-                        **request._session_kwargs,
+                        **kwargs,
                     )
                 else:
                     # Sync session or other types - shouldn't happen in async context

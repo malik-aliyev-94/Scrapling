@@ -112,10 +112,10 @@ class TextHandler(str):
     def get(self, default=None):  # pragma: no cover
         return self
 
-    def get_all(self):  # pragma: no cover
+    def getall(self):  # pragma: no cover
         return self
 
-    extract = get_all
+    extract = getall
     extract_first = get
 
     def json(self) -> Dict:
@@ -279,7 +279,7 @@ class TextHandlers(List[TextHandler]):
         return self
 
     extract_first = get
-    get_all = extract
+    getall = extract
 
 
 class AttributesHandler(Mapping[str, _TextHandlerType]):
