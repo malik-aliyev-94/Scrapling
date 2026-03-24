@@ -9,9 +9,9 @@ metadata:
     emoji: "🕷️"
     homepage: "https://scrapling.readthedocs.io/en/latest/index.html"
     requires:
-      bins: 
+      bins:
         - python3
-      anyBins: 
+      anyBins:
         - pip
         - pip3
 ---
