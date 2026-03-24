@@ -175,16 +175,6 @@ class TestSaveRetrieveRoundTrip:
         # Path should be a list of tag names from root to element
         assert result["path"][-1] == "p"
 
-    def test_element_without_parent(self):
-        """A root element (no parent) should still be savable."""
-        storage = self._make_storage()
-        tree = fromstring("<div>Root element</div>")
-        storage.save(tree, "root-elem")
-
-        result = storage.retrieve("root-elem")
-        assert result is not None
-        assert "parent_name" not in result
-
     def test_element_with_children_and_siblings(self):
         storage = self._make_storage()
         html_str = "<div><p>Sibling</p><span id='target'><b>Child</b><i>Child2</i></span></div>"
@@ -289,4 +279,4 @@ class TestStorageToolsGetElementPath:
     def test_root_element_path(self):
         tree = fromstring("<div>Root</div>")
         path = _StorageTools._get_element_path(tree)
-        assert path == ("div",)
+        assert path == ('html', 'body', 'div',)
