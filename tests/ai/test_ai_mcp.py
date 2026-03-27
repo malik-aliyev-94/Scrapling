@@ -16,9 +16,10 @@ class TestMCPServer:
     def server(self):
         return ScraplingMCPServer()
 
-    def test_get_tool(self, server, test_url):
+    @pytest.mark.asyncio
+    async def test_get_tool(self, server, test_url):
         """Test the get tool method"""
-        result = server.get(url=test_url, extraction_type="markdown")
+        result = await server.get(url=test_url, extraction_type="markdown")
         assert isinstance(result, ResponseModel)
         assert result.status == 200
         assert result.url == test_url

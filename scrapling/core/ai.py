@@ -7,11 +7,8 @@ from scrapling.core.shell import Convertor
 from scrapling.engines.toolbelt.custom import Response as _ScraplingResponse
 from scrapling.engines.static import ImpersonateType
 from scrapling.fetchers import (
-    Fetcher,
     FetcherSession,
-    DynamicFetcher,
     AsyncDynamicSession,
-    StealthyFetcher,
     AsyncStealthySession,
 )
 from scrapling.core._types import (
@@ -21,7 +18,6 @@ from scrapling.core._types import (
     Dict,
     List,
     Any,
-    Generator,
     Sequence,
     SetCookieParam,
     extraction_types,
@@ -37,9 +33,22 @@ class ResponseModel(BaseModel):
     url: str = Field(description="The URL given by the user that resulted in this response.")
 
 
-def _content_translator(content: Generator[str, None, None], page: _ScraplingResponse) -> ResponseModel:
-    """Convert a content generator to a list of ResponseModel objects."""
-    return ResponseModel(status=page.status, content=[result for result in content], url=page.url)
+def _translate_response(
+    page: _ScraplingResponse,
+    extraction_type: extraction_types,
+    css_selector: Optional[str],
+    main_content_only: bool,
+) -> ResponseModel:
+    """Extract content from a response and translate it to a ResponseModel."""
+    content = list(
+        Convertor._extract_content(
+            page,
+            css_selector=css_selector,
+            extraction_type=extraction_type,
+            main_content_only=main_content_only,
+        )
+    )
+    return ResponseModel(status=page.status, content=content, url=page.url)
 
 
 def _normalize_credentials(credentials: Optional[Dict[str, str]]) -> Optional[Tuple[str, str]]:
@@ -58,7 +67,7 @@ def _normalize_credentials(credentials: Optional[Dict[str, str]]) -> Optional[Tu
 
 class ScraplingMCPServer:
     @staticmethod
-    def get(
+    async def get(
         url: str,
         impersonate: ImpersonateType = "chrome",
         extraction_type: extraction_types = "markdown",
@@ -107,36 +116,28 @@ class ScraplingMCPServer:
         :param http3: Whether to use HTTP3. Defaults to False. It might be problematic if used it with `impersonate`.
         :param stealthy_headers: If enabled (default), it creates and adds real browser headers. It also sets a Google referer header.
         """
-        normalized_proxy_auth = _normalize_credentials(proxy_auth)
-        normalized_auth = _normalize_credentials(auth)
-
-        page = Fetcher.get(
-            url,
-            auth=normalized_auth,
-            proxy=proxy,
-            http3=http3,
-            verify=verify,
-            params=params,
-            proxy_auth=normalized_proxy_auth,
-            retry_delay=retry_delay,
-            stealthy_headers=stealthy_headers,
+        results = await ScraplingMCPServer.bulk_get(
+            urls=[url],
             impersonate=impersonate,
+            extraction_type=extraction_type,
+            css_selector=css_selector,
+            main_content_only=main_content_only,
+            params=params,
             headers=headers,
             cookies=cookies,
             timeout=timeout,
-            retries=retries,
-            max_redirects=max_redirects,
             follow_redirects=follow_redirects,
+            max_redirects=max_redirects,
+            retries=retries,
+            retry_delay=retry_delay,
+            proxy=proxy,
+            proxy_auth=proxy_auth,
+            auth=auth,
+            verify=verify,
+            http3=http3,
+            stealthy_headers=stealthy_headers,
         )
-        return _content_translator(
-            Convertor._extract_content(
-                page,
-                css_selector=css_selector,
-                extraction_type=extraction_type,
-                main_content_only=main_content_only,
-            ),
-            page,
-        )
+        return results[0]
 
     @staticmethod
     async def bulk_get(
@@ -214,18 +215,7 @@ class ScraplingMCPServer:
                 for url in urls
             ]
             responses = await gather(*tasks)
-            return [
-                _content_translator(
-                    Convertor._extract_content(
-                        page,
-                        css_selector=css_selector,
-                        extraction_type=extraction_type,
-                        main_content_only=main_content_only,
-                    ),
-                    page,
-                )
-                for page in responses
-            ]
+            return [_translate_response(page, extraction_type, css_selector, main_content_only) for page in responses]
 
     @staticmethod
     async def fetch(
@@ -280,34 +270,29 @@ class ScraplingMCPServer:
         :param extra_headers: A dictionary of extra headers to add to the request. _The referer set by `google_search` takes priority over the referer set here if used together._
         :param proxy: The proxy to be used with requests, it can be a string or a dictionary with the keys 'server', 'username', and 'password' only.
         """
-        page = await DynamicFetcher.async_fetch(
-            url,
+        results = await ScraplingMCPServer.bulk_fetch(
+            urls=[url],
+            extraction_type=extraction_type,
+            css_selector=css_selector,
+            main_content_only=main_content_only,
+            headless=headless,
+            google_search=google_search,
+            real_chrome=real_chrome,
             wait=wait,
             proxy=proxy,
-            locale=locale,
-            timeout=timeout,
-            cookies=cookies,
-            cdp_url=cdp_url,
-            headless=headless,
-            useragent=useragent,
             timezone_id=timezone_id,
-            real_chrome=real_chrome,
-            network_idle=network_idle,
-            wait_selector=wait_selector,
+            locale=locale,
             extra_headers=extra_headers,
-            google_search=google_search,
+            useragent=useragent,
+            cdp_url=cdp_url,
+            timeout=timeout,
             disable_resources=disable_resources,
+            wait_selector=wait_selector,
+            cookies=cookies,
+            network_idle=network_idle,
             wait_selector_state=wait_selector_state,
         )
-        return _content_translator(
-            Convertor._extract_content(
-                page,
-                css_selector=css_selector,
-                extraction_type=extraction_type,
-                main_content_only=main_content_only,
-            ),
-            page,
-        )
+        return results[0]
 
     @staticmethod
     async def bulk_fetch(
@@ -383,18 +368,7 @@ class ScraplingMCPServer:
         ) as session:
             tasks = [session.fetch(url) for url in urls]
             responses = await gather(*tasks)
-            return [
-                _content_translator(
-                    Convertor._extract_content(
-                        page,
-                        css_selector=css_selector,
-                        extraction_type=extraction_type,
-                        main_content_only=main_content_only,
-                    ),
-                    page,
-                )
-                for page in responses
-            ]
+            return [_translate_response(page, extraction_type, css_selector, main_content_only) for page in responses]
 
     @staticmethod
     async def stealthy_fetch(
@@ -459,39 +433,34 @@ class ScraplingMCPServer:
         :param proxy: The proxy to be used with requests, it can be a string or a dictionary with the keys 'server', 'username', and 'password' only.
         :param additional_args: Additional arguments to be passed to Playwright's context as additional settings, and it takes higher priority than Scrapling's settings.
         """
-        page = await StealthyFetcher.async_fetch(
-            url,
+        results = await ScraplingMCPServer.bulk_stealthy_fetch(
+            urls=[url],
+            extraction_type=extraction_type,
+            css_selector=css_selector,
+            main_content_only=main_content_only,
+            headless=headless,
+            google_search=google_search,
+            real_chrome=real_chrome,
             wait=wait,
             proxy=proxy,
+            timezone_id=timezone_id,
             locale=locale,
+            extra_headers=extra_headers,
+            useragent=useragent,
+            hide_canvas=hide_canvas,
             cdp_url=cdp_url,
             timeout=timeout,
-            cookies=cookies,
-            headless=headless,
-            useragent=useragent,
-            timezone_id=timezone_id,
-            real_chrome=real_chrome,
-            hide_canvas=hide_canvas,
-            allow_webgl=allow_webgl,
-            network_idle=network_idle,
-            block_webrtc=block_webrtc,
-            wait_selector=wait_selector,
-            google_search=google_search,
-            extra_headers=extra_headers,
-            additional_args=additional_args,
-            solve_cloudflare=solve_cloudflare,
             disable_resources=disable_resources,
+            wait_selector=wait_selector,
+            cookies=cookies,
+            network_idle=network_idle,
             wait_selector_state=wait_selector_state,
+            block_webrtc=block_webrtc,
+            allow_webgl=allow_webgl,
+            solve_cloudflare=solve_cloudflare,
+            additional_args=additional_args,
         )
-        return _content_translator(
-            Convertor._extract_content(
-                page,
-                css_selector=css_selector,
-                extraction_type=extraction_type,
-                main_content_only=main_content_only,
-            ),
-            page,
-        )
+        return results[0]
 
     @staticmethod
     async def bulk_stealthy_fetch(
@@ -581,18 +550,7 @@ class ScraplingMCPServer:
         ) as session:
             tasks = [session.fetch(url) for url in urls]
             responses = await gather(*tasks)
-            return [
-                _content_translator(
-                    Convertor._extract_content(
-                        page,
-                        css_selector=css_selector,
-                        extraction_type=extraction_type,
-                        main_content_only=main_content_only,
-                    ),
-                    page,
-                )
-                for page in responses
-            ]
+            return [_translate_response(page, extraction_type, css_selector, main_content_only) for page in responses]
 
     def serve(self, http: bool, host: str, port: int):
         """Serve the MCP server."""
