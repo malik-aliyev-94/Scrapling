@@ -1,4 +1,7 @@
+from uuid import uuid4
 from asyncio import gather
+from datetime import datetime, timezone
+from dataclasses import dataclass, field
 
 from mcp.server.fastmcp import FastMCP
 from pydantic import BaseModel, Field
@@ -13,6 +16,7 @@ from scrapling.fetchers import (
 )
 from scrapling.core._types import (
     Optional,
+    Literal,
     Tuple,
     Mapping,
     Dict,
@@ -24,6 +28,8 @@ from scrapling.core._types import (
     SelectorWaitStates,
 )
 
+SessionType = Literal["dynamic", "stealthy"]
+
 
 class ResponseModel(BaseModel):
     """Request's response information structure."""
@@ -31,6 +37,35 @@ class ResponseModel(BaseModel):
     status: int = Field(description="The status code returned by the website.")
     content: list[str] = Field(description="The content as Markdown/HTML or the text content of the page.")
     url: str = Field(description="The URL given by the user that resulted in this response.")
+
+
+class SessionInfo(BaseModel):
+    """Information about an open browser session."""
+
+    session_id: str = Field(description="The unique identifier of the session.")
+    session_type: SessionType = Field(description="The type of the session: 'dynamic' or 'stealthy'.")
+    created_at: str = Field(description="ISO timestamp of when the session was created.")
+    is_alive: bool = Field(description="Whether the session is still alive and usable.")
+
+
+class SessionCreatedModel(SessionInfo):
+    """Response returned when a new session is created."""
+
+    message: str = Field(description="A confirmation message.")
+
+
+class SessionClosedModel(BaseModel):
+    """Response returned when a session is closed."""
+
+    session_id: str = Field(description="The unique identifier of the closed session.")
+    message: str = Field(description="A confirmation message.")
+
+
+@dataclass
+class _SessionEntry:
+    session: Any  # AsyncDynamicSession | AsyncStealthySession
+    session_type: SessionType
+    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
 def _translate_response(
@@ -65,7 +100,177 @@ def _normalize_credentials(credentials: Optional[Dict[str, str]]) -> Optional[Tu
     return username, password
 
 
+def _build_fetch_kwargs(**params) -> Dict[str, Any]:
+    """Build kwargs dict for session.fetch() from request-level parameters."""
+    kwargs: Dict[str, Any] = {}
+    # These are the params that session.fetch() accepts as per-request overrides
+    request_level_keys = (
+        "wait",
+        "timeout",
+        "google_search",
+        "extra_headers",
+        "disable_resources",
+        "wait_selector",
+        "wait_selector_state",
+        "network_idle",
+        "proxy",
+        "solve_cloudflare",
+    )
+    for key in request_level_keys:
+        if key in params and params[key] is not None:
+            kwargs[key] = params[key]
+    return kwargs
+
+
 class ScraplingMCPServer:
+    def __init__(self):
+        self._sessions: Dict[str, _SessionEntry] = {}
+
+    def _get_session(self, session_id: str, expected_type: SessionType) -> _SessionEntry:
+        """Look up a session by ID and validate its type."""
+        entry = self._sessions.get(session_id)
+        if entry is None:
+            raise ValueError(f"Session '{session_id}' not found. Use list_sessions to see active sessions.")
+        if not entry.session._is_alive:
+            raise ValueError(f"Session '{session_id}' is no longer alive. Open a new session.")
+        if entry.session_type != expected_type:
+            raise ValueError(
+                f"Session '{session_id}' is a '{entry.session_type}' session, but this tool requires a "
+                f"'{expected_type}' session. Use the matching fetch tool for your session type."
+            )
+        return entry
+
+    async def open_session(
+        self,
+        session_type: SessionType,
+        headless: bool = True,
+        google_search: bool = True,
+        real_chrome: bool = False,
+        wait: int | float = 0,
+        proxy: Optional[str | Dict[str, str]] = None,
+        timezone_id: str | None = None,
+        locale: str | None = None,
+        extra_headers: Optional[Dict[str, str]] = None,
+        useragent: Optional[str] = None,
+        cdp_url: Optional[str] = None,
+        timeout: int | float = 30000,
+        disable_resources: bool = False,
+        wait_selector: Optional[str] = None,
+        cookies: Sequence[SetCookieParam] | None = None,
+        network_idle: bool = False,
+        wait_selector_state: SelectorWaitStates = "attached",
+        max_pages: int = 5,
+        # Stealthy-only params (ignored for dynamic sessions)
+        hide_canvas: bool = False,
+        block_webrtc: bool = False,
+        allow_webgl: bool = True,
+        solve_cloudflare: bool = False,
+        additional_args: Optional[Dict] = None,
+    ) -> SessionCreatedModel:
+        """Open a persistent browser session that can be reused across multiple fetch calls.
+        This avoids the overhead of launching a new browser for each request.
+        Use close_session to close the session when done, and list_sessions to see all active sessions.
+
+        :param session_type: The type of session to open. Use "dynamic" for standard Playwright browser, or "stealthy" for anti-bot bypass with fingerprint spoofing.
+        :param headless: Run the browser in headless/hidden (default), or headful/visible mode.
+        :param google_search: Enabled by default, Scrapling will set a Google referer header.
+        :param real_chrome: If you have a Chrome browser installed on your device, enable this, and the Fetcher will launch an instance of your browser and use it.
+        :param wait: The time (milliseconds) the fetcher will wait after everything finishes before closing the page and returning the Response object.
+        :param proxy: The proxy to be used with requests, it can be a string or a dictionary with the keys 'server', 'username', and 'password' only.
+        :param timezone_id: Changes the timezone of the browser. Defaults to the system timezone.
+        :param locale: Specify user locale, for example, `en-GB`, `de-DE`, etc.
+        :param extra_headers: A dictionary of extra headers to add to the request.
+        :param useragent: Pass a useragent string to be used. Otherwise the fetcher will generate a real Useragent of the same browser and use it.
+        :param cdp_url: Instead of launching a new browser instance, connect to this CDP URL to control real browsers through CDP.
+        :param timeout: The timeout in milliseconds that is used in all operations and waits through the page. The default is 30,000.
+        :param disable_resources: Drop requests for unnecessary resources for a speed boost.
+        :param wait_selector: Wait for a specific CSS selector to be in a specific state.
+        :param cookies: Set cookies for the session. It should be in a dictionary format that Playwright accepts.
+        :param network_idle: Wait for the page until there are no network connections for at least 500 ms.
+        :param wait_selector_state: The state to wait for the selector given with `wait_selector`. The default state is `attached`.
+        :param max_pages: Maximum number of concurrent pages/tabs in the browser. Defaults to 5. Higher values allow more parallel fetches.
+        :param hide_canvas: (Stealthy only) Add random noise to canvas operations to prevent fingerprinting.
+        :param block_webrtc: (Stealthy only) Forces WebRTC to respect proxy settings to prevent local IP address leak.
+        :param allow_webgl: (Stealthy only) Enabled by default. Disabling WebGL is not recommended as many WAFs now check if WebGL is enabled.
+        :param solve_cloudflare: (Stealthy only) Solves all types of the Cloudflare's Turnstile/Interstitial challenges.
+        :param additional_args: (Stealthy only) Additional arguments to be passed to Playwright's context as additional settings.
+        """
+        common_kwargs: Dict[str, Any] = dict(
+            wait=wait,
+            proxy=proxy,
+            locale=locale,
+            timeout=timeout,
+            cookies=cookies,
+            cdp_url=cdp_url,
+            headless=headless,
+            max_pages=max_pages,
+            useragent=useragent,
+            timezone_id=timezone_id,
+            real_chrome=real_chrome,
+            network_idle=network_idle,
+            wait_selector=wait_selector,
+            google_search=google_search,
+            extra_headers=extra_headers,
+            disable_resources=disable_resources,
+            wait_selector_state=wait_selector_state,
+        )
+
+        if session_type == "stealthy":
+            session = AsyncStealthySession(
+                **common_kwargs,
+                hide_canvas=hide_canvas,
+                block_webrtc=block_webrtc,
+                allow_webgl=allow_webgl,
+                solve_cloudflare=solve_cloudflare,
+                additional_args=additional_args,
+            )
+        else:
+            session = AsyncDynamicSession(**common_kwargs)
+
+        await session.start()
+
+        session_id = uuid4().hex[:12]
+        entry = _SessionEntry(session=session, session_type=session_type)
+        self._sessions[session_id] = entry
+
+        return SessionCreatedModel(
+            session_id=session_id,
+            session_type=session_type,
+            created_at=entry.created_at,
+            is_alive=True,
+            message=f"Session '{session_id}' ({session_type}) created successfully.",
+        )
+
+    async def close_session(
+        self,
+        session_id: str,
+    ) -> SessionClosedModel:
+        """Close a persistent browser session and free its resources.
+
+        :param session_id: The unique identifier of the session to close. Use list_sessions to see active sessions.
+        """
+        entry = self._sessions.pop(session_id, None)
+        if entry is None:
+            raise ValueError(f"Session '{session_id}' not found. Use list_sessions to see active sessions.")
+
+        await entry.session.close()
+        return SessionClosedModel(
+            session_id=session_id,
+            message=f"Session '{session_id}' closed successfully.",
+        )
+
+    async def list_sessions(self) -> List[SessionInfo]:
+        """List all active browser sessions with their details."""
+        return [
+            SessionInfo(
+                session_id=sid,
+                session_type=entry.session_type,
+                created_at=entry.created_at,
+                is_alive=entry.session._is_alive,
+            )
+            for sid, entry in self._sessions.items()
+        ]
+
     @staticmethod
     async def get(
         url: str,
@@ -217,8 +422,8 @@ class ScraplingMCPServer:
             responses = await gather(*tasks)
             return [_translate_response(page, extraction_type, css_selector, main_content_only) for page in responses]
 
-    @staticmethod
     async def fetch(
+        self,
         url: str,
         extraction_type: extraction_types = "markdown",
         css_selector: Optional[str] = None,
@@ -239,10 +444,13 @@ class ScraplingMCPServer:
         cookies: Sequence[SetCookieParam] | None = None,
         network_idle: bool = False,
         wait_selector_state: SelectorWaitStates = "attached",
+        session_id: Optional[str] = None,
     ) -> ResponseModel:
         """Use playwright to open a browser to fetch a URL and return a structured output of the result.
         Note: This is only suitable for low-mid protection levels.
         Note: If the `css_selector` resolves to more than one element, all the elements will be returned.
+        Note: If a `session_id` is provided (from open_session), the browser session will be reused instead of creating a new one.
+            When using a session, browser-level params (headless, proxy, locale, etc.) are ignored — they were set at session creation time.
 
         :param url: The URL to request.
         :param extraction_type: The type of content to extract from the page. Defaults to "markdown". Options are:
@@ -269,8 +477,9 @@ class ScraplingMCPServer:
         :param google_search: Enabled by default, Scrapling will set a Google referer header.
         :param extra_headers: A dictionary of extra headers to add to the request. _The referer set by `google_search` takes priority over the referer set here if used together._
         :param proxy: The proxy to be used with requests, it can be a string or a dictionary with the keys 'server', 'username', and 'password' only.
+        :param session_id: Optional session ID from open_session. If provided, reuses the existing browser session instead of creating a new one.
         """
-        results = await ScraplingMCPServer.bulk_fetch(
+        results = await self.bulk_fetch(
             urls=[url],
             extraction_type=extraction_type,
             css_selector=css_selector,
@@ -291,11 +500,12 @@ class ScraplingMCPServer:
             cookies=cookies,
             network_idle=network_idle,
             wait_selector_state=wait_selector_state,
+            session_id=session_id,
         )
         return results[0]
 
-    @staticmethod
     async def bulk_fetch(
+        self,
         urls: List[str],
         extraction_type: extraction_types = "markdown",
         css_selector: Optional[str] = None,
@@ -316,10 +526,13 @@ class ScraplingMCPServer:
         cookies: Sequence[SetCookieParam] | None = None,
         network_idle: bool = False,
         wait_selector_state: SelectorWaitStates = "attached",
+        session_id: Optional[str] = None,
     ) -> List[ResponseModel]:
         """Use playwright to open a browser, then fetch a group of URLs at the same time, and for each page return a structured output of the result.
         Note: This is only suitable for low-mid protection levels.
         Note: If the `css_selector` resolves to more than one element, all the elements will be returned.
+        Note: If a `session_id` is provided (from open_session), the browser session will be reused instead of creating a new one.
+            When using a session, browser-level params (headless, proxy, locale, etc.) are ignored — they were set at session creation time.
 
         :param urls: A list of the URLs to request.
         :param extraction_type: The type of content to extract from the page. Defaults to "markdown". Options are:
@@ -346,32 +559,50 @@ class ScraplingMCPServer:
         :param google_search: Enabled by default, Scrapling will set a Google referer header.
         :param extra_headers: A dictionary of extra headers to add to the request. _The referer set by `google_search` takes priority over the referer set here if used together._
         :param proxy: The proxy to be used with requests, it can be a string or a dictionary with the keys 'server', 'username', and 'password' only.
+        :param session_id: Optional session ID from open_session. If provided, reuses the existing browser session instead of creating a new one.
         """
-        async with AsyncDynamicSession(
-            wait=wait,
-            proxy=proxy,
-            locale=locale,
-            timeout=timeout,
-            cookies=cookies,
-            cdp_url=cdp_url,
-            headless=headless,
-            max_pages=len(urls),
-            useragent=useragent,
-            timezone_id=timezone_id,
-            real_chrome=real_chrome,
-            network_idle=network_idle,
-            wait_selector=wait_selector,
-            google_search=google_search,
-            extra_headers=extra_headers,
-            disable_resources=disable_resources,
-            wait_selector_state=wait_selector_state,
-        ) as session:
-            tasks = [session.fetch(url) for url in urls]
+        if session_id:
+            entry = self._get_session(session_id, "dynamic")
+            fetch_kwargs = _build_fetch_kwargs(
+                wait=wait,
+                timeout=timeout,
+                google_search=google_search,
+                extra_headers=extra_headers,
+                disable_resources=disable_resources,
+                wait_selector=wait_selector,
+                wait_selector_state=wait_selector_state,
+                network_idle=network_idle,
+                proxy=proxy,
+            )
+            tasks = [entry.session.fetch(url, **fetch_kwargs) for url in urls]
             responses = await gather(*tasks)
-            return [_translate_response(page, extraction_type, css_selector, main_content_only) for page in responses]
+        else:
+            async with AsyncDynamicSession(
+                wait=wait,
+                proxy=proxy,
+                locale=locale,
+                timeout=timeout,
+                cookies=cookies,
+                cdp_url=cdp_url,
+                headless=headless,
+                max_pages=len(urls),
+                useragent=useragent,
+                timezone_id=timezone_id,
+                real_chrome=real_chrome,
+                network_idle=network_idle,
+                wait_selector=wait_selector,
+                google_search=google_search,
+                extra_headers=extra_headers,
+                disable_resources=disable_resources,
+                wait_selector_state=wait_selector_state,
+            ) as session:
+                tasks = [session.fetch(url) for url in urls]
+                responses = await gather(*tasks)
 
-    @staticmethod
+        return [_translate_response(page, extraction_type, css_selector, main_content_only) for page in responses]
+
     async def stealthy_fetch(
+        self,
         url: str,
         extraction_type: extraction_types = "markdown",
         css_selector: Optional[str] = None,
@@ -397,10 +628,13 @@ class ScraplingMCPServer:
         allow_webgl: bool = True,
         solve_cloudflare: bool = False,
         additional_args: Optional[Dict] = None,
+        session_id: Optional[str] = None,
     ) -> ResponseModel:
         """Use the stealthy fetcher to fetch a URL and return a structured output of the result.
         Note: This is the only suitable fetcher for high protection levels.
         Note: If the `css_selector` resolves to more than one element, all the elements will be returned.
+        Note: If a `session_id` is provided (from open_session), the browser session will be reused instead of creating a new one.
+            When using a session, browser-level params (headless, proxy, locale, etc.) are ignored — they were set at session creation time.
 
         :param url: The URL to request.
         :param extraction_type: The type of content to extract from the page. Defaults to "markdown". Options are:
@@ -432,8 +666,9 @@ class ScraplingMCPServer:
         :param extra_headers: A dictionary of extra headers to add to the request. _The referer set by `google_search` takes priority over the referer set here if used together._
         :param proxy: The proxy to be used with requests, it can be a string or a dictionary with the keys 'server', 'username', and 'password' only.
         :param additional_args: Additional arguments to be passed to Playwright's context as additional settings, and it takes higher priority than Scrapling's settings.
+        :param session_id: Optional session ID from open_session. If provided, reuses the existing browser session instead of creating a new one.
         """
-        results = await ScraplingMCPServer.bulk_stealthy_fetch(
+        results = await self.bulk_stealthy_fetch(
             urls=[url],
             extraction_type=extraction_type,
             css_selector=css_selector,
@@ -459,11 +694,12 @@ class ScraplingMCPServer:
             allow_webgl=allow_webgl,
             solve_cloudflare=solve_cloudflare,
             additional_args=additional_args,
+            session_id=session_id,
         )
         return results[0]
 
-    @staticmethod
     async def bulk_stealthy_fetch(
+        self,
         urls: List[str],
         extraction_type: extraction_types = "markdown",
         css_selector: Optional[str] = None,
@@ -489,10 +725,13 @@ class ScraplingMCPServer:
         allow_webgl: bool = True,
         solve_cloudflare: bool = False,
         additional_args: Optional[Dict] = None,
+        session_id: Optional[str] = None,
     ) -> List[ResponseModel]:
         """Use the stealthy fetcher to fetch a group of URLs at the same time, and for each page return a structured output of the result.
         Note: This is the only suitable fetcher for high protection levels.
         Note: If the `css_selector` resolves to more than one element, all the elements will be returned.
+        Note: If a `session_id` is provided (from open_session), the browser session will be reused instead of creating a new one.
+            When using a session, browser-level params (headless, proxy, locale, etc.) are ignored — they were set at session creation time.
 
         :param urls: A list of the URLs to request.
         :param extraction_type: The type of content to extract from the page. Defaults to "markdown". Options are:
@@ -524,45 +763,74 @@ class ScraplingMCPServer:
         :param extra_headers: A dictionary of extra headers to add to the request. _The referer set by `google_search` takes priority over the referer set here if used together._
         :param proxy: The proxy to be used with requests, it can be a string or a dictionary with the keys 'server', 'username', and 'password' only.
         :param additional_args: Additional arguments to be passed to Playwright's context as additional settings, and it takes higher priority than Scrapling's settings.
+        :param session_id: Optional session ID from open_session. If provided, reuses the existing browser session instead of creating a new one.
         """
-        async with AsyncStealthySession(
-            wait=wait,
-            proxy=proxy,
-            locale=locale,
-            cdp_url=cdp_url,
-            timeout=timeout,
-            cookies=cookies,
-            headless=headless,
-            useragent=useragent,
-            timezone_id=timezone_id,
-            real_chrome=real_chrome,
-            hide_canvas=hide_canvas,
-            allow_webgl=allow_webgl,
-            network_idle=network_idle,
-            block_webrtc=block_webrtc,
-            wait_selector=wait_selector,
-            google_search=google_search,
-            extra_headers=extra_headers,
-            additional_args=additional_args,
-            solve_cloudflare=solve_cloudflare,
-            disable_resources=disable_resources,
-            wait_selector_state=wait_selector_state,
-        ) as session:
-            tasks = [session.fetch(url) for url in urls]
+        if session_id:
+            entry = self._get_session(session_id, "stealthy")
+            fetch_kwargs = _build_fetch_kwargs(
+                wait=wait,
+                timeout=timeout,
+                google_search=google_search,
+                extra_headers=extra_headers,
+                disable_resources=disable_resources,
+                wait_selector=wait_selector,
+                wait_selector_state=wait_selector_state,
+                network_idle=network_idle,
+                proxy=proxy,
+                solve_cloudflare=solve_cloudflare,
+            )
+            tasks = [entry.session.fetch(url, **fetch_kwargs) for url in urls]
             responses = await gather(*tasks)
-            return [_translate_response(page, extraction_type, css_selector, main_content_only) for page in responses]
+        else:
+            async with AsyncStealthySession(
+                wait=wait,
+                proxy=proxy,
+                locale=locale,
+                cdp_url=cdp_url,
+                timeout=timeout,
+                cookies=cookies,
+                headless=headless,
+                useragent=useragent,
+                timezone_id=timezone_id,
+                real_chrome=real_chrome,
+                hide_canvas=hide_canvas,
+                allow_webgl=allow_webgl,
+                network_idle=network_idle,
+                block_webrtc=block_webrtc,
+                wait_selector=wait_selector,
+                google_search=google_search,
+                extra_headers=extra_headers,
+                additional_args=additional_args,
+                solve_cloudflare=solve_cloudflare,
+                disable_resources=disable_resources,
+                wait_selector_state=wait_selector_state,
+            ) as session:
+                tasks = [session.fetch(url) for url in urls]
+                responses = await gather(*tasks)
+
+        return [_translate_response(page, extraction_type, css_selector, main_content_only) for page in responses]
 
     def serve(self, http: bool, host: str, port: int):
         """Serve the MCP server."""
         server = FastMCP(name="Scrapling", host=host, port=port)
+        # Session management tools
+        server.add_tool(self.open_session, title="open_session", structured_output=True)
+        server.add_tool(self.close_session, title="close_session", structured_output=True)
+        server.add_tool(self.list_sessions, title="list_sessions", structured_output=True)
+        # HTTP tools
         server.add_tool(self.get, title="get", description=self.get.__doc__, structured_output=True)
         server.add_tool(self.bulk_get, title="bulk_get", description=self.bulk_get.__doc__, structured_output=True)
+        # Dynamic browser tools
         server.add_tool(self.fetch, title="fetch", description=self.fetch.__doc__, structured_output=True)
         server.add_tool(
             self.bulk_fetch, title="bulk_fetch", description=self.bulk_fetch.__doc__, structured_output=True
         )
+        # Stealthy browser tools
         server.add_tool(
-            self.stealthy_fetch, title="stealthy_fetch", description=self.stealthy_fetch.__doc__, structured_output=True
+            self.stealthy_fetch,
+            title="stealthy_fetch",
+            description=self.stealthy_fetch.__doc__,
+            structured_output=True,
         )
         server.add_tool(
             self.bulk_stealthy_fetch,
