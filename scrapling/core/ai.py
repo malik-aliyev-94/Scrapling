@@ -17,6 +17,7 @@ from scrapling.fetchers import (
 from scrapling.core._types import (
     Optional,
     Literal,
+    Union,
     Tuple,
     Mapping,
     Dict,
@@ -98,28 +99,6 @@ def _normalize_credentials(credentials: Optional[Dict[str, str]]) -> Optional[Tu
         raise ValueError("Credentials dictionary must contain both 'username' and 'password' keys")
 
     return username, password
-
-
-def _build_fetch_kwargs(**params) -> Dict[str, Any]:
-    """Build kwargs dict for session.fetch() from request-level parameters."""
-    kwargs: Dict[str, Any] = {}
-    # These are the params that session.fetch() accepts as per-request overrides
-    request_level_keys = (
-        "wait",
-        "timeout",
-        "google_search",
-        "extra_headers",
-        "disable_resources",
-        "wait_selector",
-        "wait_selector_state",
-        "network_idle",
-        "proxy",
-        "solve_cloudflare",
-    )
-    for key in request_level_keys:
-        if key in params and params[key] is not None:
-            kwargs[key] = params[key]
-    return kwargs
 
 
 class ScraplingMCPServer:
@@ -215,6 +194,7 @@ class ScraplingMCPServer:
             wait_selector_state=wait_selector_state,
         )
 
+        session: Union[AsyncDynamicSession, AsyncStealthySession]
         if session_type == "stealthy":
             session = AsyncStealthySession(
                 **common_kwargs,
@@ -563,18 +543,21 @@ class ScraplingMCPServer:
         """
         if session_id:
             entry = self._get_session(session_id, "dynamic")
-            fetch_kwargs = _build_fetch_kwargs(
-                wait=wait,
-                timeout=timeout,
-                google_search=google_search,
-                extra_headers=extra_headers,
-                disable_resources=disable_resources,
-                wait_selector=wait_selector,
-                wait_selector_state=wait_selector_state,
-                network_idle=network_idle,
-                proxy=proxy,
-            )
-            tasks = [entry.session.fetch(url, **fetch_kwargs) for url in urls]
+            tasks = [
+                entry.session.fetch(
+                    url,
+                    wait=wait,
+                    timeout=timeout,
+                    google_search=google_search,
+                    extra_headers=extra_headers,
+                    disable_resources=disable_resources,
+                    wait_selector=wait_selector,
+                    wait_selector_state=wait_selector_state,
+                    network_idle=network_idle,
+                    proxy=proxy,
+                )
+                for url in urls
+            ]
             responses = await gather(*tasks)
         else:
             async with AsyncDynamicSession(
@@ -767,19 +750,22 @@ class ScraplingMCPServer:
         """
         if session_id:
             entry = self._get_session(session_id, "stealthy")
-            fetch_kwargs = _build_fetch_kwargs(
-                wait=wait,
-                timeout=timeout,
-                google_search=google_search,
-                extra_headers=extra_headers,
-                disable_resources=disable_resources,
-                wait_selector=wait_selector,
-                wait_selector_state=wait_selector_state,
-                network_idle=network_idle,
-                proxy=proxy,
-                solve_cloudflare=solve_cloudflare,
-            )
-            tasks = [entry.session.fetch(url, **fetch_kwargs) for url in urls]
+            tasks = [
+                entry.session.fetch(
+                    url,
+                    wait=wait,
+                    timeout=timeout,
+                    google_search=google_search,
+                    extra_headers=extra_headers,
+                    disable_resources=disable_resources,
+                    wait_selector=wait_selector,
+                    wait_selector_state=wait_selector_state,
+                    network_idle=network_idle,
+                    proxy=proxy,
+                    solve_cloudflare=solve_cloudflare,
+                )
+                for url in urls
+            ]
             responses = await gather(*tasks)
         else:
             async with AsyncStealthySession(
