@@ -11,7 +11,7 @@ from playwright.async_api import (
 )
 
 from scrapling.core.utils import log
-from scrapling.core._types import Optional, ProxyType, Unpack
+from scrapling.core._types import Optional, List, ProxyType, Unpack
 from scrapling.engines.toolbelt.proxy_rotation import is_proxy_error
 from scrapling.engines.toolbelt.convertor import Response, ResponseFactory
 from scrapling.engines._browsers._types import PlaywrightSession, PlaywrightFetchParams
@@ -139,7 +139,8 @@ class DynamicSession(SyncSession, DynamicSessionMixin):
             with self._page_generator(
                 params.timeout, params.extra_headers, params.disable_resources, proxy, params.blocked_domains
             ) as page_info:
-                final_response, xhr_captured = [None], []
+                final_response: List = [None]
+                xhr_captured: List = []
                 page = page_info.page
                 page.on(
                     "response",
@@ -319,7 +320,8 @@ class AsyncDynamicSession(AsyncSession, DynamicSessionMixin):
             async with self._page_generator(
                 params.timeout, params.extra_headers, params.disable_resources, proxy, params.blocked_domains
             ) as page_info:
-                final_response, xhr_captured = [None], []
+                final_response: List = [None]
+                xhr_captured: List = []
                 page = page_info.page
                 page.on(
                     "response",

@@ -28,6 +28,7 @@ from scrapling.engines.toolbelt.navigation import (
 )
 from scrapling.core._types import (
     Any,
+    Awaitable,
     Dict,
     List,
     Set,
@@ -152,7 +153,7 @@ class SyncSession:
         response_container: List,
         xhr_pattern: Optional[str] = None,
         xhr_container: Optional[List] = None,
-    ) -> Callable:
+    ) -> Callable[[SyncPlaywrightResponse], None]:
         """Create a response handler that captures the final navigation response and optionally XHR/fetch responses.
 
         :param page_info: The PageInfo object containing the page
@@ -162,7 +163,7 @@ class SyncSession:
         :return: A callback function for page.on("response", ...)
         """
 
-        def handle_response(finished_response: SyncPlaywrightResponse):
+        def handle_response(finished_response: SyncPlaywrightResponse) -> None:
             if (
                 finished_response.request.resource_type == "document"
                 and finished_response.request.is_navigation_request()
@@ -337,7 +338,7 @@ class AsyncSession:
         response_container: List,
         xhr_pattern: Optional[str] = None,
         xhr_container: Optional[List] = None,
-    ) -> Callable:
+    ) -> Callable[[AsyncPlaywrightResponse], Awaitable[None]]:
         """Create an async response handler that captures the final navigation response and optionally XHR/fetch responses.
 
         :param page_info: The PageInfo object containing the page
@@ -347,7 +348,7 @@ class AsyncSession:
         :return: A callback function for page.on("response", ...)
         """
 
-        async def handle_response(finished_response: AsyncPlaywrightResponse):
+        async def handle_response(finished_response: AsyncPlaywrightResponse) -> None:
             if (
                 finished_response.request.resource_type == "document"
                 and finished_response.request.is_navigation_request()

@@ -9,7 +9,7 @@ from patchright.sync_api import sync_playwright
 from patchright.async_api import async_playwright
 
 from scrapling.core.utils import log
-from scrapling.core._types import Any, Optional, ProxyType, Unpack
+from scrapling.core._types import Any, List, Optional, ProxyType, Unpack
 from scrapling.engines.toolbelt.proxy_rotation import is_proxy_error
 from scrapling.engines.toolbelt.convertor import Response, ResponseFactory
 from scrapling.engines._browsers._types import StealthSession, StealthFetchParams
@@ -222,7 +222,8 @@ class StealthySession(SyncSession, StealthySessionMixin):
             with self._page_generator(
                 params.timeout, params.extra_headers, params.disable_resources, proxy, params.blocked_domains
             ) as page_info:
-                final_response, xhr_captured = [None], []
+                final_response: List = [None]
+                xhr_captured: List = []
                 page = page_info.page
                 page.on(
                     "response",
@@ -489,7 +490,8 @@ class AsyncStealthySession(AsyncSession, StealthySessionMixin):
             async with self._page_generator(
                 params.timeout, params.extra_headers, params.disable_resources, proxy, params.blocked_domains
             ) as page_info:
-                final_response, xhr_captured = [None], []
+                final_response: List = [None]
+                xhr_captured: List = []
                 page = page_info.page
                 page.on(
                     "response",
