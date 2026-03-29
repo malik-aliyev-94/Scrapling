@@ -89,6 +89,7 @@ class PlaywrightSession(TypedDict, total=False):
     blocked_domains: Optional[Set[str]]
     retries: int
     retry_delay: int | float
+    capture_xhr: str | None
 
 
 class PlaywrightFetchParams(TypedDict, total=False):

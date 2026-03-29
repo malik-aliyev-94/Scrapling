@@ -67,6 +67,7 @@ class Response(Selector):
 
         self.meta: Dict[str, Any] = meta or {}
         self.request: Optional["Request"] = None  # Will be set by crawler
+        self.captured_xhr: List["Response"] = []
 
     @property
     def body(self) -> bytes:
