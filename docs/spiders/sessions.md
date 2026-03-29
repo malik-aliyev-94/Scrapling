@@ -74,9 +74,11 @@ class ProductSpider(Spider):
         manager.add("http", FetcherSession())
 
         # Stealth browser for protected product pages
+        # capture_xhr captures background API calls matching the regex
         manager.add("stealth", AsyncStealthySession(
             headless=True,
             network_idle=True,
+            capture_xhr=r"https://api\.shop\.example\.com/.*",
         ))
 
     async def parse(self, response: Response):
@@ -89,6 +91,10 @@ class ProductSpider(Spider):
             yield response.follow(next_page)
 
     async def parse_product(self, response: Response):
+        # Access captured XHR/fetch API calls (if capture_xhr was set on the session)
+        for xhr in response.captured_xhr:
+            self.logger.info(f"Captured API call: {xhr.url} ({xhr.status})")
+
         yield {
             "name": response.css("h1::text").get(""),
             "price": response.css(".price::text").get(""),

@@ -77,6 +77,7 @@ The `Response` object is the same as the [Selector](../parsing/main_classes.md#s
 >>> page.body            # Raw response body as bytes
 >>> page.encoding        # Response encoding
 >>> page.meta            # Response metadata dictionary (e.g., proxy used). Mainly helpful with the spiders system.
+>>> page.captured_xhr    # List of captured XHR/fetch responses (when capture_xhr is enabled on a browser session)
 ```
 All fetchers return the `Response` object.
 
