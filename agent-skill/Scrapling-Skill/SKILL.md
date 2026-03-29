@@ -346,19 +346,25 @@ async with FetcherSession(http3=True) as session:  # `FetcherSession` is context
 async with AsyncStealthySession(max_pages=2) as session:
     tasks = []
     urls = ['https://example.com/page1', 'https://example.com/page2']
-    
+
     for url in urls:
         task = session.fetch(url)
         tasks.append(task)
-    
+
     print(session.get_pool_stats())  # Optional - The status of the browser tabs pool (busy/free/error)
     results = await asyncio.gather(*tasks)
     print(session.get_pool_stats())
+
+# Capture XHR/fetch API calls during page load
+async with AsyncDynamicSession(capture_xhr=r"https://api\.example\.com/.*") as session:
+    page = await session.fetch('https://example.com')
+    for xhr in page.captured_xhr:  # Each is a full Response object
+        print(xhr.url, xhr.status, xhr.body)
 ```
 
 ## References
 You already had a good glimpse of what the library can do. Use the references below to dig deeper when needed
-- `references/mcp-server.md` — MCP server tools and capabilities
+- `references/mcp-server.md` — MCP server tools, persistent session management, and capabilities
 - `references/parsing` — Everything you need for parsing HTML
 - `references/fetching` — Everything you need to fetch websites and session persistence
 - `references/spiders` — Everything you need to write spiders, proxy rotation, and advanced features. It follows a Scrapy-like format
