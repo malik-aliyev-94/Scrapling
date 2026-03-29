@@ -6,19 +6,24 @@ The **Scrapling MCP Server** is a new feature that brings Scrapling's powerful W
 
 ## Features
 
-The Scrapling MCP Server provides six powerful tools for web scraping:
+The Scrapling MCP Server provides nine powerful tools for web scraping:
 
 ### 🚀 Basic HTTP Scraping
 - **`get`**: Fast HTTP requests with browser fingerprint impersonation, generating real browser headers matching the TLS version, HTTP/3, and more!
 - **`bulk_get`**: An async version of the above tool that allows scraping of multiple URLs at the same time!
 
-### 🌐 Dynamic Content Scraping  
+### 🌐 Dynamic Content Scraping
 - **`fetch`**: Rapidly fetch dynamic content with Chromium/Chrome browser with complete control over the request/browser, and more!
 - **`bulk_fetch`**: An async version of the above tool that allows scraping of multiple URLs in different browser tabs at the same time!
 
 ### 🔒 Stealth Scraping
-- **`stealthy_fetch`**: Uses our Stealthy browser to bypass Cloudflare Turnstile/Interstitial and other anti-bot systems with complete control over the request/browser! 
+- **`stealthy_fetch`**: Uses our Stealthy browser to bypass Cloudflare Turnstile/Interstitial and other anti-bot systems with complete control over the request/browser!
 - **`bulk_stealthy_fetch`**: An async version of the above tool that allows stealth scraping of multiple URLs in different browser tabs at the same time!
+
+### 🔌 Session Management
+- **`open_session`**: Create a persistent browser session (dynamic or stealthy) that stays open across multiple fetch calls, avoiding the overhead of launching a new browser each time.
+- **`close_session`**: Close a persistent browser session and free its resources.
+- **`list_sessions`**: List all active browser sessions with their details.
 
 ### Key Capabilities
 - **Smart Content Extraction**: Convert web pages/elements to Markdown, HTML, or extract a clean version of the text content
@@ -27,6 +32,7 @@ The Scrapling MCP Server provides six powerful tools for web scraping:
 - **Proxy Support**: Use proxies for anonymity and geo-targeting
 - **Browser Impersonation**: Mimic real browsers with TLS fingerprinting, real browser headers matching that version, and more
 - **Parallel Processing**: Scrape multiple URLs concurrently for efficiency
+- **Session Persistence**: Reuse browser sessions across multiple requests for better performance
 
 #### But why use Scrapling MCP Server instead of other available tools?
 
@@ -252,6 +258,34 @@ We will gradually go from simple prompts to more complex ones. We will use Claud
     https://www.arnotts.ie/furniture/bedroom/bed-frames/
     ```
 
+7. **Using Persistent Sessions**
+
+    When scraping multiple pages from the same site, use a persistent browser session to avoid the overhead of launching a new browser for each request:
+    ```
+    Open a stealthy browser session with 5 pages maximum pool, then use it to scrape the main details in bulk from the first 5 product pages on https://shop.example.com. Close the session when you're done.
+    ```
+    Claude will use `open_session` to create a persistent browser, pass the `session_id` to `bulk_stealthy_fetch` call while opening all pages at the same time, and then call `close_session` at the end. This is significantly faster than launching a new browser for each page.
+
+    !!! danger
+    
+        When using persistent sessions, always remember to close the session after you finish or it will stay open!
+
+
+8. **Using Persistent Session on a long flow**
+
+    Another long test example that makes Clause think:
+
+    ```
+    Use Scrapling MCP to do the following in this order:
+
+    1. Open a stealthy browser session with headless mode off.
+    2. Go to this page and collect the number of stars: https://github.com/D4Vinci/Scrapling
+    3. From the README, get the URL that shows the number of downloads and go to it.
+    4. Get the number of downloads and the top 3 countries from the graph.
+    5. Prepare a report with the results.
+    6. Close the browser.
+    ```
+
 And so on, you get the idea. Your creativity is the key here.
 
 ## Best Practices
@@ -277,6 +311,13 @@ Here is some technical advice for you.
 ### 4. Data Quality
 - Use `main_content_only=true` to avoid navigation/ads
 - Choose an appropriate `extraction_type` for your use case
+
+### 5. Use Sessions for Multiple Requests
+- Use `open_session` to create a persistent browser session when scraping multiple pages
+- Pass the `session_id` to `fetch` or `stealthy_fetch` calls to reuse the same browser
+- Always close sessions with `close_session` when done to free resources
+- Use `list_sessions` to check which sessions are still active
+- A `session_id` from a dynamic session can only be used with `fetch`/`bulk_fetch`, and a stealthy session can only be used with `stealthy_fetch`/`bulk_stealthy_fetch`
 
 ## Legal and Ethical Considerations
 
