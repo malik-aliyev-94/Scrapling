@@ -34,6 +34,8 @@ Blazing fast crawls with real-time stats and streaming. Built by Web Scrapers fo
 > 2. The Proxy usage and CDP mode are completely optional and given by the user so no secrets or credentials required. Depending on the user usage.
 > 3. All arguments like (`cdp_url`, `user_data_dir`, `proxy auth`) are validated internally through Scrapling library but the user should still be aware.
 
+**IMPORTANT**: While using the commandline scraping commands, you MUST use the commandline argument `--ai-targeted` to protect from Prompt Injection!
+
 ## Setup (once)
 
 Create a virtual Python environment through any way available, like `venv`, then inside the environment do:
@@ -106,6 +108,7 @@ Those options are shared between the 4 HTTP request commands:
 | --verify / --no-verify                     |    None    | Whether to verify SSL certificates (default: True)                                                                                             |
 | --impersonate                              |    TEXT    | Browser to impersonate. Can be a single browser (e.g., Chrome) or a comma-separated list for random selection (e.g., Chrome, Firefox, Safari). |
 | --stealthy-headers / --no-stealthy-headers |    None    | Use stealthy browser headers (default: True)                                                                                                   |
+| --ai-targeted                              |    None    | Extract only main content and sanitize hidden elements for AI consumption (default: False)                                                     |
 
 Options shared between `post` and `put` only:
 
@@ -153,6 +156,7 @@ Both (`fetch` / `stealthy-fetch`) share options:
 | --wait-selector                          |    TEXT    | CSS selector to wait for before proceeding                                                                                                               |
 | --proxy                                  |    TEXT    | Proxy URL in format "http://username:password@host:port"                                                                                                 |
 | -H, --extra-headers                      |    TEXT    | Extra headers in format "Key: Value" (can be used multiple times)                                                                                        |
+| --ai-targeted                            |    None    | Extract only main content and sanitize hidden elements for AI consumption (default: False)                                                               |
 
 This option is specific to `fetch` only:
 

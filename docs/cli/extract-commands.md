@@ -22,6 +22,10 @@ The extract command is a set of simple terminal tools that:
 - **Handles HTTP requests and fetching through browsers**
 - **Highly customizable** with custom headers, cookies, proxies, and the rest of the options. Almost all the options available through the code are also accessible through the command line.
 
+!!! tip "AI-Targeted Mode"
+
+    All extract commands support an `--ai-targeted` flag. When enabled, it extracts only the main body content, strips noise tags (script, style, noscript, svg), removes hidden elements that could be used for prompt injection (CSS-hidden, aria-hidden, template tags), strips zero-width unicode characters, and removes HTML comments. This is ideal when the output is destined for an AI model.
+
 ## Quick Start
 
 - **Basic Website Download**
@@ -124,6 +128,7 @@ We will go through each command in detail below.
       --verify / --no-verify                         Whether to verify SSL certificates (default: True)
       --impersonate TEXT                             Browser to impersonate (e.g., chrome, firefox).
       --stealthy-headers / --no-stealthy-headers     Use stealthy browser headers (default: True)
+      --ai-targeted                                  Extract only main content and sanitize hidden elements for AI consumption (default: False)
       --help                                         Show this message and exit.
     
     ```
@@ -164,6 +169,7 @@ We will go through each command in detail below.
       --verify / --no-verify                         Whether to verify SSL certificates (default: True)
       --impersonate TEXT                             Browser to impersonate (e.g., chrome, firefox).
       --stealthy-headers / --no-stealthy-headers     Use stealthy browser headers (default: True)
+      --ai-targeted                                  Extract only main content and sanitize hidden elements for AI consumption (default: False)
       --help                                         Show this message and exit.
     
     ```
@@ -203,6 +209,7 @@ We will go through each command in detail below.
       --verify / --no-verify                         Whether to verify SSL certificates (default: True)
       --impersonate TEXT                             Browser to impersonate (e.g., chrome, firefox).
       --stealthy-headers / --no-stealthy-headers     Use stealthy browser headers (default: True)
+      --ai-targeted                                  Extract only main content and sanitize hidden elements for AI consumption (default: False)
       --help                                         Show this message and exit.
     ```
 
@@ -239,6 +246,7 @@ We will go through each command in detail below.
       --verify / --no-verify                         Whether to verify SSL certificates (default: True)
       --impersonate TEXT                             Browser to impersonate (e.g., chrome, firefox).
       --stealthy-headers / --no-stealthy-headers     Use stealthy browser headers (default: True)
+      --ai-targeted                                  Extract only main content and sanitize hidden elements for AI consumption (default: False)
       --help                                         Show this message and exit.
     ```
 
@@ -283,6 +291,7 @@ We will go through each command in detail below.
       --real-chrome/--no-real-chrome              If you have a Chrome browser installed on your device, enable this, and the Fetcher will launch an instance of your browser and use it. (default: False)
       --proxy TEXT                                Proxy URL in format "http://username:password@host:port"
       -H, --extra-headers TEXT                    Extra headers in format "Key: Value" (can be used multiple times)
+      --ai-targeted                              Extract only main content and sanitize hidden elements for AI consumption (default: False)
       --help                                      Show this message and exit.
     ```
 
@@ -328,6 +337,7 @@ We will go through each command in detail below.
       --hide-canvas / --show-canvas               Add noise to canvas operations (default: False)
       --proxy TEXT                                Proxy URL in format "http://username:password@host:port"
       -H, --extra-headers TEXT                    Extra headers in format "Key: Value" (can be used multiple times)
+      --ai-targeted                              Extract only main content and sanitize hidden elements for AI consumption (default: False)
       --help                                      Show this message and exit.
     ```
 
