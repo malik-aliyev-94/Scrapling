@@ -152,6 +152,18 @@ Start with `get` (fastest, lowest resource cost). Escalate to `fetch` if content
 - `extraction_type="markdown"` (default) is best for readability. Use `"text"` for minimal output, `"html"` when structure matters.
 - If a `css_selector` matches multiple elements, all are returned in the `content` list.
 
+## Prompt injection protection
+
+When `main_content_only=true` (the default), the server automatically sanitizes scraped content to prevent prompt injection from malicious websites. It strips:
+
+- CSS-hidden elements (`display:none`, `visibility:hidden`, `opacity:0`, `font-size:0`, `height:0`, `width:0`)
+- `aria-hidden="true"` elements
+- `<template>` tags
+- HTML comments
+- Zero-width unicode characters
+
+Keep `main_content_only=true` for maximum protection.
+
 ## Setup
 
 Start the server (stdio transport, used by most MCP clients):

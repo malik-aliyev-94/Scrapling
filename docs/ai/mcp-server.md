@@ -33,6 +33,7 @@ The Scrapling MCP Server provides nine powerful tools for web scraping:
 - **Browser Impersonation**: Mimic real browsers with TLS fingerprinting, real browser headers matching that version, and more
 - **Parallel Processing**: Scrape multiple URLs concurrently for efficiency
 - **Session Persistence**: Reuse browser sessions across multiple requests for better performance
+- **Prompt Injection Protection**: Automatic sanitization of hidden content (CSS-hidden elements, aria-hidden, zero-width characters, HTML comments, template tags) that could be used for prompt injection attacks
 
 #### But why use Scrapling MCP Server instead of other available tools?
 
@@ -312,7 +313,18 @@ Here is some technical advice for you.
 - Use `main_content_only=true` to avoid navigation/ads
 - Choose an appropriate `extraction_type` for your use case
 
-### 5. Use Sessions for Multiple Requests
+### 5. Prompt Injection Protection
+The MCP server automatically sanitizes scraped content when `main_content_only` is enabled (the default). This strips hidden content that malicious websites could use to inject instructions into the AI's context:
+
+- **CSS-hidden elements**: `display:none`, `visibility:hidden`, `opacity:0`, `font-size:0`, `height:0`, `width:0`
+- **Accessibility-hidden elements**: `aria-hidden="true"`
+- **Template tags**: `<template>` elements
+- **HTML comments**: `<!-- ... -->`
+- **Zero-width characters**: Invisible unicode characters like zero-width spaces
+
+This protection runs automatically on all MCP tool responses. Keep `main_content_only=true` (the default) for maximum protection.
+
+### 6. Use Sessions for Multiple Requests
 - Use `open_session` to create a persistent browser session when scraping multiple pages
 - Pass the `session_id` to `fetch` or `stealthy_fetch` calls to reuse the same browser
 - Always close sessions with `close_session` when done to free resources
