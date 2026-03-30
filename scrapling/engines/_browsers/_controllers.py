@@ -11,7 +11,7 @@ from playwright.async_api import (
 )
 
 from scrapling.core.utils import log
-from scrapling.core._types import Optional, ProxyType, Unpack
+from scrapling.core._types import Optional, List, ProxyType, Unpack
 from scrapling.engines.toolbelt.proxy_rotation import is_proxy_error
 from scrapling.engines.toolbelt.convertor import Response, ResponseFactory
 from scrapling.engines._browsers._types import PlaywrightSession, PlaywrightFetchParams
@@ -139,9 +139,18 @@ class DynamicSession(SyncSession, DynamicSessionMixin):
             with self._page_generator(
                 params.timeout, params.extra_headers, params.disable_resources, proxy, params.blocked_domains
             ) as page_info:
-                final_response = [None]
+                final_response: List = [None]
+                xhr_captured: List = []
                 page = page_info.page
-                page.on("response", self._create_response_handler(page_info, final_response))
+                page.on(
+                    "response",
+                    self._create_response_handler(
+                        page_info,
+                        final_response,
+                        xhr_pattern=self._config.capture_xhr,
+                        xhr_container=xhr_captured,
+                    ),
+                )
 
                 try:
                     first_response = page.goto(url, referer=referer)
@@ -167,7 +176,12 @@ class DynamicSession(SyncSession, DynamicSessionMixin):
                     page.wait_for_timeout(params.wait)
 
                     response = ResponseFactory.from_playwright_response(
-                        page, first_response, final_response[0], params.selector_config, meta={"proxy": proxy}
+                        page,
+                        first_response,
+                        final_response[0],
+                        params.selector_config,
+                        meta={"proxy": proxy},
+                        xhr_captured=xhr_captured,
                     )
                     return response
 
@@ -306,9 +320,18 @@ class AsyncDynamicSession(AsyncSession, DynamicSessionMixin):
             async with self._page_generator(
                 params.timeout, params.extra_headers, params.disable_resources, proxy, params.blocked_domains
             ) as page_info:
-                final_response = [None]
+                final_response: List = [None]
+                xhr_captured: List = []
                 page = page_info.page
-                page.on("response", self._create_response_handler(page_info, final_response))
+                page.on(
+                    "response",
+                    self._create_response_handler(
+                        page_info,
+                        final_response,
+                        xhr_pattern=self._config.capture_xhr,
+                        xhr_container=xhr_captured,
+                    ),
+                )
 
                 try:
                     first_response = await page.goto(url, referer=referer)
@@ -334,7 +357,12 @@ class AsyncDynamicSession(AsyncSession, DynamicSessionMixin):
                     await page.wait_for_timeout(params.wait)
 
                     response = await ResponseFactory.from_async_playwright_response(
-                        page, first_response, final_response[0], params.selector_config, meta={"proxy": proxy}
+                        page,
+                        first_response,
+                        final_response[0],
+                        params.selector_config,
+                        meta={"proxy": proxy},
+                        xhr_captured=xhr_captured,
                     )
                     return response
 

@@ -49,7 +49,7 @@
 
 Scrapling は、単一のリクエストから本格的なクロールまですべてを処理する適応型 Web Scraping フレームワークです。
 
-そのパーサーはウェブサイトの変更から学習し、ページが更新されたときに要素を自動的に再配置します。Fetcher はすぐに使える Cloudflare Turnstile などのアンチボットシステムを回避します。そして Spider フレームワークにより、Pause & Resume や自動 Proxy 回転機能を備えた並行マルチ Session クロールへとスケールアップできます — すべてわずか数行の Python で。1 つのライブラリ、妥協なし。
+そのパーサーはウェブサイトの変更から学習し、ページが更新されたときに要素を自動的に再配置します。Fetcher はすぐに使える Cloudflare Turnstile などのアンチボットシステムを回避します。そして Spider フレームワークにより、Pause & Resume や自動 Proxy 回転機能を備えた並行マルチ Session クロールへとスケールアップできます - すべてわずか数行の Python で。1 つのライブラリ、妥協なし。
 
 リアルタイム統計と Streaming による超高速クロール。Web Scraper によって、Web Scraper と一般ユーザーのために構築され、誰にでも何かがあります。
 
@@ -125,7 +125,7 @@ MySpider().start()
       </a>
     </td>
     <td>
-      <a href="https://tikhub.io/?utm_source=github.com/D4Vinci/Scrapling&utm_medium=marketing_social&utm_campaign=retargeting&utm_content=carousel_ad" target="_blank">TikHub.io</a> は TikTok、X、YouTube、Instagram を含む 16 以上のプラットフォームで 900 以上の安定した API を提供し、4,000 万以上のデータセットを保有。<br /> さらに <a href="https://ai.tikhub.io/?ref=KarimShoair" target="_blank">割引 AI モデル</a>も提供 — Claude、GPT、GEMINI など最大 71% オフ。
+      <a href="https://tikhub.io/?utm_source=github.com/D4Vinci/Scrapling&utm_medium=marketing_social&utm_campaign=retargeting&utm_content=carousel_ad" target="_blank">TikHub.io</a> は TikTok、X、YouTube、Instagram を含む 16 以上のプラットフォームで 900 以上の安定した API を提供し、4,000 万以上のデータセットを保有。<br /> さらに <a href="https://ai.tikhub.io/?ref=KarimShoair" target="_blank">割引 AI モデル</a>も提供 - Claude、GPT、GEMINI など最大 71% オフ。
     </td>
   </tr>
   <tr>
@@ -191,12 +191,12 @@ MySpider().start()
 
 ## 主な機能
 
-### Spider — 本格的なクロールフレームワーク
+### Spider - 本格的なクロールフレームワーク
 - 🕷️ **Scrapy 風の Spider API**：`start_urls`、async `parse` callback、`Request`/`Response` オブジェクトで Spider を定義。
 - ⚡ **並行クロール**：設定可能な並行数制限、ドメインごとのスロットリング、ダウンロード遅延。
-- 🔄 **マルチ Session サポート**：HTTP リクエストとステルスヘッドレスブラウザの統一インターフェース — ID によって異なる Session にリクエストをルーティング。
+- 🔄 **マルチ Session サポート**：HTTP リクエストとステルスヘッドレスブラウザの統一インターフェース - ID によって異なる Session にリクエストをルーティング。
 - 💾 **Pause & Resume**：Checkpoint ベースのクロール永続化。Ctrl+C で正常にシャットダウン；再起動すると中断したところから再開。
-- 📡 **Streaming モード**：`async for item in spider.stream()` でリアルタイム統計とともにスクレイプされたアイテムを Streaming で受信 — UI、パイプライン、長時間実行クロールに最適。
+- 📡 **Streaming モード**：`async for item in spider.stream()` でリアルタイム統計とともにスクレイプされたアイテムを Streaming で受信 - UI、パイプライン、長時間実行クロールに最適。
 - 🛡️ **ブロックされたリクエストの検出**：カスタマイズ可能なロジックによるブロックされたリクエストの自動検出とリトライ。
 - 📦 **組み込みエクスポート**：フックや独自のパイプライン、または組み込みの JSON/JSONL で結果をエクスポート。それぞれ`result.items.to_json()` / `result.items.to_jsonl()`を使用。
 
@@ -520,7 +520,7 @@ docker pull ghcr.io/d4vinci/scrapling:latest
 ## 謝辞
 
 このプロジェクトには次から適応されたコードが含まれています：
-- Parsel（BSD ライセンス）— [translator](https://github.com/D4Vinci/Scrapling/blob/main/scrapling/core/translator.py) サブモジュールに使用
+- Parsel（BSD ライセンス）- [translator](https://github.com/D4Vinci/Scrapling/blob/main/scrapling/core/translator.py) サブモジュールに使用
 
 ---
 <div align="center"><small>Karim Shoair によって❤️でデザインおよび作成されました。</small></div><br>

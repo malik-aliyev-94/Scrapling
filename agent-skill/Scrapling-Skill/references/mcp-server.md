@@ -1,8 +1,8 @@
 # Scrapling MCP Server
 
-The Scrapling MCP server exposes six web scraping tools over the MCP protocol. It supports CSS-selector-based content narrowing (reducing tokens by extracting only relevant elements before returning results) and three levels of scraping capability: plain HTTP, browser-rendered, and stealth (anti-bot bypass).
+The Scrapling MCP server exposes nine web scraping tools over the MCP protocol. It supports CSS-selector-based content narrowing (reducing tokens by extracting only relevant elements before returning results), three levels of scraping capability (plain HTTP, browser-rendered, and stealth/anti-bot bypass), and persistent browser session management.
 
-All tools return a `ResponseModel` with fields: `status` (int), `content` (list of strings), `url` (str).
+All scraping tools return a `ResponseModel` with fields: `status` (int), `content` (list of strings), `url` (str).
 
 ## Tools
 
@@ -66,10 +66,11 @@ Opens a Chromium browser via Playwright to render JavaScript. Suitable for dynam
 | `cookies`             | list or null        | null         | Playwright-format cookies                                                       |
 | `timezone_id`         | str or null         | null         | Browser timezone, e.g. `"America/New_York"`                                     |
 | `locale`              | str or null         | null         | Browser locale, e.g. `"en-GB"`                                                  |
+| `session_id`          | str or null         | null         | Reuse a persistent session from `open_session` instead of creating a new browser |
 
 ### `bulk_fetch` -- Browser fetch (multiple URLs)
 
-Concurrent browser version of `fetch`. Same parameters except `url` is replaced by `urls` (list of strings). Each URL opens in a separate browser tab. Returns a list of `ResponseModel`.
+Concurrent browser version of `fetch`. Same parameters (including `session_id`) except `url` is replaced by `urls` (list of strings). Each URL opens in a separate browser tab. Returns a list of `ResponseModel`.
 
 ### `stealthy_fetch` -- Stealth browser fetch (single URL)
 
@@ -84,12 +85,51 @@ Anti-bot bypass fetcher with fingerprint spoofing. Use this for sites with Cloud
 | `block_webrtc`     | bool         | false   | Force WebRTC to respect proxy settings (prevents IP leak)        |
 | `allow_webgl`      | bool         | true    | Keep WebGL enabled (disabling is detectable by WAFs)             |
 | `additional_args`  | dict or null | null    | Extra Playwright context args (overrides Scrapling defaults)     |
+| `session_id`       | str or null  | null    | Reuse a persistent stealthy session from `open_session`          |
 
 All parameters from `fetch` are also accepted.
 
 ### `bulk_stealthy_fetch` -- Stealth browser fetch (multiple URLs)
 
-Concurrent stealth version. Same parameters as `stealthy_fetch` except `url` is replaced by `urls` (list of strings). Returns a list of `ResponseModel`.
+Concurrent stealth version. Same parameters (including `session_id`) as `stealthy_fetch` except `url` is replaced by `urls` (list of strings). Returns a list of `ResponseModel`.
+
+### `open_session` -- Create a persistent browser session
+
+Opens a browser session that stays alive across multiple fetch calls, avoiding the overhead of launching a new browser each time. Returns a `SessionCreatedModel` with `session_id`, `session_type`, `created_at`, `is_alive`, and `message`.
+
+**Key parameters:**
+
+| Parameter          | Type                        | Default      | Description                                                         |
+|--------------------|-----------------------------|--------------|---------------------------------------------------------------------|
+| `session_type`     | `"dynamic"` / `"stealthy"`  | required     | Type of browser session to create                                   |
+| `headless`         | bool                        | true         | Run browser hidden or visible                                       |
+| `max_pages`        | int                         | 5            | Max concurrent browser tabs (1-50)                                  |
+| `proxy`            | str or dict or null         | null         | Proxy for all requests in this session                              |
+| `timeout`          | number                      | 30000        | Default timeout in ms                                               |
+| `solve_cloudflare` | bool                        | false        | (Stealthy only) Auto-solve Cloudflare challenges                    |
+| `hide_canvas`      | bool                        | false        | (Stealthy only) Canvas fingerprint noise                            |
+| `block_webrtc`     | bool                        | false        | (Stealthy only) Block WebRTC IP leak                                |
+| `allow_webgl`      | bool                        | true         | (Stealthy only) Keep WebGL enabled                                  |
+
+Plus all other browser session parameters (`google_search`, `real_chrome`, `cdp_url`, `locale`, `timezone_id`, `useragent`, `extra_headers`, `cookies`, `disable_resources`, `network_idle`, `wait_selector`, `wait_selector_state`).
+
+A dynamic session can only be used with `fetch`/`bulk_fetch`. A stealthy session can only be used with `stealthy_fetch`/`bulk_stealthy_fetch`.
+
+### `close_session` -- Close a persistent browser session
+
+Closes a session and frees its browser resources. Always close sessions when done.
+
+| Parameter    | Type | Default  | Description                      |
+|--------------|------|----------|----------------------------------|
+| `session_id` | str  | required | Session ID from `open_session`   |
+
+Returns a `SessionClosedModel` with `session_id` and `message`.
+
+### `list_sessions` -- List active sessions
+
+Returns a list of `SessionInfo` objects, each with `session_id`, `session_type`, `created_at`, and `is_alive`.
+
+No parameters.
 
 ## Tool selection guide
 
@@ -101,8 +141,9 @@ Concurrent stealth version. Same parameters as `stealthy_fetch` except `url` is 
 | Multiple JS-rendered pages               | `bulk_fetch`                                                  |
 | Cloudflare or strong anti-bot protection | `stealthy_fetch` (with `solve_cloudflare=true` for Turnstile) |
 | Multiple protected pages                 | `bulk_stealthy_fetch`                                         |
+| Multiple pages from the same site        | `open_session` + `fetch`/`stealthy_fetch` with `session_id`  |
 
-Start with `get` (fastest, lowest resource cost). Escalate to `fetch` if content requires JS rendering. Escalate to `stealthy_fetch` only if blocked.
+Start with `get` (fastest, lowest resource cost). Escalate to `fetch` if content requires JS rendering. Escalate to `stealthy_fetch` only if blocked. For multiple pages from the same site, use a persistent session to avoid browser launch overhead.
 
 ## Content extraction tips
 
@@ -110,6 +151,18 @@ Start with `get` (fastest, lowest resource cost). Escalate to `fetch` if content
 - `main_content_only=true` (default) strips nav/footer by restricting to `<body>`.
 - `extraction_type="markdown"` (default) is best for readability. Use `"text"` for minimal output, `"html"` when structure matters.
 - If a `css_selector` matches multiple elements, all are returned in the `content` list.
+
+## Prompt injection protection
+
+When `main_content_only=true` (the default), the server automatically sanitizes scraped content to prevent prompt injection from malicious websites. It strips:
+
+- CSS-hidden elements (`display:none`, `visibility:hidden`, `opacity:0`, `font-size:0`, `height:0`, `width:0`)
+- `aria-hidden="true"` elements
+- `<template>` tags
+- HTML comments
+- Zero-width unicode characters
+
+Keep `main_content_only=true` for maximum protection.
 
 ## Setup
 

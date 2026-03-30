@@ -26,7 +26,18 @@ if TYPE_CHECKING:
 
 
 class Response(Selector):
-    """This class is returned by all engines as a way to unify the response type between different libraries."""
+    """This class is returned by all engines as a way to unify the response type between different libraries.
+
+    :param status: HTTP status code.
+    :param reason: HTTP status message.
+    :param cookies: Response cookies.
+    :param headers: Response headers.
+    :param request_headers: Request headers sent with the request.
+    :param history: List of redirect responses, if any.
+    :param meta: Metadata dictionary (e.g., proxy used).
+    :param request: Associated spider Request object (set by crawler, in the spiders framework).
+    :param captured_xhr: List of captured XHR/fetch ``Response`` objects. Populated when ``capture_xhr`` is set on a browser session.
+    """
 
     def __init__(
         self,
@@ -67,6 +78,7 @@ class Response(Selector):
 
         self.meta: Dict[str, Any] = meta or {}
         self.request: Optional["Request"] = None  # Will be set by crawler
+        self.captured_xhr: List["Response"] = []
 
     @property
     def body(self) -> bytes:

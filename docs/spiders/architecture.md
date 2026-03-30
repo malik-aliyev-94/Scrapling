@@ -7,7 +7,7 @@
 
 Scrapling's spider system is a Scrapy-inspired async crawling framework designed for concurrent, multi-session crawls with built-in pause/resume support. It brings together Scrapling's parsing engine and fetchers into a unified crawling API while adding scheduling, concurrency control, and checkpointing.
 
-If you're familiar with Scrapy, you'll feel right at home. If not, don't worry — the system is designed to be straightforward.
+If you're familiar with Scrapy, you'll feel right at home. If not, don't worry - the system is designed to be straightforward.
 
 ## Data Flow
 
@@ -23,7 +23,7 @@ Here's what happens step by step when you run a spider without many details:
 4. The **session** fetches the page and returns a [Response](../fetching/choosing.md#response-object) object to the **Crawler Engine**. The engine records statistics and checks for blocked responses. If the response is blocked, the engine retries the request up to `max_blocked_retries` times. Of course, the blocking detection and the retry logic for blocked requests can be customized.
 5. The **Crawler Engine** passes the [Response](../fetching/choosing.md#response-object) to the request's callback. The callback either yields a dictionary, which gets treated as a scraped item, or a follow-up request, which gets sent to the scheduler for queuing.
 6. The cycle repeats from step 2 until the scheduler is empty and no tasks are active, or the spider is paused.
-7. If `crawldir` is set while starting the spider, the **Crawler Engine** periodically saves a checkpoint (pending requests + seen URLs set) to disk. On graceful shutdown (Ctrl+C), a final checkpoint is saved. The next time the spider runs with the same `crawldir`, it resumes from where it left off — skipping `start_requests()` and restoring the scheduler state.
+7. If `crawldir` is set while starting the spider, the **Crawler Engine** periodically saves a checkpoint (pending requests + seen URLs set) to disk. On graceful shutdown (Ctrl+C), a final checkpoint is saved. The next time the spider runs with the same `crawldir`, it resumes from where it left off, skipping `start_requests()` and restoring the scheduler state.
 
 
 ## Components
@@ -49,7 +49,7 @@ class MySpider(Spider):
 
 ### Crawler Engine
 
-The engine orchestrates the entire crawl. It manages the main loop, enforces concurrency limits, dispatches requests through the Session Manager, and processes results from callbacks. You don't interact with it directly — the `Spider.start()` and `Spider.stream()` methods handle it for you.
+The engine orchestrates the entire crawl. It manages the main loop, enforces concurrency limits, dispatches requests through the Session Manager, and processes results from callbacks. You don't interact with it directly - the `Spider.start()` and `Spider.stream()` methods handle it for you.
 
 ### Scheduler
 

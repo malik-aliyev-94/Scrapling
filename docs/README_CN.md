@@ -49,7 +49,7 @@
 
 Scrapling 是一个自适应 Web Scraping 框架，能处理从单个请求到大规模爬取的一切需求。
 
-它的解析器能够从网站变化中学习，并在页面更新时自动重新定位您的元素。它的 Fetcher 能够开箱即用地绕过 Cloudflare Turnstile 等反机器人系统。它的 Spider 框架让您可以扩展到并发、多 Session 爬取，支持暂停/恢复和自动 Proxy 轮换——只需几行 Python 代码。一个库，零妥协。
+它的解析器能够从网站变化中学习，并在页面更新时自动重新定位您的元素。它的 Fetcher 能够开箱即用地绕过 Cloudflare Turnstile 等反机器人系统。它的 Spider 框架让您可以扩展到并发、多 Session 爬取，支持暂停/恢复和自动 Proxy 轮换--只需几行 Python 代码。一个库，零妥协。
 
 极速爬取，实时统计和 Streaming。由 Web Scraper 为 Web Scraper 和普通用户而构建，每个人都能找到适合自己的功能。
 
@@ -125,7 +125,7 @@ MySpider().start()
       </a>
     </td>
     <td>
-      <a href="https://tikhub.io/?utm_source=github.com/D4Vinci/Scrapling&utm_medium=marketing_social&utm_campaign=retargeting&utm_content=carousel_ad" target="_blank">TikHub.io</a> 提供覆盖 16+ 平台（包括 TikTok、X、YouTube 和 Instagram）的 900+ 稳定 API，拥有 4000 万+ 数据集。<br /> 还提供<a href="https://ai.tikhub.io/?ref=KarimShoair" target="_blank">优惠 AI 模型</a> — Claude、GPT、GEMINI 等，最高优惠 71%。
+      <a href="https://tikhub.io/?utm_source=github.com/D4Vinci/Scrapling&utm_medium=marketing_social&utm_campaign=retargeting&utm_content=carousel_ad" target="_blank">TikHub.io</a> 提供覆盖 16+ 平台（包括 TikTok、X、YouTube 和 Instagram）的 900+ 稳定 API，拥有 4000 万+ 数据集。<br /> 还提供<a href="https://ai.tikhub.io/?ref=KarimShoair" target="_blank">优惠 AI 模型</a> - Claude、GPT、GEMINI 等，最高优惠 71%。
     </td>
   </tr>
   <tr>
@@ -191,12 +191,12 @@ MySpider().start()
 
 ## 主要特性
 
-### Spider — 完整的爬取框架
+### Spider - 完整的爬取框架
 - 🕷️ **类 Scrapy 的 Spider API**：使用 `start_urls`、async `parse` callback 和`Request`/`Response` 对象定义 Spider。
 - ⚡ **并发爬取**：可配置的并发限制、按域名节流和下载延迟。
-- 🔄 **多 Session 支持**：统一接口，支持 HTTP 请求和隐秘无头浏览器在同一个 Spider 中使用——通过 ID 将请求路由到不同的 Session。
+- 🔄 **多 Session 支持**：统一接口，支持 HTTP 请求和隐秘无头浏览器在同一个 Spider 中使用--通过 ID 将请求路由到不同的 Session。
 - 💾 **暂停与恢复**：基于 Checkpoint 的爬取持久化。按 Ctrl+C 优雅关闭；重启后从上次停止的地方继续。
-- 📡 **Streaming 模式**：通过 `async for item in spider.stream()` 以实时统计 Streaming 抓取的数据——非常适合 UI、管道和长时间运行的爬取。
+- 📡 **Streaming 模式**：通过 `async for item in spider.stream()` 以实时统计 Streaming 抓取的数据--非常适合 UI、管道和长时间运行的爬取。
 - 🛡️ **被阻止请求检测**：自动检测并重试被阻止的请求，支持自定义逻辑。
 - 📦 **内置导出**：通过钩子和您自己的管道导出结果，或使用内置的 JSON/JSONL，分别通过 `result.items.to_json()`/`result.items.to_jsonl()`。
 
@@ -323,7 +323,7 @@ class MultiSessionSpider(Spider):
 ```python
 QuotesSpider(crawldir="./crawl_data").start()
 ```
-按 Ctrl+C 优雅暂停——进度会自动保存。之后，当您再次启动 Spider 时，传递相同的 `crawldir`，它将从上次停止的地方继续。
+按 Ctrl+C 优雅暂停--进度会自动保存。之后，当您再次启动 Spider 时，传递相同的 `crawldir`，它将从上次停止的地方继续。
 
 ### 高级解析与导航
 ```python
@@ -408,7 +408,7 @@ scrapling extract stealthy-fetch 'https://nopecha.com/demo/cloudflare' captchas.
 
 ## 性能基准
 
-Scrapling 不仅功能强大——它还速度极快。以下基准测试将 Scrapling 的解析器与其他流行库的最新版本进行了比较。
+Scrapling 不仅功能强大--它还速度极快。以下基准测试将 Scrapling 的解析器与其他流行库的最新版本进行了比较。
 
 ### 文本提取速度测试（5000 个嵌套元素）
 
@@ -520,7 +520,7 @@ docker pull ghcr.io/d4vinci/scrapling:latest
 ## 致谢
 
 此项目包含改编自以下内容的代码：
-- Parsel（BSD 许可证）——用于 [translator](https://github.com/D4Vinci/Scrapling/blob/main/scrapling/core/translator.py)子模块
+- Parsel（BSD 许可证）--用于 [translator](https://github.com/D4Vinci/Scrapling/blob/main/scrapling/core/translator.py)子模块
 
 ---
 <div align="center"><small>由 Karim Shoair 用❤️设计和制作。</small></div><br>

@@ -42,6 +42,7 @@ def __Request_and_Save(
     url: str,
     output_file: str,
     css_selector: Optional[str] = None,
+    ai_targeted: bool = False,
     **kwargs,
 ) -> None:
     """Make a request using the specified fetcher function and save the result"""
@@ -53,7 +54,7 @@ def __Request_and_Save(
         output_path = Path.cwd() / output_file
 
     response = fetcher_func(url, **kwargs)
-    Convertor.write_content_to_file(response, str(output_path), css_selector)
+    Convertor.write_content_to_file(response, str(output_path), css_selector, main_content_only=ai_targeted)
     log.info(f"Content successfully saved to '{output_path}'")
 
 
@@ -194,48 +195,154 @@ def extract():
     pass
 
 
+####
+# Shared Click option decorator factories
+####
+
+
+def _common_http_options(f):
+    """Apply shared Click options for all HTTP extract commands (get/post/put/delete)."""
+    decorators = [
+        option(
+            "--ai-targeted",
+            is_flag=True,
+            default=False,
+            help="Extract only main content and sanitize hidden elements for AI consumption (default: False)",
+        ),
+        option(
+            "--stealthy-headers/--no-stealthy-headers",
+            default=True,
+            help="Use stealthy browser headers (default: True)",
+        ),
+        option(
+            "--impersonate",
+            help="Browser to impersonate. Can be a single browser (e.g., chrome) or comma-separated list for random selection (e.g., chrome,firefox,safari).",
+        ),
+        option(
+            "--verify/--no-verify",
+            default=True,
+            help="Whether to verify SSL certificates (default: True)",
+        ),
+        option(
+            "--follow-redirects/--no-follow-redirects",
+            default=True,
+            help="Whether to follow redirects (default: True)",
+        ),
+        option(
+            "--params",
+            "-p",
+            multiple=True,
+            help='Query parameters in format "key=value" (can be used multiple times)',
+        ),
+        option(
+            "--css-selector",
+            "-s",
+            help="CSS selector to extract specific content from the page. It returns all matches.",
+        ),
+        option("--proxy", help='Proxy URL in format "http://username:password@host:port"'),
+        option("--timeout", type=int, default=30, help="Request timeout in seconds (default: 30)"),
+        option("--cookies", help='Cookies string in format "name1=value1; name2=value2"'),
+        option(
+            "--headers",
+            "-H",
+            multiple=True,
+            help='HTTP headers in format "Key: Value" (can be used multiple times)',
+        ),
+    ]
+    for decorator in decorators:
+        f = decorator(f)
+    return f
+
+
+def _common_browser_options(f):
+    """Apply shared Click options for browser-based commands (fetch/stealthy_fetch)."""
+    decorators = [
+        option(
+            "--ai-targeted",
+            is_flag=True,
+            default=False,
+            help="Extract only main content and sanitize hidden elements for AI consumption (default: False)",
+        ),
+        option(
+            "--extra-headers",
+            "-H",
+            multiple=True,
+            help='Extra headers in format "Key: Value" (can be used multiple times)',
+        ),
+        option("--proxy", help='Proxy URL in format "http://username:password@host:port"'),
+        option(
+            "--real-chrome/--no-real-chrome",
+            default=False,
+            help="If you have a Chrome browser installed on your device, enable this, and the Fetcher will launch an instance of your browser and use it. (default: False)",
+        ),
+        option("--locale", default=None, help="Specify user locale. Defaults to the system default locale."),
+        option("--wait-selector", help="CSS selector to wait for before proceeding"),
+        option(
+            "--css-selector",
+            "-s",
+            help="CSS selector to extract specific content from the page. It returns all matches.",
+        ),
+        option(
+            "--wait",
+            type=int,
+            default=0,
+            help="Additional wait time in milliseconds after page load (default: 0)",
+        ),
+        option(
+            "--timeout",
+            type=int,
+            default=30000,
+            help="Timeout in milliseconds (default: 30000)",
+        ),
+        option(
+            "--network-idle/--no-network-idle",
+            default=False,
+            help="Wait for network idle (default: False)",
+        ),
+        option(
+            "--disable-resources/--enable-resources",
+            default=False,
+            help="Drop unnecessary resources for speed boost (default: False)",
+        ),
+        option(
+            "--headless/--no-headless",
+            default=True,
+            help="Run browser in headless mode (default: True)",
+        ),
+    ]
+    for decorator in decorators:
+        f = decorator(f)
+    return f
+
+
+def _data_options(f):
+    """Apply data/json options for POST and PUT commands."""
+    decorators = [
+        option("--json", "-j", help="JSON data to include in the request body (as string)"),
+        option(
+            "--data",
+            "-d",
+            help='Form data to include in the request body (as string, ex: "param1=value1&param2=value2")',
+        ),
+    ]
+    for decorator in decorators:
+        f = decorator(f)
+    return f
+
+
+def __http_command(
+    method_name: str, url: str, output_file: str, css_selector: Optional[str], ai_targeted: bool = False, **kwargs
+) -> None:
+    """Shared implementation for HTTP extract commands."""
+    from scrapling.fetchers import Fetcher
+
+    __Request_and_Save(getattr(Fetcher, method_name), url, output_file, css_selector, ai_targeted=ai_targeted, **kwargs)
+
+
 @extract.command(help=f"Perform a GET request and save the content to a file.\n\n{__OUTPUT_FILE_HELP__}")
 @argument("url", required=True)
 @argument("output_file", required=True)
-@option(
-    "--headers",
-    "-H",
-    multiple=True,
-    help='HTTP headers in format "Key: Value" (can be used multiple times)',
-)
-@option("--cookies", help='Cookies string in format "name1=value1; name2=value2"')
-@option("--timeout", type=int, default=30, help="Request timeout in seconds (default: 30)")
-@option("--proxy", help='Proxy URL in format "http://username:password@host:port"')
-@option(
-    "--css-selector",
-    "-s",
-    help="CSS selector to extract specific content from the page. It returns all matches.",
-)
-@option(
-    "--params",
-    "-p",
-    multiple=True,
-    help='Query parameters in format "key=value" (can be used multiple times)',
-)
-@option(
-    "--follow-redirects/--no-follow-redirects",
-    default=True,
-    help="Whether to follow redirects (default: True)",
-)
-@option(
-    "--verify/--no-verify",
-    default=True,
-    help="Whether to verify SSL certificates (default: True)",
-)
-@option(
-    "--impersonate",
-    help="Browser to impersonate. Can be a single browser (e.g., chrome) or comma-separated list for random selection (e.g., chrome,firefox,safari).",
-)
-@option(
-    "--stealthy-headers/--no-stealthy-headers",
-    default=True,
-    help="Use stealthy browser headers (default: True)",
-)
+@_common_http_options
 def get(
     url,
     output_file,
@@ -249,24 +356,9 @@ def get(
     verify,
     impersonate,
     stealthy_headers,
+    ai_targeted,
 ):
-    """
-    Perform a GET request and save the content to a file.
-
-    :param url: Target URL for the request.
-    :param output_file: Output file path (.md for Markdown, .html for HTML).
-    :param headers: HTTP headers to include in the request.
-    :param cookies: Cookies to use in the request.
-    :param timeout: Number of seconds to wait before timing out.
-    :param proxy: Proxy URL to use. (Format: "http://username:password@localhost:8030")
-    :param css_selector: CSS selector to extract specific content.
-    :param params: Query string parameters for the request.
-    :param follow_redirects: Whether to follow redirects.
-    :param verify: Whether to verify HTTPS certificates.
-    :param impersonate: Browser version to impersonate.
-    :param stealthy_headers: If enabled, creates and adds real browser headers.
-    """
-
+    """Perform a GET request and save the content to a file."""
     kwargs = __BuildRequest(
         headers,
         cookies,
@@ -279,59 +371,14 @@ def get(
         impersonate=impersonate,
         proxy=proxy,
     )
-    from scrapling.fetchers import Fetcher
-
-    __Request_and_Save(Fetcher.get, url, output_file, css_selector, **kwargs)
+    __http_command("get", url, output_file, css_selector, ai_targeted=ai_targeted, **kwargs)
 
 
 @extract.command(help=f"Perform a POST request and save the content to a file.\n\n{__OUTPUT_FILE_HELP__}")
 @argument("url", required=True)
 @argument("output_file", required=True)
-@option(
-    "--data",
-    "-d",
-    help='Form data to include in the request body (as string, ex: "param1=value1&param2=value2")',
-)
-@option("--json", "-j", help="JSON data to include in the request body (as string)")
-@option(
-    "--headers",
-    "-H",
-    multiple=True,
-    help='HTTP headers in format "Key: Value" (can be used multiple times)',
-)
-@option("--cookies", help='Cookies string in format "name1=value1; name2=value2"')
-@option("--timeout", type=int, default=30, help="Request timeout in seconds (default: 30)")
-@option("--proxy", help='Proxy URL in format "http://username:password@host:port"')
-@option(
-    "--css-selector",
-    "-s",
-    help="CSS selector to extract specific content from the page. It returns all matches.",
-)
-@option(
-    "--params",
-    "-p",
-    multiple=True,
-    help='Query parameters in format "key=value" (can be used multiple times)',
-)
-@option(
-    "--follow-redirects/--no-follow-redirects",
-    default=True,
-    help="Whether to follow redirects (default: True)",
-)
-@option(
-    "--verify/--no-verify",
-    default=True,
-    help="Whether to verify SSL certificates (default: True)",
-)
-@option(
-    "--impersonate",
-    help="Browser to impersonate. Can be a single browser (e.g., chrome) or comma-separated list for random selection (e.g., chrome,firefox,safari).",
-)
-@option(
-    "--stealthy-headers/--no-stealthy-headers",
-    default=True,
-    help="Use stealthy browser headers (default: True)",
-)
+@_data_options
+@_common_http_options
 def post(
     url,
     output_file,
@@ -347,26 +394,9 @@ def post(
     verify,
     impersonate,
     stealthy_headers,
+    ai_targeted,
 ):
-    """
-    Perform a POST request and save the content to a file.
-
-    :param url: Target URL for the request.
-    :param output_file: Output file path (.md for Markdown, .html for HTML).
-    :param data: Form data to include in the request body. (as string, ex: "param1=value1&param2=value2")
-    :param json: A JSON serializable object to include in the body of the request.
-    :param headers: Headers to include in the request.
-    :param cookies: Cookies to use in the request.
-    :param timeout: Number of seconds to wait before timing out.
-    :param proxy: Proxy URL to use.
-    :param css_selector: CSS selector to extract specific content.
-    :param params: Query string parameters for the request.
-    :param follow_redirects: Whether to follow redirects.
-    :param verify: Whether to verify HTTPS certificates.
-    :param impersonate: Browser version to impersonate.
-    :param stealthy_headers: If enabled, creates and adds real browser headers.
-    """
-
+    """Perform a POST request and save the content to a file."""
     kwargs = __BuildRequest(
         headers,
         cookies,
@@ -380,55 +410,14 @@ def post(
         proxy=proxy,
         data=data,
     )
-    from scrapling.fetchers import Fetcher
-
-    __Request_and_Save(Fetcher.post, url, output_file, css_selector, **kwargs)
+    __http_command("post", url, output_file, css_selector, ai_targeted=ai_targeted, **kwargs)
 
 
 @extract.command(help=f"Perform a PUT request and save the content to a file.\n\n{__OUTPUT_FILE_HELP__}")
 @argument("url", required=True)
 @argument("output_file", required=True)
-@option("--data", "-d", help="Form data to include in the request body")
-@option("--json", "-j", help="JSON data to include in the request body (as string)")
-@option(
-    "--headers",
-    "-H",
-    multiple=True,
-    help='HTTP headers in format "Key: Value" (can be used multiple times)',
-)
-@option("--cookies", help='Cookies string in format "name1=value1; name2=value2"')
-@option("--timeout", type=int, default=30, help="Request timeout in seconds (default: 30)")
-@option("--proxy", help='Proxy URL in format "http://username:password@host:port"')
-@option(
-    "--css-selector",
-    "-s",
-    help="CSS selector to extract specific content from the page. It returns all matches.",
-)
-@option(
-    "--params",
-    "-p",
-    multiple=True,
-    help='Query parameters in format "key=value" (can be used multiple times)',
-)
-@option(
-    "--follow-redirects/--no-follow-redirects",
-    default=True,
-    help="Whether to follow redirects (default: True)",
-)
-@option(
-    "--verify/--no-verify",
-    default=True,
-    help="Whether to verify SSL certificates (default: True)",
-)
-@option(
-    "--impersonate",
-    help="Browser to impersonate. Can be a single browser (e.g., chrome) or comma-separated list for random selection (e.g., chrome,firefox,safari).",
-)
-@option(
-    "--stealthy-headers/--no-stealthy-headers",
-    default=True,
-    help="Use stealthy browser headers (default: True)",
-)
+@_data_options
+@_common_http_options
 def put(
     url,
     output_file,
@@ -444,26 +433,9 @@ def put(
     verify,
     impersonate,
     stealthy_headers,
+    ai_targeted,
 ):
-    """
-    Perform a PUT request and save the content to a file.
-
-    :param url: Target URL for the request.
-    :param output_file: Output file path (.md for Markdown, .html for HTML).
-    :param data: Form data to include in the request body.
-    :param json: A JSON serializable object to include in the body of the request.
-    :param headers: Headers to include in the request.
-    :param cookies: Cookies to use in the request.
-    :param timeout: Number of seconds to wait before timing out.
-    :param proxy: Proxy URL to use.
-    :param css_selector: CSS selector to extract specific content.
-    :param params: Query string parameters for the request.
-    :param follow_redirects: Whether to follow redirects.
-    :param verify: Whether to verify HTTPS certificates.
-    :param impersonate: Browser version to impersonate.
-    :param stealthy_headers: If enabled, creates and adds real browser headers.
-    """
-
+    """Perform a PUT request and save the content to a file."""
     kwargs = __BuildRequest(
         headers,
         cookies,
@@ -477,53 +449,13 @@ def put(
         proxy=proxy,
         data=data,
     )
-    from scrapling.fetchers import Fetcher
-
-    __Request_and_Save(Fetcher.put, url, output_file, css_selector, **kwargs)
+    __http_command("put", url, output_file, css_selector, ai_targeted=ai_targeted, **kwargs)
 
 
 @extract.command(help=f"Perform a DELETE request and save the content to a file.\n\n{__OUTPUT_FILE_HELP__}")
 @argument("url", required=True)
 @argument("output_file", required=True)
-@option(
-    "--headers",
-    "-H",
-    multiple=True,
-    help='HTTP headers in format "Key: Value" (can be used multiple times)',
-)
-@option("--cookies", help='Cookies string in format "name1=value1; name2=value2"')
-@option("--timeout", type=int, default=30, help="Request timeout in seconds (default: 30)")
-@option("--proxy", help='Proxy URL in format "http://username:password@host:port"')
-@option(
-    "--css-selector",
-    "-s",
-    help="CSS selector to extract specific content from the page. It returns all matches.",
-)
-@option(
-    "--params",
-    "-p",
-    multiple=True,
-    help='Query parameters in format "key=value" (can be used multiple times)',
-)
-@option(
-    "--follow-redirects/--no-follow-redirects",
-    default=True,
-    help="Whether to follow redirects (default: True)",
-)
-@option(
-    "--verify/--no-verify",
-    default=True,
-    help="Whether to verify SSL certificates (default: True)",
-)
-@option(
-    "--impersonate",
-    help="Browser to impersonate. Can be a single browser (e.g., chrome) or comma-separated list for random selection (e.g., chrome,firefox,safari).",
-)
-@option(
-    "--stealthy-headers/--no-stealthy-headers",
-    default=True,
-    help="Use stealthy browser headers (default: True)",
-)
+@_common_http_options
 def delete(
     url,
     output_file,
@@ -537,24 +469,9 @@ def delete(
     verify,
     impersonate,
     stealthy_headers,
+    ai_targeted,
 ):
-    """
-    Perform a DELETE request and save the content to a file.
-
-    :param url: Target URL for the request.
-    :param output_file: Output file path (.md for Markdown, .html for HTML).
-    :param headers: Headers to include in the request.
-    :param cookies: Cookies to use in the request.
-    :param timeout: Number of seconds to wait before timing out.
-    :param proxy: Proxy URL to use.
-    :param css_selector: CSS selector to extract specific content.
-    :param params: Query string parameters for the request.
-    :param follow_redirects: Whether to follow redirects.
-    :param verify: Whether to verify HTTPS certificates.
-    :param impersonate: Browser version to impersonate.
-    :param stealthy_headers: If enabled, creates and adds real browser headers.
-    """
-
+    """Perform a DELETE request and save the content to a file."""
     kwargs = __BuildRequest(
         headers,
         cookies,
@@ -567,60 +484,45 @@ def delete(
         impersonate=impersonate,
         proxy=proxy,
     )
-    from scrapling.fetchers import Fetcher
+    __http_command("delete", url, output_file, css_selector, ai_targeted=ai_targeted, **kwargs)
 
-    __Request_and_Save(Fetcher.delete, url, output_file, css_selector, **kwargs)
+
+def __build_browser_kwargs(
+    headless,
+    disable_resources,
+    network_idle,
+    timeout,
+    wait,
+    wait_selector,
+    locale,
+    real_chrome,
+    proxy,
+    parsed_headers,
+) -> Dict[str, Any]:
+    """Build shared kwargs dict for browser-based commands."""
+    kwargs: Dict[str, Any] = {
+        "headless": headless,
+        "disable_resources": disable_resources,
+        "network_idle": network_idle,
+        "timeout": timeout,
+        "locale": locale,
+        "real_chrome": real_chrome,
+    }
+    if wait > 0:
+        kwargs["wait"] = wait
+    if wait_selector:
+        kwargs["wait_selector"] = wait_selector
+    if proxy:
+        kwargs["proxy"] = proxy
+    if parsed_headers:
+        kwargs["extra_headers"] = parsed_headers
+    return kwargs
 
 
 @extract.command(help=f"Use DynamicFetcher to fetch content with browser automation.\n\n{__OUTPUT_FILE_HELP__}")
 @argument("url", required=True)
 @argument("output_file", required=True)
-@option(
-    "--headless/--no-headless",
-    default=True,
-    help="Run browser in headless mode (default: True)",
-)
-@option(
-    "--disable-resources/--enable-resources",
-    default=False,
-    help="Drop unnecessary resources for speed boost (default: False)",
-)
-@option(
-    "--network-idle/--no-network-idle",
-    default=False,
-    help="Wait for network idle (default: False)",
-)
-@option(
-    "--timeout",
-    type=int,
-    default=30000,
-    help="Timeout in milliseconds (default: 30000)",
-)
-@option(
-    "--wait",
-    type=int,
-    default=0,
-    help="Additional wait time in milliseconds after page load (default: 0)",
-)
-@option(
-    "--css-selector",
-    "-s",
-    help="CSS selector to extract specific content from the page. It returns all matches.",
-)
-@option("--wait-selector", help="CSS selector to wait for before proceeding")
-@option("--locale", default=None, help="Specify user locale. Defaults to the system default locale.")
-@option(
-    "--real-chrome/--no-real-chrome",
-    default=False,
-    help="If you have a Chrome browser installed on your device, enable this, and the Fetcher will launch an instance of your browser and use it. (default: False)",
-)
-@option("--proxy", help='Proxy URL in format "http://username:password@host:port"')
-@option(
-    "--extra-headers",
-    "-H",
-    multiple=True,
-    help='Extra headers in format "Key: Value" (can be used multiple times)',
-)
+@_common_browser_options
 def fetch(
     url,
     output_file,
@@ -635,65 +537,30 @@ def fetch(
     real_chrome,
     proxy,
     extra_headers,
+    ai_targeted,
 ):
-    """
-    Opens up a browser and fetch content using DynamicFetcher.
-
-    :param url: Target url.
-    :param output_file: Output file path (.md for Markdown, .html for HTML).
-    :param headless: Run the browser in headless/hidden or headful/visible mode.
-    :param disable_resources: Drop requests of unnecessary resources for a speed boost.
-    :param network_idle: Wait for the page until there are no network connections for at least 500 ms.
-    :param timeout: The timeout in milliseconds that is used in all operations and waits through the page.
-    :param wait: The time (milliseconds) the fetcher will wait after everything finishes before returning.
-    :param css_selector: CSS selector to extract specific content.
-    :param wait_selector: Wait for a specific CSS selector to be in a specific state.
-    :param locale: Set the locale for the browser.
-    :param real_chrome: If you have a Chrome browser installed on your device, enable this, and the Fetcher will launch an instance of your browser and use it.
-    :param proxy: The proxy to be used with requests.
-    :param extra_headers: Extra headers to add to the request.
-    """
-
-    # Parse parameters
+    """Opens up a browser and fetch content using DynamicFetcher."""
     parsed_headers, _ = _ParseHeaders(extra_headers, False)
-
-    # Build request arguments
-    kwargs = {
-        "headless": headless,
-        "disable_resources": disable_resources,
-        "network_idle": network_idle,
-        "timeout": timeout,
-        "locale": locale,
-        "real_chrome": real_chrome,
-    }
-
-    if wait > 0:
-        kwargs["wait"] = wait
-    if wait_selector:
-        kwargs["wait_selector"] = wait_selector
-    if proxy:
-        kwargs["proxy"] = proxy
-    if parsed_headers:
-        kwargs["extra_headers"] = parsed_headers
-
+    kwargs = __build_browser_kwargs(
+        headless,
+        disable_resources,
+        network_idle,
+        timeout,
+        wait,
+        wait_selector,
+        locale,
+        real_chrome,
+        proxy,
+        parsed_headers,
+    )
     from scrapling.fetchers import DynamicFetcher
 
-    __Request_and_Save(DynamicFetcher.fetch, url, output_file, css_selector, **kwargs)
+    __Request_and_Save(DynamicFetcher.fetch, url, output_file, css_selector, ai_targeted=ai_targeted, **kwargs)
 
 
 @extract.command(help=f"Use StealthyFetcher to fetch content with advanced stealth features.\n\n{__OUTPUT_FILE_HELP__}")
 @argument("url", required=True)
 @argument("output_file", required=True)
-@option(
-    "--headless/--no-headless",
-    default=True,
-    help="Run browser in headless mode (default: True)",
-)
-@option(
-    "--disable-resources/--enable-resources",
-    default=False,
-    help="Drop unnecessary resources for speed boost (default: False)",
-)
 @option(
     "--block-webrtc/--allow-webrtc",
     default=False,
@@ -706,112 +573,56 @@ def fetch(
 )
 @option("--allow-webgl/--block-webgl", default=True, help="Allow WebGL (default: True)")
 @option(
-    "--network-idle/--no-network-idle",
-    default=False,
-    help="Wait for network idle (default: False)",
-)
-@option(
-    "--real-chrome/--no-real-chrome",
-    default=False,
-    help="If you have a Chrome browser installed on your device, enable this, and the Fetcher will launch an instance of your browser and use it. (default: False)",
-)
-@option(
     "--hide-canvas/--show-canvas",
     default=False,
     help="Add noise to canvas operations (default: False)",
 )
-@option(
-    "--timeout",
-    type=int,
-    default=30000,
-    help="Timeout in milliseconds (default: 30000)",
-)
-@option(
-    "--wait",
-    type=int,
-    default=0,
-    help="Additional wait time in milliseconds after page load (default: 0)",
-)
-@option(
-    "--css-selector",
-    "-s",
-    help="CSS selector to extract specific content from the page. It returns all matches.",
-)
-@option("--wait-selector", help="CSS selector to wait for before proceeding")
-@option("--proxy", help='Proxy URL in format "http://username:password@host:port"')
-@option(
-    "--extra-headers",
-    "-H",
-    multiple=True,
-    help='Extra headers in format "Key: Value" (can be used multiple times)',
-)
+@_common_browser_options
 def stealthy_fetch(
     url,
     output_file,
     headless,
     disable_resources,
-    block_webrtc,
-    solve_cloudflare,
-    allow_webgl,
     network_idle,
-    real_chrome,
-    hide_canvas,
     timeout,
     wait,
     css_selector,
     wait_selector,
+    locale,
+    real_chrome,
     proxy,
     extra_headers,
+    block_webrtc,
+    solve_cloudflare,
+    allow_webgl,
+    hide_canvas,
+    ai_targeted,
 ):
-    """
-    Opens up a browser with advanced stealth features and fetch content using StealthyFetcher.
-
-    :param url: Target url.
-    :param output_file: Output file path (.md for Markdown, .html for HTML).
-    :param headless: Run the browser in headless/hidden, or headful/visible mode.
-    :param disable_resources: Drop requests of unnecessary resources for a speed boost.
-    :param block_webrtc: Blocks WebRTC entirely.
-    :param solve_cloudflare: Solves all types of the Cloudflare's Turnstile/Interstitial challenges.
-    :param allow_webgl: Allow WebGL (recommended to keep enabled).
-    :param network_idle: Wait for the page until there are no network connections for at least 500 ms.
-    :param real_chrome: If you have a Chrome browser installed on your device, enable this, and the Fetcher will launch an instance of your browser and use it.
-    :param hide_canvas: Add random noise to canvas operations to prevent fingerprinting.
-    :param timeout: The timeout in milliseconds that is used in all operations and waits through the page.
-    :param wait: The time (milliseconds) the fetcher will wait after everything finishes before returning.
-    :param css_selector: CSS selector to extract specific content.
-    :param wait_selector: Wait for a specific CSS selector to be in a specific state.
-    :param proxy: The proxy to be used with requests.
-    :param extra_headers: Extra headers to add to the request.
-    """
-
-    # Parse parameters
+    """Opens up a browser with advanced stealth features and fetch content using StealthyFetcher."""
     parsed_headers, _ = _ParseHeaders(extra_headers, False)
-
-    # Build request arguments
-    kwargs = {
-        "headless": headless,
-        "disable_resources": disable_resources,
-        "block_webrtc": block_webrtc,
-        "solve_cloudflare": solve_cloudflare,
-        "allow_webgl": allow_webgl,
-        "network_idle": network_idle,
-        "real_chrome": real_chrome,
-        "hide_canvas": hide_canvas,
-        "timeout": timeout,
-    }
-
-    if wait > 0:
-        kwargs["wait"] = wait
-    if wait_selector:
-        kwargs["wait_selector"] = wait_selector
-    if proxy:
-        kwargs["proxy"] = proxy
-    if parsed_headers:
-        kwargs["extra_headers"] = parsed_headers
-
+    kwargs = __build_browser_kwargs(
+        headless,
+        disable_resources,
+        network_idle,
+        timeout,
+        wait,
+        wait_selector,
+        locale,
+        real_chrome,
+        proxy,
+        parsed_headers,
+    )
+    kwargs.update(
+        {
+            "block_webrtc": block_webrtc,
+            "solve_cloudflare": solve_cloudflare,
+            "allow_webgl": allow_webgl,
+            "hide_canvas": hide_canvas,
+        }
+    )
     from scrapling.fetchers import StealthyFetcher
 
-    __Request_and_Save(StealthyFetcher.fetch, url, output_file, css_selector, **kwargs)
+    __Request_and_Save(StealthyFetcher.fetch, url, output_file, css_selector, ai_targeted=ai_targeted, **kwargs)
 
 
 @group()

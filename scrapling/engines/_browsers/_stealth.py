@@ -3,17 +3,13 @@ from re import compile as re_compile
 from time import sleep as time_sleep
 from asyncio import sleep as asyncio_sleep
 
-from playwright.sync_api import Locator, Page, BrowserContext
-from playwright.async_api import (
-    Page as async_Page,
-    Locator as AsyncLocator,
-    BrowserContext as AsyncBrowserContext,
-)
+from playwright.sync_api import Locator, Page
+from playwright.async_api import Page as async_Page, Locator as AsyncLocator
 from patchright.sync_api import sync_playwright
 from patchright.async_api import async_playwright
 
 from scrapling.core.utils import log
-from scrapling.core._types import Any, Optional, ProxyType, Unpack
+from scrapling.core._types import Any, List, Optional, ProxyType, Unpack
 from scrapling.engines.toolbelt.proxy_rotation import is_proxy_error
 from scrapling.engines.toolbelt.convertor import Response, ResponseFactory
 from scrapling.engines._browsers._types import StealthSession, StealthFetchParams
@@ -226,9 +222,18 @@ class StealthySession(SyncSession, StealthySessionMixin):
             with self._page_generator(
                 params.timeout, params.extra_headers, params.disable_resources, proxy, params.blocked_domains
             ) as page_info:
-                final_response = [None]
+                final_response: List = [None]
+                xhr_captured: List = []
                 page = page_info.page
-                page.on("response", self._create_response_handler(page_info, final_response))
+                page.on(
+                    "response",
+                    self._create_response_handler(
+                        page_info,
+                        final_response,
+                        xhr_pattern=self._config.capture_xhr,
+                        xhr_container=xhr_captured,
+                    ),
+                )
 
                 try:
                     first_response = page.goto(url, referer=referer)
@@ -259,7 +264,12 @@ class StealthySession(SyncSession, StealthySessionMixin):
                     page.wait_for_timeout(params.wait)
 
                     response = ResponseFactory.from_playwright_response(
-                        page, first_response, final_response[0], params.selector_config, meta={"proxy": proxy}
+                        page,
+                        first_response,
+                        final_response[0],
+                        params.selector_config,
+                        meta={"proxy": proxy},
+                        xhr_captured=xhr_captured,
                     )
                     return response
 
@@ -480,9 +490,18 @@ class AsyncStealthySession(AsyncSession, StealthySessionMixin):
             async with self._page_generator(
                 params.timeout, params.extra_headers, params.disable_resources, proxy, params.blocked_domains
             ) as page_info:
-                final_response = [None]
+                final_response: List = [None]
+                xhr_captured: List = []
                 page = page_info.page
-                page.on("response", self._create_response_handler(page_info, final_response))
+                page.on(
+                    "response",
+                    self._create_response_handler(
+                        page_info,
+                        final_response,
+                        xhr_pattern=self._config.capture_xhr,
+                        xhr_container=xhr_captured,
+                    ),
+                )
 
                 try:
                     first_response = await page.goto(url, referer=referer)
@@ -513,7 +532,12 @@ class AsyncStealthySession(AsyncSession, StealthySessionMixin):
                     await page.wait_for_timeout(params.wait)
 
                     response = await ResponseFactory.from_async_playwright_response(
-                        page, first_response, final_response[0], params.selector_config, meta={"proxy": proxy}
+                        page,
+                        first_response,
+                        final_response[0],
+                        params.selector_config,
+                        meta={"proxy": proxy},
+                        xhr_captured=xhr_captured,
                     )
                     return response
 

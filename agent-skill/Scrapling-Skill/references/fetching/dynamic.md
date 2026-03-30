@@ -79,6 +79,8 @@ All arguments for `DynamicFetcher` and its session classes:
 |    proxy_rotator    | A `ProxyRotator` instance for automatic proxy rotation. Cannot be combined with `proxy`.                                                                                                                                            |    ✔️    |
 |       retries       | Number of retry attempts for failed requests. Defaults to 3.                                                                                                                                                                        |    ✔️    |
 |     retry_delay     | Seconds to wait between retry attempts. Defaults to 1.                                                                                                                                                                              |    ✔️    |
+|     capture_xhr     | Pass a regex URL pattern string to capture XHR/fetch requests matching it during page load. Captured responses are available via `response.captured_xhr`. Defaults to `None` (disabled).                                             |    ✔️    |
+|   executable_path   | Absolute path to a custom browser executable to use instead of the bundled Chromium. Useful for non-standard installations or custom browser builds.                                                                                |    ✔️    |
 
 In session classes, all these arguments can be set globally for the session. Still, you can configure each request individually by passing some of the arguments here that can be configured on the browser tab level like: `google_search`, `timeout`, `wait`, `page_action`, `extra_headers`, `disable_resources`, `wait_selector`, `wait_selector_state`, `network_idle`, `load_dom`, `blocked_domains`, `proxy`, and `selector_config`.
 
@@ -200,6 +202,24 @@ The states the fetcher can wait for can be any of the following ([source](https:
 - `detached`: Wait for an element to not be present in the DOM.
 - `visible`: wait for an element to have a non-empty bounding box and no `visibility:hidden`. Note that an element without any content or with `display:none` has an empty bounding box and is not considered visible.
 - `hidden`: wait for an element to be either detached from the DOM, or have an empty bounding box, or `visibility:hidden`. This is opposite to the `'visible'` option.
+
+### Capturing XHR/Fetch Requests
+
+Many SPAs load data through background API calls (XHR/fetch). You can capture these requests by passing a regex URL pattern to `capture_xhr` at the session level:
+
+```python
+from scrapling.fetchers import DynamicSession
+
+with DynamicSession(capture_xhr=r"https://api\.example\.com/.*", headless=True) as session:
+    page = session.fetch('https://example.com')
+
+    # Access captured XHR responses
+    for xhr in page.captured_xhr:
+        print(xhr.url, xhr.status)
+        print(xhr.body)  # Raw response body as bytes
+```
+
+Each item in `captured_xhr` is a full `Response` object with the same properties (`.url`, `.status`, `.headers`, `.body`, etc.). When `capture_xhr` is not set or is `None`, `captured_xhr` is an empty list.
 
 ### Some Stealth Features
 

@@ -2,7 +2,7 @@
 from sys import stderr
 from copy import deepcopy
 from functools import wraps
-from re import sub as re_sub
+from re import sub as re_sub, compile as re_compile
 from collections import namedtuple
 from shlex import split as shlex_split
 from inspect import signature, Parameter
@@ -21,6 +21,7 @@ from logging import (
     getLevelName,
 )
 
+from lxml.etree import XPath
 from orjson import loads as json_loads, JSONDecodeError
 
 from ._shell_signatures import Signatures_map
@@ -66,6 +67,19 @@ Request = namedtuple(
         "follow_redirects",  # Added for -L flag
     ],
 )
+
+# Precompiled for the prompt injection sanitizer
+_HIDDEN_XPATH = XPath(
+    './/*[contains(@style,"display:none") or contains(@style,"display: none")'
+    ' or contains(@style,"visibility:hidden") or contains(@style,"visibility: hidden")'
+    ' or contains(@style,"opacity:0") or contains(@style,"opacity: 0")'
+    ' or contains(@style,"font-size:0") or contains(@style,"font-size: 0")'
+    ' or contains(@style,"height:0") or contains(@style,"height: 0")'
+    ' or contains(@style,"width:0") or contains(@style,"width: 0")]'
+    " | .//*[@aria-hidden='true']"
+    " | .//template"
+)
+_ZWC_PATTERN = re_compile(r"[\u200b\u200c\u200d\ufeff\u2060\u180e]")
 
 
 # Suppress exit on error to handle parsing errors gracefully
@@ -581,6 +595,23 @@ class Convertor:
         return Selector(root=clean_root, url=page.url)
 
     @classmethod
+    def _sanitize_for_ai(cls, page: Selector) -> Selector:
+        """Strip hidden content that could be used for prompt injection.
+
+        Removes CSS-hidden elements, aria-hidden elements, <template> tags,
+        HTML comments, and zero-width Unicode characters.
+        """
+        clean_root = deepcopy(page._root)
+        for element in cast(list, _HIDDEN_XPATH(clean_root)):
+            element.drop_tree()
+        for element in clean_root.iter():
+            if element.text:
+                element.text = _ZWC_PATTERN.sub("", element.text)
+            if element.tail:
+                element.tail = _ZWC_PATTERN.sub("", element.tail)
+        return Selector(root=clean_root, url=page.url, keep_comments=False)
+
+    @classmethod
     def _extract_content(
         cls,
         page: Selector,
@@ -597,6 +628,7 @@ class Convertor:
             if main_content_only:
                 page = cast(Selector, page.css("body").first) or page
                 page = cls._strip_noise_tags(page)
+                page = cls._sanitize_for_ai(page)
 
             pages = [page] if not css_selector else cast(Selectors, page.css(css_selector))
             for page in pages:
@@ -621,7 +653,9 @@ class Convertor:
             yield ""
 
     @classmethod
-    def write_content_to_file(cls, page: Selector, filename: str, css_selector: Optional[str] = None) -> None:
+    def write_content_to_file(
+        cls, page: Selector, filename: str, css_selector: Optional[str] = None, main_content_only: bool = False
+    ) -> None:
         """Write a Selector's content to a file"""
         if not page or not isinstance(page, Selector):  # pragma: no cover
             raise TypeError("Input must be of type `Selector`")
@@ -638,6 +672,7 @@ class Convertor:
                             page,
                             cls._extension_map[extension],
                             css_selector=css_selector,
+                            main_content_only=main_content_only,
                         )
                     )
                 )

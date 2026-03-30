@@ -1,4 +1,5 @@
 from time import time
+from re import search as re_search
 from asyncio import sleep as asyncio_sleep, Lock
 from contextlib import contextmanager, asynccontextmanager
 
@@ -27,6 +28,7 @@ from scrapling.engines.toolbelt.navigation import (
 )
 from scrapling.core._types import (
     Any,
+    Awaitable,
     Dict,
     List,
     Set,
@@ -146,21 +148,35 @@ class SyncSession:
             self._wait_for_networkidle(page)
 
     @staticmethod
-    def _create_response_handler(page_info: PageInfo[Page], response_container: List) -> Callable:
-        """Create a response handler that captures the final navigation response.
+    def _create_response_handler(
+        page_info: PageInfo[Page],
+        response_container: List,
+        xhr_pattern: Optional[str] = None,
+        xhr_container: Optional[List] = None,
+    ) -> Callable[[SyncPlaywrightResponse], None]:
+        """Create a response handler that captures the final navigation response and optionally XHR/fetch responses.
 
         :param page_info: The PageInfo object containing the page
         :param response_container: A list to store the final response (mutable container)
+        :param xhr_pattern: Optional regex pattern to match XHR/fetch response URLs
+        :param xhr_container: Optional list to store captured XHR/fetch responses
         :return: A callback function for page.on("response", ...)
         """
 
-        def handle_response(finished_response: SyncPlaywrightResponse):
+        def handle_response(finished_response: SyncPlaywrightResponse) -> None:
             if (
                 finished_response.request.resource_type == "document"
                 and finished_response.request.is_navigation_request()
                 and finished_response.request.frame == page_info.page.main_frame
             ):
                 response_container[0] = finished_response
+            elif (
+                xhr_pattern
+                and xhr_container is not None
+                and finished_response.request.resource_type in ("xhr", "fetch")
+                and re_search(xhr_pattern, finished_response.url)
+            ):
+                xhr_container.append(finished_response)
 
         return handle_response
 
@@ -317,21 +333,35 @@ class AsyncSession:
             await self._wait_for_networkidle(page)
 
     @staticmethod
-    def _create_response_handler(page_info: PageInfo[AsyncPage], response_container: List) -> Callable:
-        """Create an async response handler that captures the final navigation response.
+    def _create_response_handler(
+        page_info: PageInfo[AsyncPage],
+        response_container: List,
+        xhr_pattern: Optional[str] = None,
+        xhr_container: Optional[List] = None,
+    ) -> Callable[[AsyncPlaywrightResponse], Awaitable[None]]:
+        """Create an async response handler that captures the final navigation response and optionally XHR/fetch responses.
 
         :param page_info: The PageInfo object containing the page
         :param response_container: A list to store the final response (mutable container)
+        :param xhr_pattern: Optional regex pattern to match XHR/fetch response URLs
+        :param xhr_container: Optional list to store captured XHR/fetch responses
         :return: A callback function for page.on("response", ...)
         """
 
-        async def handle_response(finished_response: AsyncPlaywrightResponse):
+        async def handle_response(finished_response: AsyncPlaywrightResponse) -> None:
             if (
                 finished_response.request.resource_type == "document"
                 and finished_response.request.is_navigation_request()
                 and finished_response.request.frame == page_info.page.main_frame
             ):
                 response_container[0] = finished_response
+            elif (
+                xhr_pattern
+                and xhr_container is not None
+                and finished_response.request.resource_type in ("xhr", "fetch")
+                and re_search(xhr_pattern, finished_response.url)
+            ):
+                xhr_container.append(finished_response)
 
         return handle_response
 
@@ -428,6 +458,8 @@ class BaseSessionMixin:
                     "channel": "chrome" if config.real_chrome else "chromium",
                 }
             )
+            if config.executable_path:
+                self._browser_options["executable_path"] = config.executable_path
 
             self._user_data_dir = config.user_data_dir
         else:

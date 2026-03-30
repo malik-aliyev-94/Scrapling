@@ -87,6 +87,8 @@ class PlaywrightConfig(Struct, kw_only=True, frozen=False, weakref=True):
     blocked_domains: Optional[Set[str]] = None
     retries: RetriesCount = 3
     retry_delay: Seconds = 1
+    capture_xhr: str | None = None
+    executable_path: Optional[str] = None
 
     def __post_init__(self):  # pragma: no cover
         """Custom validation after msgspec validation"""
@@ -112,9 +114,16 @@ class PlaywrightConfig(Struct, kw_only=True, frozen=False, weakref=True):
             self.selector_config = {}
         if not self.additional_args:
             self.additional_args = {}
+        if not self.capture_xhr:
+            self.capture_xhr = None
 
         if self.init_script is not None:
             validation_msg = _is_invalid_file_path(self.init_script)
+            if validation_msg:
+                raise ValueError(validation_msg)
+
+        if self.executable_path is not None:
+            validation_msg = _is_invalid_file_path(self.executable_path)
             if validation_msg:
                 raise ValueError(validation_msg)
 
