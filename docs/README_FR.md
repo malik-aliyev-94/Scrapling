@@ -49,7 +49,7 @@
 
 Scrapling est un framework de Web Scraping adaptatif qui gère tout, d'une simple requête à un crawl à grande échelle.
 
-Son parser apprend des modifications de sites web et relocalise automatiquement vos éléments lorsque les pages sont mises à jour. Ses fetchers contournent les systèmes anti-bot comme Cloudflare Turnstile nativement. Et son framework Spider vous permet de monter en charge vers des crawls concurrents multi-sessions avec pause/reprise et rotation automatique de proxy — le tout en quelques lignes de Python. Une seule bibliothèque, zéro compromis.
+Son parser apprend des modifications de sites web et relocalise automatiquement vos éléments lorsque les pages sont mises à jour. Ses fetchers contournent les systèmes anti-bot comme Cloudflare Turnstile nativement. Et son framework Spider vous permet de monter en charge vers des crawls concurrents multi-sessions avec pause/reprise et rotation automatique de proxy - le tout en quelques lignes de Python. Une seule bibliothèque, zéro compromis.
 
 Des crawls ultra-rapides avec des statistiques en temps réel et du streaming. Conçu par des Web Scrapers pour des Web Scrapers et des utilisateurs réguliers, il y en a pour tout le monde.
 
@@ -125,7 +125,7 @@ MySpider().start()
       </a>
     </td>
     <td>
-      <a href="https://tikhub.io/?utm_source=github.com/D4Vinci/Scrapling&utm_medium=marketing_social&utm_campaign=retargeting&utm_content=carousel_ad" target="_blank">TikHub.io</a> propose plus de 900 APIs stables sur plus de 16 plateformes, dont TikTok, X, YouTube et Instagram, avec plus de 40M de jeux de données. <br /> Propose également des <a href="https://ai.tikhub.io/?ref=KarimShoair" target="_blank">modèles IA à prix réduit</a> — Claude, GPT, GEMINI et plus, jusqu'à 71% de réduction.
+      <a href="https://tikhub.io/?utm_source=github.com/D4Vinci/Scrapling&utm_medium=marketing_social&utm_campaign=retargeting&utm_content=carousel_ad" target="_blank">TikHub.io</a> propose plus de 900 APIs stables sur plus de 16 plateformes, dont TikTok, X, YouTube et Instagram, avec plus de 40M de jeux de données. <br /> Propose également des <a href="https://ai.tikhub.io/?ref=KarimShoair" target="_blank">modèles IA à prix réduit</a> - Claude, GPT, GEMINI et plus, jusqu'à 71% de réduction.
     </td>
   </tr>
   <tr>
@@ -191,12 +191,12 @@ MySpider().start()
 
 ## Fonctionnalités principales
 
-### Spiders — Un framework de crawling complet
+### Spiders - Un framework de crawling complet
 - 🕷️ **API Spider à la Scrapy** : Définissez des spiders avec `start_urls`, des callbacks async `parse` et des objets `Request`/`Response`.
 - ⚡ **Crawling concurrent** : Limites de concurrence configurables, throttling par domaine et délais de téléchargement.
-- 🔄 **Support multi-sessions** : Interface unifiée pour les requêtes HTTP et les navigateurs headless furtifs dans un seul spider — routez les requêtes vers différentes sessions par ID.
+- 🔄 **Support multi-sessions** : Interface unifiée pour les requêtes HTTP et les navigateurs headless furtifs dans un seul spider - routez les requêtes vers différentes sessions par ID.
 - 💾 **Pause & Reprise** : Persistance du crawl basée sur des checkpoints. Appuyez sur Ctrl+C pour un arrêt gracieux ; redémarrez pour reprendre là où vous vous étiez arrêté.
-- 📡 **Mode streaming** : Diffusez les éléments scrapés en temps réel via `async for item in spider.stream()` avec des statistiques en temps réel — idéal pour les UI, pipelines et crawls de longue durée.
+- 📡 **Mode streaming** : Diffusez les éléments scrapés en temps réel via `async for item in spider.stream()` avec des statistiques en temps réel - idéal pour les UI, pipelines et crawls de longue durée.
 - 🛡️ **Détection des requêtes bloquées** : Détection automatique et réessai des requêtes bloquées avec une logique personnalisable.
 - 📦 **Export intégré** : Exportez les résultats via des hooks et votre propre pipeline ou l'export JSON/JSONL intégré avec `result.items.to_json()` / `result.items.to_jsonl()` respectivement.
 
@@ -323,7 +323,7 @@ Mettez en pause et reprenez les longs crawls avec des checkpoints en lançant le
 ```python
 QuotesSpider(crawldir="./crawl_data").start()
 ```
-Appuyez sur Ctrl+C pour mettre en pause gracieusement — la progression est sauvegardée automatiquement. Plus tard, lorsque vous relancez le spider, passez le même `crawldir`, et il reprendra là où il s'était arrêté.
+Appuyez sur Ctrl+C pour mettre en pause gracieusement - la progression est sauvegardée automatiquement. Plus tard, lorsque vous relancez le spider, passez le même `crawldir`, et il reprendra là où il s'était arrêté.
 
 ### Parsing avancé & Navigation
 ```python
@@ -408,7 +408,7 @@ scrapling extract stealthy-fetch 'https://nopecha.com/demo/cloudflare' captchas.
 
 ## Benchmarks de performance
 
-Scrapling n'est pas seulement puissant — il est aussi ultra rapide. Les benchmarks suivants comparent le parser de Scrapling avec les dernières versions d'autres bibliothèques populaires.
+Scrapling n'est pas seulement puissant - il est aussi ultra rapide. Les benchmarks suivants comparent le parser de Scrapling avec les dernières versions d'autres bibliothèques populaires.
 
 ### Test de vitesse d'extraction de texte (5000 éléments imbriqués)
 
@@ -520,7 +520,7 @@ Ce travail est sous licence BSD-3-Clause.
 ## Remerciements
 
 Ce projet inclut du code adapté de :
-- Parsel (Licence BSD) — Utilisé pour le sous-module [translator](https://github.com/D4Vinci/Scrapling/blob/main/scrapling/core/translator.py)
+- Parsel (Licence BSD) - Utilisé pour le sous-module [translator](https://github.com/D4Vinci/Scrapling/blob/main/scrapling/core/translator.py)
 
 ---
 <div align="center"><small>Conçu et développé avec ❤️ par Karim Shoair.</small></div><br>

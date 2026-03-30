@@ -20,7 +20,7 @@ def product_page():
             <div class="product" data-category="veggie" data-price="3">
                 <span class="name">Carrot</span>
             </div>
-            <!-- Structurally similar but different tag — should NOT be found -->
+            <!-- Structurally similar but different tag - should NOT be found -->
             <section class="product" data-category="fruit" data-price="8">
                 <span class="name">Grape</span>
             </section>
@@ -50,7 +50,7 @@ class TestFindSimilarAdvanced:
         """match_text=True should factor in text content during similarity scoring"""
         first = product_page.css("div.product")[0]  # Apple
         # With match_text=True and a high threshold, "Apple" vs "Banana"/"Carrot" text
-        # should reduce similarity scores — result count may drop
+        # should reduce similarity scores - result count may drop
         with_text = first.find_similar(similarity_threshold=0.8, match_text=True)
         without_text = first.find_similar(similarity_threshold=0.8, match_text=False)
         # match_text=True is stricter when text differs, so result should be <= without_text

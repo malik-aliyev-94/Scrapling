@@ -32,7 +32,7 @@ class PoliteSpider(Spider):
         yield {"title": response.css("title::text").get("")}
 ```
 
-When `concurrent_requests_per_domain` is set, each domain gets its own concurrency limiter in addition to the global limit. This is useful when crawling multiple domains simultaneously — you can allow high global concurrency while being polite to each individual domain.
+When `concurrent_requests_per_domain` is set, each domain gets its own concurrency limiter in addition to the global limit. This is useful when crawling multiple domains simultaneously, as you can allow high global concurrency while being polite to each individual domain.
 
 !!! tip
 
@@ -66,7 +66,7 @@ else:
 
 1. **Pausing**: Press `Ctrl+C` during a crawl. The spider waits for all in-flight requests to finish, saves a checkpoint (pending requests + a set of seen request fingerprints), and then exits.
 2. **Force stopping**: Press `Ctrl+C` a second time to stop immediately without waiting for active tasks.
-3. **Resuming**: Run the spider again with the same `crawldir`. It detects the checkpoint, restores the queue and seen set, and continues from where it left off — skipping `start_requests()`.
+3. **Resuming**: Run the spider again with the same `crawldir`. It detects the checkpoint, restores the queue and seen set, and continues from where it left off, skipping `start_requests()`.
 4. **Cleanup**: When a crawl completes normally (not paused), the checkpoint files are deleted automatically.
 
 **Checkpoints are also saved periodically during the crawl (every 5 minutes by default).** 

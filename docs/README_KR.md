@@ -49,7 +49,7 @@
 
 Scrapling은 단일 요청부터 대규모 크롤링까지 모든 것을 처리하는 적응형 Web Scraping 프레임워크입니다.
 
-파서는 웹사이트 변경 사항을 학습하고, 페이지가 업데이트되면 요소를 자동으로 재배치합니다. Fetcher는 Cloudflare Turnstile 같은 안티봇 시스템을 별도 설정 없이 우회합니다. Spider 프레임워크를 사용하면 일시정지/재개 및 자동 프록시 로테이션을 갖춘 동시 멀티 세션 크롤링으로 확장할 수 있습니다 — 모두 Python 몇 줄이면 됩니다. 하나의 라이브러리, 타협 없는 성능.
+파서는 웹사이트 변경 사항을 학습하고, 페이지가 업데이트되면 요소를 자동으로 재배치합니다. Fetcher는 Cloudflare Turnstile 같은 안티봇 시스템을 별도 설정 없이 우회합니다. Spider 프레임워크를 사용하면 일시정지/재개 및 자동 프록시 로테이션을 갖춘 동시 멀티 세션 크롤링으로 확장할 수 있습니다 - 모두 Python 몇 줄이면 됩니다. 하나의 라이브러리, 타협 없는 성능.
 
 실시간 통계와 스트리밍을 통한 초고속 크롤링. Web Scraper가 만들고, Web Scraper와 일반 사용자 모두를 위해 설계했습니다.
 
@@ -125,7 +125,7 @@ MySpider().start()
       </a>
     </td>
     <td>
-      <a href="https://tikhub.io/?utm_source=github.com/D4Vinci/Scrapling&utm_medium=marketing_social&utm_campaign=retargeting&utm_content=carousel_ad" target="_blank">TikHub.io</a>는 TikTok, X, YouTube, Instagram 등 16개 이상 플랫폼에서 900개 이상의 안정적인 API를 제공하며, 4,000만 이상의 데이터셋을 보유하고 있습니다. <br /> <a href="https://ai.tikhub.io/?ref=KarimShoair" target="_blank">할인된 AI 모델</a>도 제공 — Claude, GPT, GEMINI 등 최대 71% 할인.
+      <a href="https://tikhub.io/?utm_source=github.com/D4Vinci/Scrapling&utm_medium=marketing_social&utm_campaign=retargeting&utm_content=carousel_ad" target="_blank">TikHub.io</a>는 TikTok, X, YouTube, Instagram 등 16개 이상 플랫폼에서 900개 이상의 안정적인 API를 제공하며, 4,000만 이상의 데이터셋을 보유하고 있습니다. <br /> <a href="https://ai.tikhub.io/?ref=KarimShoair" target="_blank">할인된 AI 모델</a>도 제공 - Claude, GPT, GEMINI 등 최대 71% 할인.
     </td>
   </tr>
   <tr>
@@ -191,12 +191,12 @@ MySpider().start()
 
 ## 주요 기능
 
-### Spider — 본격적인 크롤링 프레임워크
+### Spider - 본격적인 크롤링 프레임워크
 - 🕷️ **Scrapy 스타일 Spider API**: `start_urls`, 비동기 `parse` 콜백, `Request`/`Response` 객체로 Spider를 정의합니다.
 - ⚡ **동시 크롤링**: 설정 가능한 동시 요청 수 제한, 도메인별 스로틀링, 다운로드 딜레이를 지원합니다.
-- 🔄 **멀티 세션 지원**: HTTP 요청과 스텔스 헤드리스 브라우저를 하나의 인터페이스로 통합 — ID로 요청을 다른 세션에 라우팅합니다.
+- 🔄 **멀티 세션 지원**: HTTP 요청과 스텔스 헤드리스 브라우저를 하나의 인터페이스로 통합 - ID로 요청을 다른 세션에 라우팅합니다.
 - 💾 **일시정지 & 재개**: 체크포인트 기반의 크롤링 영속화. Ctrl+C로 정상 종료하고, 재시작하면 중단된 지점부터 이어갑니다.
-- 📡 **스트리밍 모드**: `async for item in spider.stream()`으로 스크레이핑된 아이템을 실시간 통계와 함께 스트리밍으로 수신 — UI, 파이프라인, 장시간 크롤링에 적합합니다.
+- 📡 **스트리밍 모드**: `async for item in spider.stream()`으로 스크레이핑된 아이템을 실시간 통계와 함께 스트리밍으로 수신 - UI, 파이프라인, 장시간 크롤링에 적합합니다.
 - 🛡️ **차단된 요청 감지**: 커스텀 로직을 통한 차단된 요청의 자동 감지 및 재시도를 지원합니다.
 - 📦 **내장 내보내기**: 훅이나 자체 파이프라인, 또는 내장 JSON/JSONL로 결과를 내보냅니다. 각각 `result.items.to_json()` / `result.items.to_jsonl()`을 사용합니다.
 
@@ -256,7 +256,7 @@ with StealthySession(headless=True, solve_cloudflare=True) as session:  # 작업
     page = session.fetch('https://nopecha.com/demo/cloudflare', google_search=False)
     data = page.css('#padded_content a').getall()
 
-# 또는 일회성 요청 스타일 — 이 요청을 위해 브라우저를 열고, 완료 후 닫습니다
+# 또는 일회성 요청 스타일 - 이 요청을 위해 브라우저를 열고, 완료 후 닫습니다
 page = StealthyFetcher.fetch('https://nopecha.com/demo/cloudflare')
 data = page.css('#padded_content a').getall()
 ```
@@ -268,7 +268,7 @@ with DynamicSession(headless=True, disable_resources=False, network_idle=True) a
     page = session.fetch('https://quotes.toscrape.com/', load_dom=False)
     data = page.xpath('//span[@class="text"]/text()').getall()  # 원하시면 XPath selector도 사용 가능
 
-# 또는 일회성 요청 스타일 — 이 요청을 위해 브라우저를 열고, 완료 후 닫습니다
+# 또는 일회성 요청 스타일 - 이 요청을 위해 브라우저를 열고, 완료 후 닫습니다
 page = DynamicFetcher.fetch('https://quotes.toscrape.com/')
 data = page.css('.quote .text::text').getall()
 ```
@@ -520,7 +520,7 @@ docker pull ghcr.io/d4vinci/scrapling:latest
 ## 감사의 말
 
 이 프로젝트에는 다음에서 차용한 코드가 포함되어 있습니다:
-- Parsel (BSD 라이선스) — [translator](https://github.com/D4Vinci/Scrapling/blob/main/scrapling/core/translator.py) 서브모듈에 사용
+- Parsel (BSD 라이선스) - [translator](https://github.com/D4Vinci/Scrapling/blob/main/scrapling/core/translator.py) 서브모듈에 사용
 
 ---
 <div align="center"><small>Karim Shoair가 ❤️으로 디자인하고 만들었습니다.</small></div><br>

@@ -5,7 +5,7 @@
     1. You've read the [Getting started](getting-started.md) page and know how to create and run a basic spider.
     2. You're familiar with [Fetchers basics](../fetching/choosing.md) and the differences between HTTP, Dynamic, and Stealthy sessions.
 
-A spider can use multiple fetcher sessions simultaneously — for example, a fast HTTP session for simple pages and a stealth browser session for protected pages. This page shows you how to configure and use sessions.
+A spider can use multiple fetcher sessions simultaneously. For example, a fast HTTP session for simple pages and a stealth browser session for protected pages. This page shows you how to configure and use sessions.
 
 ## What are Sessions?
 
@@ -23,7 +23,7 @@ By default, every spider creates a single [FetcherSession](../fetching/static.md
 
 ## Configuring Sessions
 
-Override `configure_sessions()` on your spider to set up sessions. The `manager` parameter is a `SessionManager` instance — use `manager.add()` to register sessions:
+Override `configure_sessions()` on your spider to set up sessions. The `manager` parameter is a `SessionManager` instance. Use `manager.add()` to register sessions:
 
 ```python
 from scrapling.spiders import Spider, Response
@@ -101,7 +101,7 @@ class ProductSpider(Spider):
         }
 ```
 
-The key is the `sid` parameter — it tells the spider which session to use for each request. When you call `response.follow()` without `sid`, the session ID from the original request is inherited.
+The key is the `sid` parameter - it tells the spider which session to use for each request. When you call `response.follow()` without `sid`, the session ID from the original request is inherited.
 
 Note that the sessions don't have to be from different classes only, but can be the same session, but different instances with different configurations, for example, like below:
 

@@ -47,11 +47,11 @@
     <a href="https://scrapling.readthedocs.io/en/latest/ai/mcp-server.html"><strong>Режим MCP</strong></a>
 </p>
 
-Scrapling — это адаптивный фреймворк для Web Scraping, который берёт на себя всё: от одного запроса до полномасштабного обхода сайтов.
+Scrapling - это адаптивный фреймворк для Web Scraping, который берёт на себя всё: от одного запроса до полномасштабного обхода сайтов.
 
-Его парсер учится на изменениях сайтов и автоматически перемещает ваши элементы при обновлении страниц. Его Fetcher'ы обходят анти-бот системы вроде Cloudflare Turnstile прямо из коробки. А его Spider-фреймворк позволяет масштабироваться до параллельных, многосессионных обходов с Pause & Resume и автоматической ротацией Proxy — и всё это в нескольких строках Python. Одна библиотека, без компромиссов.
+Его парсер учится на изменениях сайтов и автоматически перемещает ваши элементы при обновлении страниц. Его Fetcher'ы обходят анти-бот системы вроде Cloudflare Turnstile прямо из коробки. А его Spider-фреймворк позволяет масштабироваться до параллельных, многосессионных обходов с Pause & Resume и автоматической ротацией Proxy - и всё это в нескольких строках Python. Одна библиотека, без компромиссов.
 
-Молниеносно быстрые обходы с отслеживанием статистики в реальном времени и Streaming. Создано веб-скраперами для веб-скраперов и обычных пользователей — здесь есть что-то для каждого.
+Молниеносно быстрые обходы с отслеживанием статистики в реальном времени и Streaming. Создано веб-скраперами для веб-скраперов и обычных пользователей - здесь есть что-то для каждого.
 
 ```python
 from scrapling.fetchers import Fetcher, AsyncFetcher, StealthyFetcher, DynamicFetcher
@@ -128,7 +128,7 @@ MySpider().start()
       </a>
     </td>
     <td>
-      <a href="https://tikhub.io/?utm_source=github.com/D4Vinci/Scrapling&utm_medium=marketing_social&utm_campaign=retargeting&utm_content=carousel_ad" target="_blank">TikHub.io</a> предоставляет более 900 стабильных API на 16+ платформах, включая TikTok, X, YouTube и Instagram, с более чем 40 млн наборов данных. <br /> Также предлагает <a href="https://ai.tikhub.io/?ref=KarimShoair" target="_blank">AI-модели со скидкой</a> — Claude, GPT, GEMINI и другие со скидкой до 71%.
+      <a href="https://tikhub.io/?utm_source=github.com/D4Vinci/Scrapling&utm_medium=marketing_social&utm_campaign=retargeting&utm_content=carousel_ad" target="_blank">TikHub.io</a> предоставляет более 900 стабильных API на 16+ платформах, включая TikTok, X, YouTube и Instagram, с более чем 40 млн наборов данных. <br /> Также предлагает <a href="https://ai.tikhub.io/?ref=KarimShoair" target="_blank">AI-модели со скидкой</a> - Claude, GPT, GEMINI и другие со скидкой до 71%.
     </td>
   </tr>
   <tr>
@@ -159,7 +159,7 @@ MySpider().start()
       </a>
     </td>
     <td>
-    Прочитайте полный обзор <a href="https://substack.thewebscraping.club/p/scrapling-hands-on-guide?utm_source=github&utm_medium=repo&utm_campaign=scrapling" target="_blank">Scrapling на The Web Scraping Club</a> (ноябрь 2025) — рассылка №1, посвящённая веб-скрейпингу.
+    Прочитайте полный обзор <a href="https://substack.thewebscraping.club/p/scrapling-hands-on-guide?utm_source=github&utm_medium=repo&utm_campaign=scrapling" target="_blank">Scrapling на The Web Scraping Club</a> (ноябрь 2025) - рассылка №1, посвящённая веб-скрейпингу.
     </td>
   </tr>
   <tr>
@@ -194,12 +194,12 @@ MySpider().start()
 
 ## Ключевые особенности
 
-### Spider'ы — полноценный фреймворк для обхода сайтов
+### Spider'ы - полноценный фреймворк для обхода сайтов
 - 🕷️ **Scrapy-подобный Spider API**: Определяйте Spider'ов с `start_urls`, async `parse` callback'ами и объектами `Request`/`Response`.
 - ⚡ **Параллельный обход**: Настраиваемые лимиты параллелизма, ограничение скорости по домену и задержки загрузки.
-- 🔄 **Поддержка нескольких сессий**: Единый интерфейс для HTTP-запросов и скрытных headless-браузеров в одном Spider — маршрутизируйте запросы к разным сессиям по ID.
+- 🔄 **Поддержка нескольких сессий**: Единый интерфейс для HTTP-запросов и скрытных headless-браузеров в одном Spider - маршрутизируйте запросы к разным сессиям по ID.
 - 💾 **Pause & Resume**: Persistence обхода на основе Checkpoint'ов. Нажмите Ctrl+C для мягкой остановки; перезапустите, чтобы продолжить с того места, где вы остановились.
-- 📡 **Режим Streaming**: Стримьте извлечённые элементы по мере их поступления через `async for item in spider.stream()` со статистикой в реальном времени — идеально для UI, конвейеров и длительных обходов.
+- 📡 **Режим Streaming**: Стримьте извлечённые элементы по мере их поступления через `async for item in spider.stream()` со статистикой в реальном времени - идеально для UI, конвейеров и длительных обходов.
 - 🛡️ **Обнаружение заблокированных запросов**: Автоматическое обнаружение и повторная отправка заблокированных запросов с настраиваемой логикой.
 - 📦 **Встроенный экспорт**: Экспортируйте результаты через хуки и собственный конвейер или встроенный JSON/JSONL с `result.items.to_json()` / `result.items.to_jsonl()` соответственно.
 
@@ -259,7 +259,7 @@ with StealthySession(headless=True, solve_cloudflare=True) as session:  # Дер
     page = session.fetch('https://nopecha.com/demo/cloudflare', google_search=False)
     data = page.css('#padded_content a').getall()
 
-# Или используйте стиль одноразового запроса — открывает браузер для этого запроса, затем закрывает его после завершения
+# Или используйте стиль одноразового запроса - открывает браузер для этого запроса, затем закрывает его после завершения
 page = StealthyFetcher.fetch('https://nopecha.com/demo/cloudflare')
 data = page.css('#padded_content a').getall()
 ```
@@ -271,7 +271,7 @@ with DynamicSession(headless=True, disable_resources=False, network_idle=True) a
     page = session.fetch('https://quotes.toscrape.com/', load_dom=False)
     data = page.xpath('//span[@class="text"]/text()').getall()  # XPath-селектор, если вы предпочитаете его
 
-# Или используйте стиль одноразового запроса — открывает браузер для этого запроса, затем закрывает его после завершения
+# Или используйте стиль одноразового запроса - открывает браузер для этого запроса, затем закрывает его после завершения
 page = DynamicFetcher.fetch('https://quotes.toscrape.com/')
 data = page.css('.quote .text::text').getall()
 ```
@@ -326,7 +326,7 @@ class MultiSessionSpider(Spider):
 ```python
 QuotesSpider(crawldir="./crawl_data").start()
 ```
-Нажмите Ctrl+C для мягкой остановки — прогресс сохраняется автоматически. Позже, когда вы снова запустите Spider, передайте тот же `crawldir`, и он продолжит с того места, где остановился.
+Нажмите Ctrl+C для мягкой остановки - прогресс сохраняется автоматически. Позже, когда вы снова запустите Spider, передайте тот же `crawldir`, и он продолжит с того места, где остановился.
 
 ### Продвинутый парсинг и навигация
 ```python
@@ -383,7 +383,7 @@ async with AsyncStealthySession(max_pages=2) as session:
         task = session.fetch(url)
         tasks.append(task)
 
-    print(session.get_pool_stats())  # Опционально — статус пула вкладок браузера (занят/свободен/ошибка)
+    print(session.get_pool_stats())  # Опционально - статус пула вкладок браузера (занят/свободен/ошибка)
     results = await asyncio.gather(*tasks)
     print(session.get_pool_stats())
 ```
@@ -411,7 +411,7 @@ scrapling extract stealthy-fetch 'https://nopecha.com/demo/cloudflare' captchas.
 
 ## Тесты производительности
 
-Scrapling не только мощный — он ещё и невероятно быстрый. Следующие тесты производительности сравнивают парсер Scrapling с последними версиями других популярных библиотек.
+Scrapling не только мощный - он ещё и невероятно быстрый. Следующие тесты производительности сравнивают парсер Scrapling с последними версиями других популярных библиотек.
 
 ### Тест скорости извлечения текста (5000 вложенных элементов)
 
@@ -523,7 +523,7 @@ docker pull ghcr.io/d4vinci/scrapling:latest
 ## Благодарности
 
 Этот проект включает код, адаптированный из:
-- Parsel (лицензия BSD) — Используется для подмодуля [translator](https://github.com/D4Vinci/Scrapling/blob/main/scrapling/core/translator.py)
+- Parsel (лицензия BSD) - Используется для подмодуля [translator](https://github.com/D4Vinci/Scrapling/blob/main/scrapling/core/translator.py)
 
 ---
 <div align="center"><small>Разработано и создано с ❤️ Карим Шоаир.</small></div><br>

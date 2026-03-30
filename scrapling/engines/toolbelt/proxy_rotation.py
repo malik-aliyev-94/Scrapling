@@ -31,7 +31,7 @@ def is_proxy_error(error: Exception) -> bool:
 
 
 def cyclic_rotation(proxies: List[ProxyType], current_index: int) -> Tuple[ProxyType, int]:
-    """Default cyclic rotation strategy — iterates through proxies sequentially, wrapping around at the end."""
+    """Default cyclic rotation strategy - iterates through proxies sequentially, wrapping around at the end."""
     idx = current_index % len(proxies)
     return proxies[idx], (idx + 1) % len(proxies)
 

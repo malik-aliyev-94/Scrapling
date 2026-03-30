@@ -125,7 +125,7 @@ MySpider().start()
       </a>
     </td>
     <td>
-      <a href="https://tikhub.io/?utm_source=github.com/D4Vinci/Scrapling&utm_medium=marketing_social&utm_campaign=retargeting&utm_content=carousel_ad" target="_blank">TikHub.io</a> يوفر أكثر من 900 واجهة API مستقرة عبر أكثر من 16 منصة تشمل TikTok و X و YouTube و Instagram، مع أكثر من 40 مليون مجموعة بيانات. <br /> يقدم أيضاً <a href="https://ai.tikhub.io/?ref=KarimShoair" target="_blank">نماذج ذكاء اصطناعي بأسعار مخفضة</a> — Claude و GPT و GEMINI والمزيد بخصم يصل إلى 71%.
+      <a href="https://tikhub.io/?utm_source=github.com/D4Vinci/Scrapling&utm_medium=marketing_social&utm_campaign=retargeting&utm_content=carousel_ad" target="_blank">TikHub.io</a> يوفر أكثر من 900 واجهة API مستقرة عبر أكثر من 16 منصة تشمل TikTok و X و YouTube و Instagram، مع أكثر من 40 مليون مجموعة بيانات. <br /> يقدم أيضاً <a href="https://ai.tikhub.io/?ref=KarimShoair" target="_blank">نماذج ذكاء اصطناعي بأسعار مخفضة</a> - Claude و GPT و GEMINI والمزيد بخصم يصل إلى 71%.
     </td>
   </tr>
   <tr>
@@ -191,12 +191,12 @@ MySpider().start()
 
 ## الميزات الرئيسية
 
-### Spiders — إطار عمل زحف كامل
+### Spiders - إطار عمل زحف كامل
 - 🕷️ **واجهة Spider شبيهة بـ Scrapy**: عرّف Spiders مع `start_urls`، و async `parse` callbacks، وكائنات `Request`/`Response`.
 - ⚡ **زحف متزامن**: حدود تزامن قابلة للتكوين، وتحكم بالسرعة حسب النطاق، وتأخيرات التنزيل.
-- 🔄 **دعم الجلسات المتعددة**: واجهة موحدة لطلبات HTTP، ومتصفحات خفية بدون واجهة في Spider واحد — وجّه الطلبات إلى جلسات مختلفة بالمعرّف.
+- 🔄 **دعم الجلسات المتعددة**: واجهة موحدة لطلبات HTTP، ومتصفحات خفية بدون واجهة في Spider واحد - وجّه الطلبات إلى جلسات مختلفة بالمعرّف.
 - 💾 **إيقاف واستئناف**: استمرارية الزحف القائمة على Checkpoint. اضغط Ctrl+C للإيقاف بسلاسة؛ أعد التشغيل للاستئناف من حيث توقفت.
-- 📡 **وضع Streaming**: بث العناصر المستخرجة فور وصولها عبر `async for item in spider.stream()` مع إحصائيات فورية — مثالي لواجهات المستخدم وخطوط الأنابيب وعمليات الزحف الطويلة.
+- 📡 **وضع Streaming**: بث العناصر المستخرجة فور وصولها عبر `async for item in spider.stream()` مع إحصائيات فورية - مثالي لواجهات المستخدم وخطوط الأنابيب وعمليات الزحف الطويلة.
 - 🛡️ **كشف الطلبات المحظورة**: كشف تلقائي وإعادة محاولة للطلبات المحظورة مع منطق قابل للتخصيص.
 - 📦 **تصدير مدمج**: صدّر النتائج عبر الخطافات وخط الأنابيب الخاص بك أو JSON/JSONL المدمج مع `result.items.to_json()` / `result.items.to_jsonl()` على التوالي.
 
@@ -323,7 +323,7 @@ class MultiSessionSpider(Spider):
 ```python
 QuotesSpider(crawldir="./crawl_data").start()
 ```
-اضغط Ctrl+C للإيقاف بسلاسة — يتم حفظ التقدم تلقائياً. لاحقاً، عند تشغيل Spider مرة أخرى، مرر نفس `crawldir`، وسيستأنف من حيث توقف.
+اضغط Ctrl+C للإيقاف بسلاسة - يتم حفظ التقدم تلقائياً. لاحقاً، عند تشغيل Spider مرة أخرى، مرر نفس `crawldir`، وسيستأنف من حيث توقف.
 
 ### التحليل المتقدم والتنقل
 ```python
@@ -408,7 +408,7 @@ scrapling extract stealthy-fetch 'https://nopecha.com/demo/cloudflare' captchas.
 
 ## معايير الأداء
 
-Scrapling ليس قوياً فحسب — بل هو أيضاً سريع بشكل مذهل. تقارن المعايير التالية محلل Scrapling مع أحدث إصدارات المكتبات الشائعة الأخرى.
+Scrapling ليس قوياً فحسب - بل هو أيضاً سريع بشكل مذهل. تقارن المعايير التالية محلل Scrapling مع أحدث إصدارات المكتبات الشائعة الأخرى.
 
 ### اختبار سرعة استخراج النص (5000 عنصر متداخل)
 
@@ -520,7 +520,7 @@ docker pull ghcr.io/d4vinci/scrapling:latest
 ## الشكر والتقدير
 
 يتضمن هذا المشروع كوداً معدلاً من:
-- Parsel (ترخيص BSD) — يُستخدم للوحدة الفرعية [translator](https://github.com/D4Vinci/Scrapling/blob/main/scrapling/core/translator.py)
+- Parsel (ترخيص BSD) - يُستخدم للوحدة الفرعية [translator](https://github.com/D4Vinci/Scrapling/blob/main/scrapling/core/translator.py)
 
 ---
 <div align="center"><small>مصمم ومصنوع بـ ❤️ بواسطة كريم شعير.</small></div><br>

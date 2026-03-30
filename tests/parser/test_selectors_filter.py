@@ -46,7 +46,7 @@ class TestSelectorsFilter:
         assert len(result) == len(items)
 
     def test_filter_chained(self, page):
-        """filter() should be chainable — apply two filters in sequence"""
+        """filter() should be chainable - apply two filters in sequence"""
         items = page.css("li.item")
         # First: value > 0, then: not disabled
         result = (

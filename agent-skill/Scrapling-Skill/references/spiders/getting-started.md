@@ -21,9 +21,9 @@ class QuotesSpider(Spider):
 
 Every spider needs three things:
 
-1. **`name`** — A unique identifier for the spider.
-2. **`start_urls`** — A list of URLs to start crawling from.
-3. **`parse()`** — An async generator method that processes each response and yields results.
+1. **`name`**: A unique identifier for the spider.
+2. **`start_urls`**: A list of URLs to start crawling from.
+3. **`parse()`**: An async generator method that processes each response and yields results.
 
 The `parse()` method processes each response. You use the same selection methods you'd use with Scrapling's [Selector](../parsing/main_classes.md#selector)/[Response](../fetching/choosing.md#response-object), and `yield` dictionaries to output scraped items.
 
@@ -35,7 +35,7 @@ To run your spider, create an instance and call `start()`:
 result = QuotesSpider().start()
 ```
 
-The `start()` method handles all the async machinery internally — no need to worry about event loops. While the spider is running, everything that happens is logged to the terminal, and at the end of the crawl, you get very detailed stats.
+The `start()` method handles all the async machinery internally, so there is no need to worry about event loops. While the spider is running, everything that happens is logged to the terminal, and at the end of the crawl, you get very detailed stats.
 
 Those stats are in the returned `CrawlResult` object, which gives you everything you need:
 
@@ -80,7 +80,7 @@ class QuotesSpider(Spider):
             yield response.follow(next_page, callback=self.parse)
 ```
 
-`response.follow()` handles relative URLs automatically — it joins them with the current page's URL. It also sets the current page as the `Referer` header by default.
+`response.follow()` handles relative URLs automatically by joining them with the current page's URL. It also sets the current page as the `Referer` header by default.
 
 You can point follow-up requests at different callback methods for different page types:
 
@@ -133,7 +133,7 @@ class MySpider(Spider):
             yield response.follow(link, callback=self.parse)
 ```
 
-Subdomains are matched automatically — setting `allowed_domains = {"example.com"}` also allows `sub.example.com`, `blog.example.com`, etc.
+Subdomains are matched automatically, so setting `allowed_domains = {"example.com"}` also allows `sub.example.com`, `blog.example.com`, etc.
 
 When a request is filtered out, it's counted in `stats.offsite_requests_count` so you can see how many were dropped.
 

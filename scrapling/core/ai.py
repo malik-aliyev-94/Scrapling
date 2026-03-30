@@ -430,7 +430,7 @@ class ScraplingMCPServer:
         Note: This is only suitable for low-mid protection levels.
         Note: If the `css_selector` resolves to more than one element, all the elements will be returned.
         Note: If a `session_id` is provided (from open_session), the browser session will be reused instead of creating a new one.
-            When using a session, browser-level params (headless, proxy, locale, etc.) are ignored — they were set at session creation time.
+            When using a session, browser-level params (headless, proxy, locale, etc.) are ignored since they were set at session creation time.
 
         :param url: The URL to request.
         :param extraction_type: The type of content to extract from the page. Defaults to "markdown". Options are:
@@ -512,7 +512,7 @@ class ScraplingMCPServer:
         Note: This is only suitable for low-mid protection levels.
         Note: If the `css_selector` resolves to more than one element, all the elements will be returned.
         Note: If a `session_id` is provided (from open_session), the browser session will be reused instead of creating a new one.
-            When using a session, browser-level params (headless, proxy, locale, etc.) are ignored — they were set at session creation time.
+            When using a session, browser-level params (headless, proxy, locale, etc.) are ignored since they were set at session creation time.
 
         :param urls: A list of the URLs to request.
         :param extraction_type: The type of content to extract from the page. Defaults to "markdown". Options are:
@@ -617,7 +617,7 @@ class ScraplingMCPServer:
         Note: This is the only suitable fetcher for high protection levels.
         Note: If the `css_selector` resolves to more than one element, all the elements will be returned.
         Note: If a `session_id` is provided (from open_session), the browser session will be reused instead of creating a new one.
-            When using a session, browser-level params (headless, proxy, locale, etc.) are ignored — they were set at session creation time.
+            When using a session, browser-level params (headless, proxy, locale, etc.) are ignored since they were set at session creation time.
 
         :param url: The URL to request.
         :param extraction_type: The type of content to extract from the page. Defaults to "markdown". Options are:
@@ -714,7 +714,7 @@ class ScraplingMCPServer:
         Note: This is the only suitable fetcher for high protection levels.
         Note: If the `css_selector` resolves to more than one element, all the elements will be returned.
         Note: If a `session_id` is provided (from open_session), the browser session will be reused instead of creating a new one.
-            When using a session, browser-level params (headless, proxy, locale, etc.) are ignored — they were set at session creation time.
+            When using a session, browser-level params (headless, proxy, locale, etc.) are ignored since they were set at session creation time.
 
         :param urls: A list of the URLs to request.
         :param extraction_type: The type of content to extract from the page. Defaults to "markdown". Options are:

@@ -99,7 +99,7 @@ class TestSQLiteStorageSystem:
 
 
 class TestSaveRetrieveRoundTrip:
-    """Test the save/retrieve round-trip — the core of the adaptive feature."""
+    """Test the save/retrieve round-trip - the core of the adaptive feature."""
 
     def _make_storage(self, url="https://example.com"):
         StorageSystemMixin._get_base_url.cache_clear()

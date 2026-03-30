@@ -306,7 +306,7 @@ Starting with v0.4, [Selector](#selector) and [Selectors](#selectors) both provi
 
 **On a [Selector](#selector) object:**
 
-- `get()` returns a `TextHandler` — for text node selectors, it returns the text value; for HTML element selectors, it returns the serialized outer HTML.
+- `get()` returns a `TextHandler`: for text node selectors, it returns the text value; for HTML element selectors, it returns the serialized outer HTML.
 - `getall()` returns a `TextHandlers` list containing the single serialized string.
 - `extract_first` is an alias for `get()`, and `extract` is an alias for `getall()`.
 
