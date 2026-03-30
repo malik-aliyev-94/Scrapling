@@ -458,6 +458,8 @@ class BaseSessionMixin:
                     "channel": "chrome" if config.real_chrome else "chromium",
                 }
             )
+            if config.executable_path:
+                self._browser_options["executable_path"] = config.executable_path
 
             self._user_data_dir = config.user_data_dir
         else:

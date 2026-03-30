@@ -90,6 +90,7 @@ class PlaywrightSession(TypedDict, total=False):
     retries: int
     retry_delay: int | float
     capture_xhr: str | None
+    executable_path: Optional[str]
 
 
 class PlaywrightFetchParams(TypedDict, total=False):
