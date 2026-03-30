@@ -42,6 +42,7 @@ def __Request_and_Save(
     url: str,
     output_file: str,
     css_selector: Optional[str] = None,
+    ai_targeted: bool = False,
     **kwargs,
 ) -> None:
     """Make a request using the specified fetcher function and save the result"""
@@ -53,7 +54,7 @@ def __Request_and_Save(
         output_path = Path.cwd() / output_file
 
     response = fetcher_func(url, **kwargs)
-    Convertor.write_content_to_file(response, str(output_path), css_selector)
+    Convertor.write_content_to_file(response, str(output_path), css_selector, main_content_only=ai_targeted)
     log.info(f"Content successfully saved to '{output_path}'")
 
 
@@ -203,6 +204,12 @@ def _common_http_options(f):
     """Apply shared Click options for all HTTP extract commands (get/post/put/delete)."""
     decorators = [
         option(
+            "--ai-targeted",
+            is_flag=True,
+            default=False,
+            help="Extract only main content and sanitize hidden elements for AI consumption (default: False)",
+        ),
+        option(
             "--stealthy-headers/--no-stealthy-headers",
             default=True,
             help="Use stealthy browser headers (default: True)",
@@ -250,6 +257,12 @@ def _common_http_options(f):
 def _common_browser_options(f):
     """Apply shared Click options for browser-based commands (fetch/stealthy_fetch)."""
     decorators = [
+        option(
+            "--ai-targeted",
+            is_flag=True,
+            default=False,
+            help="Extract only main content and sanitize hidden elements for AI consumption (default: False)",
+        ),
         option(
             "--extra-headers",
             "-H",
@@ -317,11 +330,13 @@ def _data_options(f):
     return f
 
 
-def __http_command(method_name: str, url: str, output_file: str, css_selector: Optional[str], **kwargs) -> None:
+def __http_command(
+    method_name: str, url: str, output_file: str, css_selector: Optional[str], ai_targeted: bool = False, **kwargs
+) -> None:
     """Shared implementation for HTTP extract commands."""
     from scrapling.fetchers import Fetcher
 
-    __Request_and_Save(getattr(Fetcher, method_name), url, output_file, css_selector, **kwargs)
+    __Request_and_Save(getattr(Fetcher, method_name), url, output_file, css_selector, ai_targeted=ai_targeted, **kwargs)
 
 
 @extract.command(help=f"Perform a GET request and save the content to a file.\n\n{__OUTPUT_FILE_HELP__}")
@@ -341,6 +356,7 @@ def get(
     verify,
     impersonate,
     stealthy_headers,
+    ai_targeted,
 ):
     """Perform a GET request and save the content to a file."""
     kwargs = __BuildRequest(
@@ -355,7 +371,7 @@ def get(
         impersonate=impersonate,
         proxy=proxy,
     )
-    __http_command("get", url, output_file, css_selector, **kwargs)
+    __http_command("get", url, output_file, css_selector, ai_targeted=ai_targeted, **kwargs)
 
 
 @extract.command(help=f"Perform a POST request and save the content to a file.\n\n{__OUTPUT_FILE_HELP__}")
@@ -378,6 +394,7 @@ def post(
     verify,
     impersonate,
     stealthy_headers,
+    ai_targeted,
 ):
     """Perform a POST request and save the content to a file."""
     kwargs = __BuildRequest(
@@ -393,7 +410,7 @@ def post(
         proxy=proxy,
         data=data,
     )
-    __http_command("post", url, output_file, css_selector, **kwargs)
+    __http_command("post", url, output_file, css_selector, ai_targeted=ai_targeted, **kwargs)
 
 
 @extract.command(help=f"Perform a PUT request and save the content to a file.\n\n{__OUTPUT_FILE_HELP__}")
@@ -416,6 +433,7 @@ def put(
     verify,
     impersonate,
     stealthy_headers,
+    ai_targeted,
 ):
     """Perform a PUT request and save the content to a file."""
     kwargs = __BuildRequest(
@@ -431,7 +449,7 @@ def put(
         proxy=proxy,
         data=data,
     )
-    __http_command("put", url, output_file, css_selector, **kwargs)
+    __http_command("put", url, output_file, css_selector, ai_targeted=ai_targeted, **kwargs)
 
 
 @extract.command(help=f"Perform a DELETE request and save the content to a file.\n\n{__OUTPUT_FILE_HELP__}")
@@ -451,6 +469,7 @@ def delete(
     verify,
     impersonate,
     stealthy_headers,
+    ai_targeted,
 ):
     """Perform a DELETE request and save the content to a file."""
     kwargs = __BuildRequest(
@@ -465,7 +484,7 @@ def delete(
         impersonate=impersonate,
         proxy=proxy,
     )
-    __http_command("delete", url, output_file, css_selector, **kwargs)
+    __http_command("delete", url, output_file, css_selector, ai_targeted=ai_targeted, **kwargs)
 
 
 def __build_browser_kwargs(
@@ -518,6 +537,7 @@ def fetch(
     real_chrome,
     proxy,
     extra_headers,
+    ai_targeted,
 ):
     """Opens up a browser and fetch content using DynamicFetcher."""
     parsed_headers, _ = _ParseHeaders(extra_headers, False)
@@ -535,7 +555,7 @@ def fetch(
     )
     from scrapling.fetchers import DynamicFetcher
 
-    __Request_and_Save(DynamicFetcher.fetch, url, output_file, css_selector, **kwargs)
+    __Request_and_Save(DynamicFetcher.fetch, url, output_file, css_selector, ai_targeted=ai_targeted, **kwargs)
 
 
 @extract.command(help=f"Use StealthyFetcher to fetch content with advanced stealth features.\n\n{__OUTPUT_FILE_HELP__}")
@@ -576,6 +596,7 @@ def stealthy_fetch(
     solve_cloudflare,
     allow_webgl,
     hide_canvas,
+    ai_targeted,
 ):
     """Opens up a browser with advanced stealth features and fetch content using StealthyFetcher."""
     parsed_headers, _ = _ParseHeaders(extra_headers, False)
@@ -601,7 +622,7 @@ def stealthy_fetch(
     )
     from scrapling.fetchers import StealthyFetcher
 
-    __Request_and_Save(StealthyFetcher.fetch, url, output_file, css_selector, **kwargs)
+    __Request_and_Save(StealthyFetcher.fetch, url, output_file, css_selector, ai_targeted=ai_targeted, **kwargs)
 
 
 @group()

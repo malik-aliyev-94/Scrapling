@@ -653,7 +653,9 @@ class Convertor:
             yield ""
 
     @classmethod
-    def write_content_to_file(cls, page: Selector, filename: str, css_selector: Optional[str] = None) -> None:
+    def write_content_to_file(
+        cls, page: Selector, filename: str, css_selector: Optional[str] = None, main_content_only: bool = False
+    ) -> None:
         """Write a Selector's content to a file"""
         if not page or not isinstance(page, Selector):  # pragma: no cover
             raise TypeError("Input must be of type `Selector`")
@@ -670,6 +672,7 @@ class Convertor:
                             page,
                             cls._extension_map[extension],
                             css_selector=css_selector,
+                            main_content_only=main_content_only,
                         )
                     )
                 )
