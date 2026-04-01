@@ -48,9 +48,8 @@ from scrapling.engines.constants import STEALTH_ARGS, HARMFUL_ARGS, DEFAULT_ARGS
 class SyncSession:
     _config: "PlaywrightConfig | StealthConfig"
     _context_options: Dict[str, Any]
-
-    def _build_context_with_proxy(self, proxy: Optional[ProxyType] = None) -> Dict[str, Any]:
-        raise NotImplementedError  # pragma: no cover
+    if TYPE_CHECKING:
+        _build_context_with_proxy: Callable[..., Dict[str, Any]]
 
     def __init__(self, max_pages: int = 1):
         self.max_pages = max_pages
@@ -216,9 +215,8 @@ class SyncSession:
 class AsyncSession:
     _config: "PlaywrightConfig | StealthConfig"
     _context_options: Dict[str, Any]
-
-    def _build_context_with_proxy(self, proxy: Optional[ProxyType] = None) -> Dict[str, Any]:
-        raise NotImplementedError  # pragma: no cover
+    if TYPE_CHECKING:
+        _build_context_with_proxy: Callable[..., Dict[str, Any]]
 
     def __init__(self, max_pages: int = 1):
         self.max_pages = max_pages
