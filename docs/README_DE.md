@@ -169,6 +169,16 @@ MySpider().start()
     <a href="https://proxy-seller.com/?partner=CU9CAA5TBYFFT2" target="_blank">Proxy-Seller</a> bietet zuverlässige Proxy-Infrastruktur für Web Scraping mit IPv4-, IPv6-, ISP-, Residential- und Mobile-Proxys – stabile Leistung, breite geografische Abdeckung und flexible Tarife für die Datenerfassung im Unternehmensmaßstab.
     </td>
   </tr>
+  <tr>
+    <td width="200">
+      <a href="http://mangoproxy.com/?utm_source=D4Vinci&utm_medium=GitHub&utm_campaign=D4Vinci" target="_blank" title="Proxies You Can Rely On: Residential, Server, and Mobile">
+        <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/MangoProxy.png">
+      </a>
+    </td>
+    <td>
+    <a href="http://mangoproxy.com/?utm_source=D4Vinci&utm_medium=GitHub&utm_campaign=D4Vinci" target="_blank">Stabile Proxys</a> für Scraping, Automatisierung und Multi-Accounting. Saubere IPs, schnelle Reaktionszeiten und zuverlässige Leistung unter Last. Entwickelt für skalierbare Workflows.
+    </td>
+  </tr>
 </table>
 
 <i><sub>Möchten Sie Ihre Anzeige hier zeigen? Klicken Sie [hier](https://github.com/sponsors/D4Vinci/sponsorships?tier_id=586646)</sub></i>
