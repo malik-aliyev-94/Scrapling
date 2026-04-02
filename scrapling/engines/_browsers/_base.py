@@ -196,11 +196,14 @@ class SyncSession:
             context_options = self._build_context_with_proxy(proxy)
             context: BrowserContext = self.browser.new_context(**context_options)
 
+            page_info = None
             try:
                 context = self._initialize_context(self._config, context)
                 page_info = self._get_page(timeout, extra_headers, disable_resources, blocked_domains, context=context)
                 yield page_info
             finally:
+                if page_info is not None and page_info in self.page_pool.pages:
+                    self.page_pool.pages.remove(page_info)
                 context.close()
         else:
             # Standard mode: use PagePool with persistent context
@@ -380,6 +383,7 @@ class AsyncSession:
             context_options = self._build_context_with_proxy(proxy)
             context: AsyncBrowserContext = await self.browser.new_context(**context_options)
 
+            page_info = None
             try:
                 context = await self._initialize_context(self._config, context)
                 page_info = await self._get_page(
@@ -387,6 +391,8 @@ class AsyncSession:
                 )
                 yield page_info
             finally:
+                if page_info is not None and page_info in self.page_pool.pages:
+                    self.page_pool.pages.remove(page_info)
                 await context.close()
         else:
             # Standard mode: use PagePool with persistent context

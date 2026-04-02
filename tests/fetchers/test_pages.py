@@ -84,6 +84,15 @@ class TestPagePool:
         with pytest.raises(RuntimeError):
             pool.add_page(Mock())
 
+    def test_proxy_rotation_pool_leak(self):
+        pool = PagePool(max_pages=1)
+        page_info = pool.add_page(Mock())
+        assert pool.pages_count == 1
+        pool.pages.remove(page_info)
+        assert pool.pages_count == 0
+        pool.add_page(Mock())
+        assert pool.pages_count == 1
+
 
 
     def test_cleanup_error_pages(self):
