@@ -169,6 +169,16 @@ MySpider().start()
     <a href="https://proxy-seller.com/?partner=CU9CAA5TBYFFT2" target="_blank">Proxy-Seller</a> يوفر بنية تحتية موثوقة للبروكسي لكشط الويب، بما في ذلك بروكسيات IPv4 وIPv6 وISP والسكنية والمحمولة مع أداء مستقر وتغطية جغرافية واسعة وخطط مرنة لجمع البيانات على نطاق الأعمال.
     </td>
   </tr>
+  <tr>
+    <td width="200">
+      <a href="http://mangoproxy.com/?utm_source=D4Vinci&utm_medium=GitHub&utm_campaign=D4Vinci" target="_blank" title="Proxies You Can Rely On: Residential, Server, and Mobile">
+        <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/MangoProxy.png">
+      </a>
+    </td>
+    <td>
+    <a href="http://mangoproxy.com/?utm_source=D4Vinci&utm_medium=GitHub&utm_campaign=D4Vinci" target="_blank">بروكسيات مستقرة</a> للكشط والأتمتة وإدارة الحسابات المتعددة. عناوين IP نظيفة، استجابة سريعة، وأداء موثوق تحت الضغط. مصممة لسير العمل القابل للتوسع.
+    </td>
+  </tr>
 </table>
 
 <i><sub>هل تريد عرض إعلانك هنا؟ انقر [هنا](https://github.com/sponsors/D4Vinci/sponsorships?tier_id=586646)</sub></i>
