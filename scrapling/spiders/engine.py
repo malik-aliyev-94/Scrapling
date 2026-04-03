@@ -10,6 +10,7 @@ from scrapling.core.utils import log
 from scrapling.spiders.request import Request
 from scrapling.spiders.scheduler import Scheduler
 from scrapling.spiders.session import SessionManager
+from scrapling.spiders.robotstxt import RobotsTxtManager
 from scrapling.spiders.result import CrawlStats, ItemList
 from scrapling.spiders.checkpoint import CheckpointManager, CheckpointData
 from scrapling.core._types import Dict, Union, Optional, TYPE_CHECKING, Any, AsyncGenerator
@@ -41,8 +42,18 @@ class CrawlerEngine:
         )
         self.stats = CrawlStats()
 
+        if self.spider.robots_txt_obey:
+
+            async def _fetch_robots(url: str, sid: str):
+                return await self.session_manager.fetch(Request(url, sid=sid))
+
+            self._robots_manager: Optional[RobotsTxtManager] = RobotsTxtManager(_fetch_robots)
+        else:
+            self._robots_manager = None
+
         self._global_limiter = CapacityLimiter(spider.concurrent_requests)
         self._domain_limiters: dict[str, CapacityLimiter] = {}
+        self._domain_delays: dict[str, float] = {}
         self._allowed_domains: set[str] = spider.allowed_domains or set()
 
         self._active_tasks: int = 0
@@ -68,13 +79,58 @@ class CrawlerEngine:
                 return True
         return False
 
+    async def _get_domain_delay(self, request: Request) -> float:
+        """Resolve the effective download delay for a domain.
+
+        Takes the max of the spider's configured delay and any robots.txt
+        directives (Crawl-delay / Request-rate). Result is cached per domain.
+        Also pre-creates a per-domain concurrency limiter of 1 when robots.txt
+        enforces any delay, before the caller acquires it via _rate_limiter().
+        """
+        robots_manager = self._robots_manager
+        if robots_manager is None:
+            return self.spider.download_delay
+
+        domain = request.domain
+
+        # Return cached delay if available
+        if domain in self._domain_delays:
+            return self._domain_delays[domain]
+
+        # Fetch both robots.txt directives in a single parser lookup
+        c_delay, r_rate = await robots_manager._get_delay_directives(request.url, request.sid)
+
+        delay = self.spider.download_delay
+        robots_enforced_delay = False
+
+        if r_rate:
+            req_count, period = r_rate
+            if req_count > 0:
+                delay = max(delay, period / req_count)
+                robots_enforced_delay = True
+
+        if c_delay is not None:
+            delay = max(delay, c_delay)
+            robots_enforced_delay = True
+
+        self._domain_delays[domain] = delay
+
+        # Enforce 1 concurrent request for this domain when robots.txt adds a delay
+        if robots_enforced_delay and delay > 0 and domain not in self._domain_limiters:
+            if self.spider.concurrent_requests_per_domain:
+                log.warning(
+                    f"robots.txt for {domain} enforces a delay, overriding"
+                    f" concurrent_requests_per_domain={self.spider.concurrent_requests_per_domain} with 1"
+                )
+            self._domain_limiters[domain] = CapacityLimiter(1)
+
+        return delay
+
     def _rate_limiter(self, domain: str) -> CapacityLimiter:
         """Get or create a per-domain concurrency limiter if enabled, otherwise use the global limiter."""
         if self.spider.concurrent_requests_per_domain:
-            if domain not in self._domain_limiters:
-                self._domain_limiters[domain] = CapacityLimiter(self.spider.concurrent_requests_per_domain)
-            return self._domain_limiters[domain]
-        return self._global_limiter
+            self._domain_limiters.setdefault(domain, CapacityLimiter(self.spider.concurrent_requests_per_domain))
+        return self._domain_limiters.get(domain, self._global_limiter)
 
     def _normalize_request(self, request: Request) -> None:
         """Normalize request fields before enqueueing.
@@ -87,9 +143,21 @@ class CrawlerEngine:
 
     async def _process_request(self, request: Request) -> None:
         """Download and process a single request."""
+        if self._robots_manager:
+            can_fetch = await self._robots_manager.can_fetch(request.url, request.sid)
+            if not can_fetch:
+                self.stats.robots_disallowed_count += 1
+                log.debug(f"Request disallowed by robots.txt: {request.url}")
+                return
+            # Must be called before _rate_limiter: may create CapacityLimiter(1) in _domain_limiters
+            # when robots.txt enforces a delay, which _rate_limiter then picks up.
+            delay = await self._get_domain_delay(request)
+        else:
+            delay = self.spider.download_delay
+
         async with self._rate_limiter(request.domain):
-            if self.spider.download_delay:
-                await anyio.sleep(self.spider.download_delay)
+            if delay:
+                await anyio.sleep(delay)
 
             if request._session_kwargs.get("proxy"):
                 self.stats.proxies.append(request._session_kwargs["proxy"])
@@ -227,15 +295,19 @@ class CrawlerEngine:
         self._pause_requested = False
         self._force_stop = False
         self.stats = CrawlStats(start_time=anyio.current_time())
+        self._domain_limiters.clear()
+        self._domain_delays.clear()
 
         # Check for existing checkpoint
         resuming = (await self._restore_from_checkpoint()) if self._checkpoint_system_enabled else False
         self._last_checkpoint_time = anyio.current_time()
 
         async with self.session_manager:
+            # Set stats from spider configuration
             self.stats.concurrent_requests = self.spider.concurrent_requests
             self.stats.concurrent_requests_per_domain = self.spider.concurrent_requests_per_domain
             self.stats.download_delay = self.spider.download_delay
+
             await self.spider.on_start(resuming=resuming)
 
             try:
