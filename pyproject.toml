@@ -66,8 +66,7 @@ dependencies = [
     "orjson>=3.11.8",
     "tld>=0.13.2",
     "w3lib>=2.4.1",
-    "typing_extensions",
-    "protego>=0.4.0",
+    "typing_extensions"
 ]
 
 [project.optional-dependencies]
@@ -79,7 +78,8 @@ fetchers = [
     "browserforge>=1.2.4",
     "apify-fingerprint-datapoints>=0.12.0",
     "msgspec>=0.20.0",
-    "anyio>=4.12.1"
+    "anyio>=4.12.1",
+    "protego>=0.4.0",
 ]
 ai = [
     "mcp>=1.26.0",
