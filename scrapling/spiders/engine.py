@@ -97,7 +97,10 @@ class CrawlerEngine:
         if domain in self._domain_delays:
             return self._domain_delays[domain]
 
-        # Fetch both robots.txt directives in a single parser lookup
+        # For domains covered by _prefetch_robots_txt this is a local parser read.
+        # Domains discovered mid-crawl (not in start_urls/allowed_domains) will fetch here.
+        # Two concurrent callbacks hitting the same new domain can each trigger a fetch;
+        # the second write is a no-op in effect (same content), but the extra request is accepted.
         c_delay, r_rate = await robots_manager._get_delay_directives(request.url, request.sid)
 
         delay = self.spider.download_delay
@@ -287,6 +290,27 @@ class CrawlerEngine:
 
         return True
 
+    async def _prefetch_robots_txt(self) -> None:
+        """Pre-warm the robots.txt cache before the crawl loop starts.
+
+        Uses allowed_domains if configured, otherwise falls back to unique domains
+        extracted from start_urls via Request.domain. Both paths use https.
+        """
+        if not self._robots_manager:
+            return
+
+        if self._allowed_domains:
+            domains = self._allowed_domains
+        elif self.spider.start_urls:
+            # Deduplicate by domain so we spawn exactly one task per domain
+            domains = {Request(url).domain for url in self.spider.start_urls}
+        else:
+            return
+
+        seed_urls = [f"https://{domain}/" for domain in domains]
+
+        await self._robots_manager.prefetch(seed_urls, self.session_manager.default_session_id)
+
     async def crawl(self) -> CrawlStats:
         """Run the spider and return CrawlStats."""
         self._running = True
@@ -309,6 +333,8 @@ class CrawlerEngine:
             self.stats.download_delay = self.spider.download_delay
 
             await self.spider.on_start(resuming=resuming)
+
+            await self._prefetch_robots_txt()
 
             try:
                 if not resuming:
