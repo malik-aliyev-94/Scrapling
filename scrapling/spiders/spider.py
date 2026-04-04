@@ -73,7 +73,7 @@ class Spider(ABC):
     allowed_domains: Set[str] = set()
 
     # Robots.txt compliance
-    robots_txt_obey: bool = True
+    robots_txt_obey: bool = False
 
     # Concurrency settings
     concurrent_requests: int = 4
