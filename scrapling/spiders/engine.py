@@ -7,9 +7,9 @@ from anyio import Path as AsyncPath
 from anyio import create_task_group, CapacityLimiter, create_memory_object_stream, EndOfStream
 
 from scrapling.core.utils import log
-from scrapling.spiders.request import Request
 from scrapling.spiders.scheduler import Scheduler
 from scrapling.spiders.session import SessionManager
+from scrapling.spiders.request import Request, Response
 from scrapling.spiders.robotstxt import RobotsTxtManager
 from scrapling.spiders.result import CrawlStats, ItemList
 from scrapling.spiders.checkpoint import CheckpointManager, CheckpointData
@@ -44,7 +44,7 @@ class CrawlerEngine:
 
         if self.spider.robots_txt_obey:
 
-            async def _fetch_robots(url: str, sid: str):
+            async def _fetch_robots(url: str, sid: str) -> Response:
                 return await self.session_manager.fetch(Request(url, sid=sid))
 
             self._robots_manager: Optional[RobotsTxtManager] = RobotsTxtManager(_fetch_robots)
@@ -101,7 +101,7 @@ class CrawlerEngine:
         # Domains discovered mid-crawl (not in start_urls/allowed_domains) will fetch here.
         # Two concurrent callbacks hitting the same new domain can each trigger a fetch;
         # the second write is a no-op in effect (same content), but the extra request is accepted.
-        c_delay, r_rate = await robots_manager._get_delay_directives(request.url, request.sid)
+        c_delay, r_rate = await robots_manager.get_delay_directives(request.url, request.sid)
 
         delay = self.spider.download_delay
         robots_enforced_delay = False
@@ -133,6 +133,7 @@ class CrawlerEngine:
         """Get or create a per-domain concurrency limiter if enabled, otherwise use the global limiter."""
         if self.spider.concurrent_requests_per_domain:
             self._domain_limiters.setdefault(domain, CapacityLimiter(self.spider.concurrent_requests_per_domain))
+        # robots.txt-created limiters always apply even with `concurrent_requests_per_domain = 0` (if enabled)
         return self._domain_limiters.get(domain, self._global_limiter)
 
     def _normalize_request(self, request: Request) -> None:

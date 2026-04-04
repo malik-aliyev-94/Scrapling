@@ -116,7 +116,7 @@ class RobotsTxtManager:
             return (rate.requests, rate.seconds)
         return None
 
-    async def _get_delay_directives(self, url: str, sid: str) -> tuple[Optional[float], Optional[tuple[int, int]]]:
+    async def get_delay_directives(self, url: str, sid: str) -> tuple[Optional[float], Optional[tuple[int, int]]]:
         """Return both crawl-delay and request-rate in a single parser lookup.
 
         Args:
