@@ -275,27 +275,19 @@ class CrawlerEngine:
     async def _prefetch_robots_txt(self) -> None:
         """Pre-warm the robots.txt cache before the crawl loop starts.
 
-        Uses allowed_domains if configured (defaults to https since bare domains
-        have no scheme), otherwise falls back to unique domains extracted from
-        start_urls preserving the original scheme.
+        Extracts unique domains from start_urls, preserving the original scheme.
         """
-        if not self._robots_manager:
+        if not self._robots_manager or not self.spider.start_urls:
             return
 
-        if self._allowed_domains:
-            # allowed_domains are bare strings like "example.com", no scheme available
-            seed_urls = [f"http://{domain}/" for domain in self._allowed_domains]
-        elif self.spider.start_urls:
-            # Deduplicate by netloc, preserving the scheme from the first URL per domain
-            seen: set[str] = set()
-            seed_urls = []
-            for url in self.spider.start_urls:
-                parsed = urlparse(url)
-                if parsed.netloc not in seen:
-                    seen.add(parsed.netloc)
-                    seed_urls.append(f"{parsed.scheme}://{parsed.netloc}/")
-        else:
-            return
+        # Deduplicate by netloc, preserving the scheme from the first URL per domain
+        seen: set[str] = set()
+        seed_urls: list[str] = []
+        for url in self.spider.start_urls:
+            parsed = urlparse(url)
+            if parsed.netloc not in seen:
+                seen.add(parsed.netloc)
+                seed_urls.append(f"{parsed.scheme}://{parsed.netloc}/")
 
         await self._robots_manager.prefetch(seed_urls, self.session_manager.default_session_id)
 
