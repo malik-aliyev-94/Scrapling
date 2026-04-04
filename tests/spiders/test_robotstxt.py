@@ -5,7 +5,6 @@ import asyncio
 import pytest
 
 from scrapling.spiders.robotstxt import RobotsTxtManager
-from scrapling.core._types import List, Optional
 
 
 # ---------------------------------------------------------------------------
@@ -28,7 +27,7 @@ def make_fetch_fn(status: int = 200, content: str = "", encoding: str = "utf-8")
     Attaches a `.calls` list so tests can assert how many times it was invoked
     and with which arguments.
     """
-    calls: List[tuple] = []
+    calls: list[tuple] = []
 
     async def _fetch(url: str, sid: str) -> MockResponse:
         calls.append((url, sid))
@@ -276,11 +275,6 @@ class TestGetRequestRate:
 
 
 # ---------------------------------------------------------------------------
-# Tests: get_sitemaps
-# ---------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------
 # Tests: caching behaviour
 # ---------------------------------------------------------------------------
 
@@ -308,14 +302,15 @@ class TestCachingBehaviour:
         assert len(fetch_fn.calls) == 1
 
     @pytest.mark.asyncio
-    async def test_different_sids_use_separate_cache_entries(self):
+    async def test_different_sids_share_cache_entry(self):
+        """robots.txt is domain-level — different sessions share the same cached parser."""
         fetch_fn = make_fetch_fn(content=ROBOTS_BASIC)
         mgr = RobotsTxtManager(fetch_fn)
 
         await mgr.can_fetch("https://example.com/", "s1")
         await mgr.can_fetch("https://example.com/", "s2")
 
-        assert len(fetch_fn.calls) == 2
+        assert len(fetch_fn.calls) == 1
 
     @pytest.mark.asyncio
     async def test_different_domains_use_separate_cache_entries(self):
@@ -476,36 +471,20 @@ class TestClearCache:
         assert len(fetch_fn.calls) == 3
 
     @pytest.mark.asyncio
-    async def test_clear_by_sid_only_invalidates_that_sid(self):
+    async def test_clear_by_domain_invalidates_all_sessions(self):
+        """Clearing a domain evicts the single shared cache entry for all sessions."""
         fetch_fn = make_fetch_fn(content=ROBOTS_BASIC)
         mgr = RobotsTxtManager(fetch_fn)
 
         await mgr.can_fetch("https://example.com/", "s1")
-        await mgr.can_fetch("https://example.com/", "s2")
+        assert len(fetch_fn.calls) == 1
+
+        mgr.clear_cache(domain="example.com")
+
+        await mgr.can_fetch("https://example.com/", "s1")  # refetched — cache was cleared
+        await mgr.can_fetch("https://example.com/", "s2")  # hits the newly warm cache, no fetch
+
         assert len(fetch_fn.calls) == 2
-
-        mgr.clear_cache(sid="s1")
-
-        await mgr.can_fetch("https://example.com/", "s1")  # refetched
-        await mgr.can_fetch("https://example.com/", "s2")  # still cached
-
-        assert len(fetch_fn.calls) == 3
-
-    @pytest.mark.asyncio
-    async def test_clear_by_domain_and_sid_targets_exact_entry(self):
-        fetch_fn = make_fetch_fn(content=ROBOTS_BASIC)
-        mgr = RobotsTxtManager(fetch_fn)
-
-        await mgr.can_fetch("https://example.com/", "s1")
-        await mgr.can_fetch("https://example.com/", "s2")
-        assert len(fetch_fn.calls) == 2
-
-        mgr.clear_cache(domain="example.com", sid="s1")
-
-        await mgr.can_fetch("https://example.com/", "s1")  # refetched
-        await mgr.can_fetch("https://example.com/", "s2")  # still cached
-
-        assert len(fetch_fn.calls) == 3
 
     def test_clear_nonexistent_domain_does_not_raise(self):
         mgr = RobotsTxtManager(make_fetch_fn())
@@ -535,32 +514,30 @@ class TestClearCache:
 
 
 # ---------------------------------------------------------------------------
-# Tests: concurrent access (double-checked locking)
+# Tests: concurrent access
 # ---------------------------------------------------------------------------
 
 
-class TestConcurrency:
+class TestCacheAndConcurrency:
     @pytest.mark.asyncio
-    async def test_concurrent_calls_same_domain_same_sid_deduplicated(self):
-        """Multiple concurrent tasks for the same domain+sid trigger only one robots.txt fetch."""
+    async def test_cached_domain_not_refetched(self):
+        """Once a domain is cached, subsequent calls return the cached parser without fetching."""
         fetch_count = 0
 
-        async def slow_fetch(url: str, sid: str) -> MockResponse:
+        async def counting_fetch(url: str, sid: str) -> MockResponse:
             nonlocal fetch_count
             fetch_count += 1
-            await asyncio.sleep(0.02)  # simulate network latency
             return MockResponse(status=200, body=ROBOTS_BASIC.encode(), encoding="utf-8")
 
-        mgr = RobotsTxtManager(slow_fetch)
+        mgr = RobotsTxtManager(counting_fetch)
 
-        results = await asyncio.gather(*[
-            mgr.can_fetch(f"https://example.com/page{i}", "s1")
-            for i in range(8)
-        ])
+        # First call fetches and caches
+        await mgr.can_fetch("https://example.com/page1", "s1")
+        # Subsequent calls hit the cache
+        for i in range(7):
+            await mgr.can_fetch(f"https://example.com/page{i + 2}", "s1")
 
-        # Concurrent calls for the same domain+sid are deduplicated to a single fetch
         assert fetch_count == 1
-        assert all(isinstance(r, bool) for r in results)
 
     @pytest.mark.asyncio
     async def test_concurrent_calls_different_domains_fetch_independently(self):
@@ -595,21 +572,61 @@ class TestConcurrency:
         assert all(r is False for r in results)
 
     @pytest.mark.asyncio
-    async def test_different_sids_concurrent_fetch_independently(self):
+    async def test_different_sids_share_cache_after_first_fetch(self):
+        """After the first fetch, all sessions share the cached parser regardless of sid."""
         fetch_count = 0
 
-        async def slow_fetch(url: str, sid: str) -> MockResponse:
+        async def counting_fetch(url: str, sid: str) -> MockResponse:
             nonlocal fetch_count
             fetch_count += 1
-            await asyncio.sleep(0.01)
             return MockResponse(status=200, body=b"", encoding="utf-8")
 
-        mgr = RobotsTxtManager(slow_fetch)
+        mgr = RobotsTxtManager(counting_fetch)
 
-        await asyncio.gather(
-            mgr.can_fetch("https://example.com/", "s1"),
-            mgr.can_fetch("https://example.com/", "s2"),
-            mgr.can_fetch("https://example.com/", "s3"),
-        )
+        # First call fetches and caches
+        await mgr.can_fetch("https://example.com/", "s1")
+        # s2 and s3 hit the cache — no additional fetches
+        await mgr.can_fetch("https://example.com/", "s2")
+        await mgr.can_fetch("https://example.com/", "s3")
 
-        assert fetch_count == 3
+        assert fetch_count == 1
+
+
+# ---------------------------------------------------------------------------
+# Tests: prefetch
+# ---------------------------------------------------------------------------
+
+
+class TestPrefetch:
+    @pytest.mark.asyncio
+    async def test_prefetch_fetches_all_domains(self):
+        fetch_fn = make_fetch_fn(content=ROBOTS_BASIC)
+        mgr = RobotsTxtManager(fetch_fn)
+
+        await mgr.prefetch(["https://a.com/", "https://b.com/", "https://c.com/"], "s1")
+
+        assert len(fetch_fn.calls) == 3
+        fetched = {url for url, _ in fetch_fn.calls}
+        assert fetched == {"https://a.com/robots.txt", "https://b.com/robots.txt", "https://c.com/robots.txt"}
+
+    @pytest.mark.asyncio
+    async def test_prefetch_warms_cache_for_subsequent_calls(self):
+        fetch_fn = make_fetch_fn(content=ROBOTS_BASIC)
+        mgr = RobotsTxtManager(fetch_fn)
+
+        await mgr.prefetch(["https://example.com/"], "s1")
+        assert len(fetch_fn.calls) == 1
+
+        # Any subsequent call for the same domain hits the cache
+        await mgr.can_fetch("https://example.com/products", "s1")
+        await mgr.can_fetch("https://example.com/products", "s2")
+        assert len(fetch_fn.calls) == 1
+
+    @pytest.mark.asyncio
+    async def test_prefetch_empty_list_is_noop(self):
+        fetch_fn = make_fetch_fn(content=ROBOTS_BASIC)
+        mgr = RobotsTxtManager(fetch_fn)
+
+        await mgr.prefetch([], "s1")
+
+        assert len(fetch_fn.calls) == 0

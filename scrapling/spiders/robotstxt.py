@@ -1,6 +1,6 @@
-from asyncio import Event
 from urllib.parse import urlparse
 
+from anyio import create_task_group
 from protego import Protego
 
 from scrapling.core._types import Dict, Optional, Callable, Awaitable
@@ -21,56 +21,40 @@ class RobotsTxtManager:
     - Allow/Disallow directives (including wildcards and $ anchors)
     - Crawl-delay directives
 
-    Deduplicates concurrent robots.txt fetches for the same domain — if multiple
-    requests for the same domain arrive before the first fetch completes, they
-    all wait for that single fetch instead of triggering redundant requests.
+    robots.txt is a domain-level document and does not vary by session, so the
+    cache is keyed by domain only. The ``sid`` parameter on public methods
+    controls which session is used for the initial fetch if the domain is not
+    yet cached, but all sessions share the same parsed result afterwards.
     """
 
     def __init__(self, fetch_fn: Callable[[str, str], Awaitable]):
         self._fetch_fn = fetch_fn
-        self._cache: Dict[tuple[str, str], Protego] = {}
-        self._inflight: Dict[tuple[str, str], Event] = {}
+        self._cache: Dict[str, Protego] = {}
 
     async def _get_parser(self, url: str, sid: str) -> Protego:
         parsed = urlparse(url)
         domain = parsed.netloc
+
+        if domain in self._cache:
+            return self._cache[domain]
+
         scheme = parsed.scheme or "https"
-        cache_key = (domain, sid)
-
-        # Return cached parser if available
-        if cache_key in self._cache:
-            return self._cache[cache_key]
-
-        # If a fetch is already in-flight for this domain, wait for it to complete
-        if cache_key in self._inflight:
-            await self._inflight[cache_key].wait()
-            return self._cache[cache_key]
-
-        # Mark fetch as in-flight to deduplicate concurrent requests
-        event = Event()
-        self._inflight[cache_key] = event
+        robots_url = f"{scheme}://{domain}/robots.txt"
+        content = ""
+        try:
+            response = await self._fetch_fn(robots_url, sid)
+            if response.status == 200:
+                content = response.body.decode(response.encoding, errors="replace")
+        except Exception as e:
+            log.warning(f"Failed to fetch robots.txt for {domain}: {e}")
 
         try:
-            robots_url = f"{scheme}://{domain}/robots.txt"
-            content = ""
-            try:
-                response = await self._fetch_fn(robots_url, sid)
-                if response.status == 200:
-                    content = response.body.decode(response.encoding, errors="replace")
-            except Exception as e:
-                log.warning(f"Failed to fetch robots.txt for {domain}: {e}")
+            parser = Protego.parse(content)
+        except Exception as e:
+            log.warning(f"Failed to parse robots.txt for {domain}: {e}")
+            parser = Protego.parse("")
 
-            try:
-                parser = Protego.parse(content)
-            except Exception as e:
-                log.warning(f"Failed to parse robots.txt for {domain}: {e}")
-                parser = Protego.parse("")
-
-            self._cache[cache_key] = parser
-        finally:
-            event.set()
-            del self._inflight[cache_key]
-
+        self._cache[domain] = parser
         return parser
 
     async def can_fetch(self, url: str, sid: str) -> bool:
@@ -88,7 +72,7 @@ class RobotsTxtManager:
 
         Args:
             url: The full URL to check
-            sid: Session ID for fetching robots.txt
+            sid: Session ID for fetching robots.txt if not yet cached
 
         Returns:
             True if the URL can be fetched, False otherwise
@@ -104,7 +88,7 @@ class RobotsTxtManager:
 
         Args:
             url: Any URL on the domain to check
-            sid: Session ID for fetching robots.txt
+            sid: Session ID for fetching robots.txt if not yet cached
 
         Returns:
             The crawl delay in seconds, or None if not specified
@@ -121,7 +105,7 @@ class RobotsTxtManager:
 
         Args:
             url: Any URL on the domain to check
-            sid: Session ID for fetching robots.txt
+            sid: Session ID for fetching robots.txt if not yet cached
 
         Returns:
             A tuple of (requests, seconds) if specified, or None if not specified
@@ -137,7 +121,7 @@ class RobotsTxtManager:
 
         Args:
             url: Any URL on the domain to check
-            sid: Session ID for fetching robots.txt
+            sid: Session ID for fetching robots.txt if not yet cached
 
         Returns:
             A tuple of (crawl_delay, request_rate) where crawl_delay is in seconds
@@ -151,19 +135,35 @@ class RobotsTxtManager:
             (rate.requests, rate.seconds) if rate is not None else None,
         )
 
-    def clear_cache(self, domain: Optional[str] = None, sid: Optional[str] = None) -> None:
-        """Clear the robots.txt cache.
+    async def prefetch(self, urls: list[str], sid: str) -> None:
+        """Pre-warm the robots.txt cache for a list of seed URLs concurrently.
+
+        Callers are responsible for deduplicating URLs by domain before calling
+        this method — passing multiple URLs for the same domain will trigger
+        redundant fetches since no inflight deduplication exists here.
 
         Args:
-            domain: If specified, only clear cache for this domain
-            sid: If specified, only clear cache for this session ID
-                 If both are None, clears the entire cache
+            urls: Seed URLs whose domains should be pre-fetched (one per domain).
+            sid: Session ID to use for the robots.txt fetch requests.
         """
-        if domain is None and sid is None:
+        if not urls:
+            return
+        log.debug(f"Pre-fetching robots.txt for {len(urls)} domain(s)")
+        async with create_task_group() as tg:
+            for url in urls:
+                tg.start_soon(self._get_parser, url, sid)
+
+    def clear_cache(self, domain: Optional[str] = None) -> None:
+        """Clear the robots.txt cache.
+
+        Note: the ``sid`` parameter was removed — the cache is now keyed by
+        domain only, so clearing a domain evicts all sessions at once.
+
+        Args:
+            domain: If specified, only clear cache for this domain.
+                    If None, clears the entire cache.
+        """
+        if domain is None:
             self._cache.clear()
         else:
-            keys_to_remove = [
-                key for key in self._cache if (domain is None or key[0] == domain) and (sid is None or key[1] == sid)
-            ]
-            for key in keys_to_remove:
-                del self._cache[key]
+            self._cache.pop(domain, None)
