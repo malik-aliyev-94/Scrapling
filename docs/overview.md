@@ -264,7 +264,7 @@ page = Fetcher.get('https://scrapling.requestcatcher.com/get', impersonate="chro
 With that out of the way, here's how to do all HTTP methods:
 ```python
 >>> from scrapling.fetchers import Fetcher
->>> page = Fetcher.get('https://scrapling.requestcatcher.com/get', stealthy_headers=True, follow_redirects=True)
+>>> page = Fetcher.get('https://scrapling.requestcatcher.com/get', stealthy_headers=True)
 >>> page = Fetcher.post('https://scrapling.requestcatcher.com/post', data={'key': 'value'}, proxy='http://username:password@localhost:8030')
 >>> page = Fetcher.put('https://scrapling.requestcatcher.com/put', data={'key': 'value'})
 >>> page = Fetcher.delete('https://scrapling.requestcatcher.com/delete')
@@ -272,7 +272,7 @@ With that out of the way, here's how to do all HTTP methods:
 For Async requests, you will replace the import like below:
 ```python
 >>> from scrapling.fetchers import AsyncFetcher
->>> page = await AsyncFetcher.get('https://scrapling.requestcatcher.com/get', stealthy_headers=True, follow_redirects=True)
+>>> page = await AsyncFetcher.get('https://scrapling.requestcatcher.com/get', stealthy_headers=True)
 >>> page = await AsyncFetcher.post('https://scrapling.requestcatcher.com/post', data={'key': 'value'}, proxy='http://username:password@localhost:8030')
 >>> page = await AsyncFetcher.put('https://scrapling.requestcatcher.com/put', data={'key': 'value'})
 >>> page = await AsyncFetcher.delete('https://scrapling.requestcatcher.com/delete')
