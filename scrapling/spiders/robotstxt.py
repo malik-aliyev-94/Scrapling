@@ -61,7 +61,6 @@ class RobotsTxtManager:
         """Check if a URL can be fetched according to the domain's robots.txt.
 
         Handles:
-        - User-agent specific rules (e.g., User-agent: SpinarakBot)
         - Wildcard user-agent rules (User-agent: *)
         - Allow/Disallow directives with wildcards (e.g., /*.pdf$)
         - Allow directives that override Disallow (e.g., Allow: /admin/public-docs/)
@@ -79,42 +78,6 @@ class RobotsTxtManager:
         """
         parser = await self._get_parser(url, sid)
         return parser.can_fetch(url, "*")
-
-    async def get_crawl_delay(self, url: str, sid: str) -> Optional[float]:
-        """Get the crawl delay for this crawler.
-
-        Uses the wildcard user-agent (*) to get the general crawl delay
-        that applies to all bots.
-
-        Args:
-            url: Any URL on the domain to check
-            sid: Session ID for fetching robots.txt if not yet cached
-
-        Returns:
-            The crawl delay in seconds, or None if not specified
-        """
-        parser = await self._get_parser(url, sid)
-        delay = parser.crawl_delay("*")
-        return float(delay) if delay is not None else None
-
-    async def get_request_rate(self, url: str, sid: str) -> Optional[tuple[int, int]]:
-        """Get the request rate for this crawler.
-
-        Uses the wildcard user-agent (*) to get the general request rate
-        that applies to all bots.
-
-        Args:
-            url: Any URL on the domain to check
-            sid: Session ID for fetching robots.txt if not yet cached
-
-        Returns:
-            A tuple of (requests, seconds) if specified, or None if not specified
-        """
-        parser = await self._get_parser(url, sid)
-        rate = parser.request_rate("*")
-        if rate is not None:
-            return (rate.requests, rate.seconds)
-        return None
 
     async def get_delay_directives(self, url: str, sid: str) -> tuple[Optional[float], Optional[tuple[int, int]]]:
         """Return both crawl-delay and request-rate in a single parser lookup.
@@ -152,18 +115,3 @@ class RobotsTxtManager:
         async with create_task_group() as tg:
             for url in urls:
                 tg.start_soon(self._get_parser, url, sid)
-
-    def clear_cache(self, domain: Optional[str] = None) -> None:
-        """Clear the robots.txt cache.
-
-        Note: the ``sid`` parameter was removed — the cache is now keyed by
-        domain only, so clearing a domain evicts all sessions at once.
-
-        Args:
-            domain: If specified, only clear cache for this domain.
-                    If None, clears the entire cache.
-        """
-        if domain is None:
-            self._cache.clear()
-        else:
-            self._cache.pop(domain, None)

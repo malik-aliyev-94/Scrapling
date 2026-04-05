@@ -96,7 +96,7 @@ class CrawlerEngine:
             return self._domain_delays[domain]
 
         # For domains covered by _prefetch_robots_txt this is a local parser read.
-        # Domains discovered mid-crawl (not in start_urls/allowed_domains) will fetch here.
+        # Domains discovered mid-crawl (not in start_urls) will fetch here.
         c_delay, r_rate = await robots_manager.get_delay_directives(request.url, request.sid)
 
         delay = self.spider.download_delay

@@ -940,19 +940,7 @@ class TestPrefetchRobotsTxt:
         return _fetch, calls
 
     @pytest.mark.asyncio
-    async def test_prefetch_uses_allowed_domains_when_set(self):
-        fetch_fn, calls = self._make_counting_fetch()
-        spider = MockSpider(allowed_domains={"a.com", "b.com"}, robots_txt_obey=True)
-        engine = _make_engine(spider=spider)
-        engine._robots_manager = RobotsTxtManager(fetch_fn)
-
-        await engine._prefetch_robots_txt()
-
-        fetched_domains = {Request(url).domain for url, _ in calls}
-        assert fetched_domains == {"a.com", "b.com"}
-
-    @pytest.mark.asyncio
-    async def test_prefetch_falls_back_to_start_urls_when_no_allowed_domains(self):
+    async def test_prefetch_uses_start_urls(self):
         fetch_fn, calls = self._make_counting_fetch()
         spider = MockSpider(robots_txt_obey=True, start_urls=["https://example.com/page1"])
         engine = _make_engine(spider=spider)

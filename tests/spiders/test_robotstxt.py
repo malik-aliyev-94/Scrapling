@@ -53,14 +53,6 @@ Request-rate: 1/10
 Disallow: /private/
 """
 
-ROBOTS_WITH_SITEMAP = """\
-User-agent: *
-Disallow:
-
-Sitemap: https://example.com/sitemap.xml
-Sitemap: https://example.com/sitemap2.xml
-"""
-
 ROBOTS_ALLOW_OVERRIDE = """\
 User-agent: *
 Disallow: /secret/
@@ -157,121 +149,79 @@ class TestCanFetch:
 
 
 # ---------------------------------------------------------------------------
-# Tests: get_crawl_delay
+# Tests: get_delay_directives
 # ---------------------------------------------------------------------------
 
 
-class TestGetCrawlDelay:
+class TestGetDelayDirectives:
     @pytest.mark.asyncio
-    async def test_returns_float_when_set(self):
+    async def test_returns_crawl_delay_when_set(self):
         mgr = RobotsTxtManager(make_fetch_fn(content=ROBOTS_BASIC))
 
-        delay = await mgr.get_crawl_delay("https://example.com/", "s1")
+        c_delay, r_rate = await mgr.get_delay_directives("https://example.com/", "s1")
 
-        assert delay == 2.0
-        assert isinstance(delay, float)
+        assert c_delay == 2.0
+        assert isinstance(c_delay, float)
+        assert r_rate is None
 
     @pytest.mark.asyncio
-    async def test_returns_none_when_not_set(self):
+    async def test_returns_request_rate_when_set(self):
+        mgr = RobotsTxtManager(make_fetch_fn(content=ROBOTS_WITH_RATE))
+
+        c_delay, r_rate = await mgr.get_delay_directives("https://example.com/", "s1")
+
+        assert c_delay is None
+        assert r_rate is not None
+        assert r_rate == (1, 1)
+
+    @pytest.mark.asyncio
+    async def test_returns_both_none_when_not_set(self):
         content = "User-agent: *\nDisallow: /admin/"
         mgr = RobotsTxtManager(make_fetch_fn(content=content))
 
-        assert await mgr.get_crawl_delay("https://example.com/", "s1") is None
+        c_delay, r_rate = await mgr.get_delay_directives("https://example.com/", "s1")
+
+        assert c_delay is None
+        assert r_rate is None
 
     @pytest.mark.asyncio
-    async def test_returns_none_for_empty_robots(self):
+    async def test_returns_both_none_for_empty_robots(self):
         mgr = RobotsTxtManager(make_fetch_fn(content=""))
 
-        assert await mgr.get_crawl_delay("https://example.com/", "s1") is None
+        c_delay, r_rate = await mgr.get_delay_directives("https://example.com/", "s1")
+
+        assert c_delay is None
+        assert r_rate is None
 
     @pytest.mark.asyncio
-    async def test_returns_none_on_fetch_error(self):
+    async def test_returns_both_none_on_fetch_error(self):
         async def failing_fetch(url: str, sid: str) -> MockResponse:
             raise ConnectionError("network failure")
 
         mgr = RobotsTxtManager(failing_fetch)
 
-        assert await mgr.get_crawl_delay("https://example.com/", "s1") is None
+        c_delay, r_rate = await mgr.get_delay_directives("https://example.com/", "s1")
+
+        assert c_delay is None
+        assert r_rate is None
 
     @pytest.mark.asyncio
-    async def test_returns_none_for_non_200_response(self):
-        mgr = RobotsTxtManager(make_fetch_fn(status=404))
-
-        assert await mgr.get_crawl_delay("https://example.com/", "s1") is None
-
-    @pytest.mark.asyncio
-    async def test_fractional_delay(self):
+    async def test_fractional_crawl_delay(self):
         content = "User-agent: *\nCrawl-delay: 0.5"
         mgr = RobotsTxtManager(make_fetch_fn(content=content))
 
-        delay = await mgr.get_crawl_delay("https://example.com/", "s1")
+        c_delay, _ = await mgr.get_delay_directives("https://example.com/", "s1")
 
-        assert delay == 0.5
+        assert c_delay == 0.5
 
     @pytest.mark.asyncio
     async def test_url_path_does_not_affect_result(self):
-        """Any URL on the same domain should return the same delay."""
         mgr = RobotsTxtManager(make_fetch_fn(content=ROBOTS_BASIC))
 
-        d1 = await mgr.get_crawl_delay("https://example.com/", "s1")
-        d2 = await mgr.get_crawl_delay("https://example.com/deep/path/page.html", "s1")
+        r1 = await mgr.get_delay_directives("https://example.com/", "s1")
+        r2 = await mgr.get_delay_directives("https://example.com/deep/path/page.html", "s1")
 
-        assert d1 == d2
-
-
-# ---------------------------------------------------------------------------
-# Tests: get_request_rate
-# ---------------------------------------------------------------------------
-
-
-class TestGetRequestRate:
-    @pytest.mark.asyncio
-    async def test_returns_tuple_when_set(self):
-        mgr = RobotsTxtManager(make_fetch_fn(content=ROBOTS_WITH_RATE))
-
-        rate = await mgr.get_request_rate("https://example.com/", "s1")
-
-        assert rate is not None
-        assert isinstance(rate, tuple)
-        assert len(rate) == 2
-
-    @pytest.mark.asyncio
-    async def test_tuple_contains_integers(self):
-        mgr = RobotsTxtManager(make_fetch_fn(content=ROBOTS_WITH_RATE))
-
-        rate = await mgr.get_request_rate("https://example.com/", "s1")
-
-        assert rate is not None
-        requests, seconds = rate
-        assert isinstance(requests, int)
-        assert isinstance(seconds, int)
-
-    @pytest.mark.asyncio
-    async def test_returns_none_when_not_set(self):
-        mgr = RobotsTxtManager(make_fetch_fn(content=ROBOTS_BASIC))
-
-        assert await mgr.get_request_rate("https://example.com/", "s1") is None
-
-    @pytest.mark.asyncio
-    async def test_returns_none_for_empty_robots(self):
-        mgr = RobotsTxtManager(make_fetch_fn(content=""))
-
-        assert await mgr.get_request_rate("https://example.com/", "s1") is None
-
-    @pytest.mark.asyncio
-    async def test_returns_none_on_fetch_error(self):
-        async def failing_fetch(url: str, sid: str) -> MockResponse:
-            raise ConnectionError("network failure")
-
-        mgr = RobotsTxtManager(failing_fetch)
-
-        assert await mgr.get_request_rate("https://example.com/", "s1") is None
-
-    @pytest.mark.asyncio
-    async def test_returns_none_for_non_200_response(self):
-        mgr = RobotsTxtManager(make_fetch_fn(status=404))
-
-        assert await mgr.get_request_rate("https://example.com/", "s1") is None
+        assert r1 == r2
 
 
 # ---------------------------------------------------------------------------
@@ -296,8 +246,7 @@ class TestCachingBehaviour:
         mgr = RobotsTxtManager(fetch_fn)
 
         await mgr.can_fetch("https://example.com/", "s1")
-        await mgr.get_crawl_delay("https://example.com/", "s1")
-        await mgr.get_request_rate("https://example.com/", "s1")
+        await mgr.get_delay_directives("https://example.com/", "s1")
 
         assert len(fetch_fn.calls) == 1
 
@@ -419,9 +368,9 @@ class TestEncoding:
             return MockResponse(status=200, body=body, encoding="latin-1")
 
         mgr = RobotsTxtManager(fetch_fn)
-        delay = await mgr.get_crawl_delay("https://example.com/", "s1")
+        c_delay, _ = await mgr.get_delay_directives("https://example.com/", "s1")
 
-        assert delay == 3.0
+        assert c_delay == 3.0
 
     @pytest.mark.asyncio
     async def test_bytes_body_decoded_correctly(self):
@@ -436,81 +385,6 @@ class TestEncoding:
         assert await mgr.can_fetch("https://example.com/private/", "s1") is False
         assert await mgr.can_fetch("https://example.com/public/", "s1") is True
 
-
-# ---------------------------------------------------------------------------
-# Tests: clear_cache
-# ---------------------------------------------------------------------------
-
-
-class TestClearCache:
-    @pytest.mark.asyncio
-    async def test_clear_all_forces_refetch(self):
-        fetch_fn = make_fetch_fn(content=ROBOTS_BASIC)
-        mgr = RobotsTxtManager(fetch_fn)
-
-        await mgr.can_fetch("https://example.com/", "s1")
-        mgr.clear_cache()
-        await mgr.can_fetch("https://example.com/", "s1")
-
-        assert len(fetch_fn.calls) == 2
-
-    @pytest.mark.asyncio
-    async def test_clear_by_domain_only_invalidates_that_domain(self):
-        fetch_fn = make_fetch_fn(content=ROBOTS_BASIC)
-        mgr = RobotsTxtManager(fetch_fn)
-
-        await mgr.can_fetch("https://example.com/", "s1")
-        await mgr.can_fetch("https://other.com/", "s1")
-        assert len(fetch_fn.calls) == 2
-
-        mgr.clear_cache(domain="example.com")
-
-        await mgr.can_fetch("https://example.com/", "s1")  # refetched
-        await mgr.can_fetch("https://other.com/", "s1")    # still cached
-
-        assert len(fetch_fn.calls) == 3
-
-    @pytest.mark.asyncio
-    async def test_clear_by_domain_invalidates_all_sessions(self):
-        """Clearing a domain evicts the single shared cache entry for all sessions."""
-        fetch_fn = make_fetch_fn(content=ROBOTS_BASIC)
-        mgr = RobotsTxtManager(fetch_fn)
-
-        await mgr.can_fetch("https://example.com/", "s1")
-        assert len(fetch_fn.calls) == 1
-
-        mgr.clear_cache(domain="example.com")
-
-        await mgr.can_fetch("https://example.com/", "s1")  # refetched — cache was cleared
-        await mgr.can_fetch("https://example.com/", "s2")  # hits the newly warm cache, no fetch
-
-        assert len(fetch_fn.calls) == 2
-
-    def test_clear_nonexistent_domain_does_not_raise(self):
-        mgr = RobotsTxtManager(make_fetch_fn())
-        mgr.clear_cache(domain="nevervisited.com")  # should not raise
-
-    def test_clear_empty_cache_does_not_raise(self):
-        mgr = RobotsTxtManager(make_fetch_fn())
-        mgr.clear_cache()  # should not raise
-
-    @pytest.mark.asyncio
-    async def test_clear_all_empties_cache_completely(self):
-        fetch_fn = make_fetch_fn(content=ROBOTS_BASIC)
-        mgr = RobotsTxtManager(fetch_fn)
-
-        await mgr.can_fetch("https://a.com/", "s1")
-        await mgr.can_fetch("https://b.com/", "s1")
-        await mgr.can_fetch("https://c.com/", "s1")
-        assert len(fetch_fn.calls) == 3
-
-        mgr.clear_cache()
-
-        await mgr.can_fetch("https://a.com/", "s1")
-        await mgr.can_fetch("https://b.com/", "s1")
-        await mgr.can_fetch("https://c.com/", "s1")
-
-        assert len(fetch_fn.calls) == 6
 
 
 # ---------------------------------------------------------------------------
