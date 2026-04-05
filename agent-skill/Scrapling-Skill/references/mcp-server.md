@@ -27,7 +27,7 @@ Fast HTTP GET with browser fingerprint impersonation (TLS, headers). Suitable fo
 | `retry_delay`       | int                                | 1            | Seconds between retries                                            |
 | `stealthy_headers`  | bool                               | true         | Generate realistic browser headers and Google referer       |
 | `http3`             | bool                               | false        | Use HTTP/3 (may conflict with `impersonate`)                       |
-| `follow_redirects`  | bool                               | true         | Follow HTTP redirects                                              |
+| `follow_redirects`  | bool or "safe"                     | "safe"       | Follow redirects. "safe" rejects redirects to internal/private IPs |
 | `max_redirects`     | int                                | 30           | Max redirects (-1 for unlimited)                                   |
 | `headers`           | dict or null                       | null         | Custom request headers                                             |
 | `cookies`           | dict or null                       | null         | Request cookies                                                    |

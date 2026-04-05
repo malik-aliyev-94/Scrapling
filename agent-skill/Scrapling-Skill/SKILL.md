@@ -1,7 +1,7 @@
 ---
 name: scrapling-official
 description: Scrape web pages using Scrapling with anti-bot bypass (like Cloudflare Turnstile), stealth headless browsing, spiders framework, adaptive scraping, and JavaScript rendering. Use when asked to scrape, crawl, or extract data from websites; web_fetch fails; the site has anti-bot protections; write Python code to scrape/crawl; or write spiders.
-version: "0.4.4"
+version: "0.4.5"
 license: Complete terms in LICENSE.txt
 metadata:
   homepage: "https://scrapling.readthedocs.io/en/latest/index.html"
@@ -40,7 +40,7 @@ Blazing fast crawls with real-time stats and streaming. Built by Web Scrapers fo
 
 Create a virtual Python environment through any way available, like `venv`, then inside the environment do:
 
-`pip install "scrapling[all]>=0.4.4"`
+`pip install "scrapling[all]>=0.4.5"`
 
 Then do this to download all the browsers' dependencies:
 
@@ -104,7 +104,7 @@ Those options are shared between the 4 HTTP request commands:
 | --proxy                                    |    TEXT    | Proxy URL in format "http://username:password@host:port"                                                                                       |
 | -s, --css-selector                         |    TEXT    | CSS selector to extract specific content from the page. It returns all matches.                                                                |
 | -p, --params                               |    TEXT    | Query parameters in format "key=value" (can be used multiple times)                                                                            |
-| --follow-redirects / --no-follow-redirects |    None    | Whether to follow redirects (default: True)                                                                                                    |
+| --follow-redirects / --no-follow-redirects |    None    | Whether to follow redirects (default: "safe", rejects redirects to internal/private IPs)                                                       |
 | --verify / --no-verify                     |    None    | Whether to verify SSL certificates (default: True)                                                                                             |
 | --impersonate                              |    TEXT    | Browser to impersonate. Can be a single browser (e.g., Chrome) or a comma-separated list for random selection (e.g., Chrome, Firefox, Safari). |
 | --stealthy-headers / --no-stealthy-headers |    None    | Use stealthy browser headers (default: True)                                                                                                   |
