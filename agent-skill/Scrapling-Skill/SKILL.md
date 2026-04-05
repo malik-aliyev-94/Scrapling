@@ -258,6 +258,7 @@ class QuotesSpider(Spider):
     name = "quotes"
     start_urls = ["https://quotes.toscrape.com/"]
     concurrent_requests = 10
+    robots_txt_obey = True  # Respect robots.txt rules
     
     async def parse(self, response: Response):
         for quote in response.css('.quote'):
@@ -379,7 +380,7 @@ This skill encapsulates almost all the published documentation in Markdown, so d
 
 ## Guardrails (Always)
 - Only scrape content you're authorized to access.
-- Respect robots.txt and ToS.
-- Add delays (download_delay) for large crawls.
+- Respect robots.txt and ToS. Use `robots_txt_obey = True` on spiders to enforce this automatically.
+- Add delays (`download_delay`) for large crawls.
 - Don't bypass paywalls or authentication without permission.
 - Never scrape personal/sensitive data.
