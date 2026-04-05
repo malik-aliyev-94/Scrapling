@@ -54,8 +54,10 @@ class CrawlerEngine:
 
         self._global_limiter = CapacityLimiter(spider.concurrent_requests)
         self._domain_limiters: dict[str, CapacityLimiter] = {}
-        self._domain_delays: dict[str, float] = {}
         self._allowed_domains: set[str] = spider.allowed_domains or set()
+
+        if self.spider.robots_txt_obey:
+            self._domain_delays: dict[str, float] = {}
 
         self._active_tasks: int = 0
         self._running: bool = False
@@ -300,7 +302,8 @@ class CrawlerEngine:
         self._force_stop = False
         self.stats = CrawlStats(start_time=anyio.current_time())
         self._domain_limiters.clear()
-        self._domain_delays.clear()
+        if self._robots_manager:
+            self._domain_delays.clear()
 
         # Check for existing checkpoint
         resuming = (await self._restore_from_checkpoint()) if self._checkpoint_system_enabled else False
