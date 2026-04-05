@@ -136,7 +136,7 @@ class CrawlerEngine:
             can_fetch = await self._robots_manager.can_fetch(request.url, request.sid)
             if not can_fetch:
                 self.stats.robots_disallowed_count += 1
-                log.debug(f"Request disallowed by robots.txt: {request.url}")
+                log.info(f"Request disallowed by robots.txt: {request.url}")
                 return
             delay = await self._get_domain_delay(request)
         else:
@@ -310,11 +310,9 @@ class CrawlerEngine:
         self._last_checkpoint_time = anyio.current_time()
 
         async with self.session_manager:
-            # Set stats from spider configuration
             self.stats.concurrent_requests = self.spider.concurrent_requests
             self.stats.concurrent_requests_per_domain = self.spider.concurrent_requests_per_domain
             self.stats.download_delay = self.spider.download_delay
-
             await self.spider.on_start(resuming=resuming)
 
             await self._prefetch_robots_txt()

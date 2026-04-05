@@ -8,24 +8,7 @@ from scrapling.core.utils import log
 
 
 class RobotsTxtManager:
-    """Manages fetching, parsing, and caching of robots.txt files.
-
-    Accepts a fetch callable ``(url: str, sid: str) -> Awaitable[Response]``
-    so it stays decoupled from any specific session or transport layer.
-
-    All public methods accept only ``(url, sid)`` — domain and scheme are
-    derived internally from the URL so callers don't pass redundant data.
-
-    Handles all standard robots.txt directives including:
-    - User-agent specific rules
-    - Allow/Disallow directives (including wildcards and $ anchors)
-    - Crawl-delay directives
-
-    robots.txt is a domain-level document and does not vary by session, so the
-    cache is keyed by domain only. The ``sid`` parameter on public methods
-    controls which session is used for the initial fetch if the domain is not
-    yet cached, but all sessions share the same parsed result afterwards.
-    """
+    """Manages fetching, parsing, and caching of robots.txt files."""
 
     def __init__(self, fetch_fn: Callable[[str, str], Awaitable]):
         self._fetch_fn = fetch_fn
@@ -60,21 +43,8 @@ class RobotsTxtManager:
     async def can_fetch(self, url: str, sid: str) -> bool:
         """Check if a URL can be fetched according to the domain's robots.txt.
 
-        Handles:
-        - Wildcard user-agent rules (User-agent: *)
-        - Allow/Disallow directives with wildcards (e.g., /*.pdf$)
-        - Allow directives that override Disallow (e.g., Allow: /admin/public-docs/)
-
-        Uses the wildcard user-agent (*) which matches standard robots.txt directives
-        that apply to all bots. This is the conservative approach — if a URL is
-        disallowed for all bots, we respect that.
-
-        Args:
-            url: The full URL to check
-            sid: Session ID for fetching robots.txt if not yet cached
-
-        Returns:
-            True if the URL can be fetched, False otherwise
+        :param url: The full URL to check
+        :param sid: Session ID for fetching robots.txt if not yet cached
         """
         parser = await self._get_parser(url, sid)
         return parser.can_fetch(url, "*")
@@ -82,13 +52,8 @@ class RobotsTxtManager:
     async def get_delay_directives(self, url: str, sid: str) -> tuple[Optional[float], Optional[tuple[int, int]]]:
         """Return both crawl-delay and request-rate in a single parser lookup.
 
-        Args:
-            url: Any URL on the domain to check
-            sid: Session ID for fetching robots.txt if not yet cached
-
-        Returns:
-            A tuple of (crawl_delay, request_rate) where crawl_delay is in seconds
-            or None, and request_rate is (requests, seconds) or None.
+        :param url: Any URL on the domain to check
+        :param sid: Session ID for fetching robots.txt if not yet cached
         """
         parser = await self._get_parser(url, sid)
         c_delay = parser.crawl_delay("*")
@@ -101,13 +66,8 @@ class RobotsTxtManager:
     async def prefetch(self, urls: list[str], sid: str) -> None:
         """Pre-warm the robots.txt cache for a list of seed URLs concurrently.
 
-        Callers are responsible for deduplicating URLs by domain before calling
-        this method — passing multiple URLs for the same domain will trigger
-        redundant fetches since no inflight deduplication exists here.
-
-        Args:
-            urls: Seed URLs whose domains should be pre-fetched (one per domain).
-            sid: Session ID to use for the robots.txt fetch requests.
+        :param urls: Seed URLs whose domains should be pre-fetched (one per domain).
+        :param sid: Session ID to use for the robots.txt fetch requests.
         """
         if not urls:
             return
