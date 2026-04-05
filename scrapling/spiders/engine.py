@@ -1,15 +1,17 @@
 import json
 import pprint
 from pathlib import Path
+from urllib.parse import urlparse
 
 import anyio
 from anyio import Path as AsyncPath
 from anyio import create_task_group, CapacityLimiter, create_memory_object_stream, EndOfStream
 
 from scrapling.core.utils import log
-from scrapling.spiders.request import Request
 from scrapling.spiders.scheduler import Scheduler
 from scrapling.spiders.session import SessionManager
+from scrapling.spiders.request import Request, Response
+from scrapling.spiders.robotstxt import RobotsTxtManager
 from scrapling.spiders.result import CrawlStats, ItemList
 from scrapling.spiders.checkpoint import CheckpointManager, CheckpointData
 from scrapling.core._types import Dict, Union, Optional, TYPE_CHECKING, Any, AsyncGenerator
@@ -41,9 +43,21 @@ class CrawlerEngine:
         )
         self.stats = CrawlStats()
 
+        if self.spider.robots_txt_obey:
+
+            async def _fetch_robots(url: str, sid: str) -> Response:
+                return await self.session_manager.fetch(Request(url, sid=sid))
+
+            self._robots_manager: Optional[RobotsTxtManager] = RobotsTxtManager(_fetch_robots)
+        else:
+            self._robots_manager = None
+
         self._global_limiter = CapacityLimiter(spider.concurrent_requests)
         self._domain_limiters: dict[str, CapacityLimiter] = {}
         self._allowed_domains: set[str] = spider.allowed_domains or set()
+
+        if self.spider.robots_txt_obey:
+            self._domain_delays: dict[str, float] = {}
 
         self._active_tasks: int = 0
         self._running: bool = False
@@ -68,11 +82,42 @@ class CrawlerEngine:
                 return True
         return False
 
+    async def _get_domain_delay(self, request: Request) -> float:
+        """Resolve the effective download delay for a domain.
+
+        Takes the max of the spider's configured delay and any robots.txt
+        directives (Crawl-delay / Request-rate). Result is cached per domain.
+        """
+        robots_manager = self._robots_manager
+        if robots_manager is None:
+            return self.spider.download_delay
+
+        domain = request.domain
+
+        if domain in self._domain_delays:
+            return self._domain_delays[domain]
+
+        # For domains covered by _prefetch_robots_txt this is a local parser read.
+        # Domains discovered mid-crawl (not in start_urls) will fetch here.
+        c_delay, r_rate = await robots_manager.get_delay_directives(request.url, request.sid)
+
+        delay = self.spider.download_delay
+
+        if r_rate:
+            req_count, period = r_rate
+            if req_count > 0:
+                delay = max(delay, period / req_count)
+
+        if c_delay is not None:
+            delay = max(delay, c_delay)
+
+        self._domain_delays[domain] = delay
+        return delay
+
     def _rate_limiter(self, domain: str) -> CapacityLimiter:
         """Get or create a per-domain concurrency limiter if enabled, otherwise use the global limiter."""
         if self.spider.concurrent_requests_per_domain:
-            if domain not in self._domain_limiters:
-                self._domain_limiters[domain] = CapacityLimiter(self.spider.concurrent_requests_per_domain)
+            self._domain_limiters.setdefault(domain, CapacityLimiter(self.spider.concurrent_requests_per_domain))
             return self._domain_limiters[domain]
         return self._global_limiter
 
@@ -87,9 +132,19 @@ class CrawlerEngine:
 
     async def _process_request(self, request: Request) -> None:
         """Download and process a single request."""
+        if self._robots_manager:
+            can_fetch = await self._robots_manager.can_fetch(request.url, request.sid)
+            if not can_fetch:
+                self.stats.robots_disallowed_count += 1
+                log.info(f"Request disallowed by robots.txt: {request.url}")
+                return
+            delay = await self._get_domain_delay(request)
+        else:
+            delay = self.spider.download_delay
+
         async with self._rate_limiter(request.domain):
-            if self.spider.download_delay:
-                await anyio.sleep(self.spider.download_delay)
+            if delay:
+                await anyio.sleep(delay)
 
             if request._session_kwargs.get("proxy"):
                 self.stats.proxies.append(request._session_kwargs["proxy"])
@@ -219,6 +274,25 @@ class CrawlerEngine:
 
         return True
 
+    async def _prefetch_robots_txt(self) -> None:
+        """Pre-warm the robots.txt cache before the crawl loop starts.
+
+        Extracts unique domains from start_urls, preserving the original scheme.
+        """
+        if not self._robots_manager or not self.spider.start_urls:
+            return
+
+        # Deduplicate by netloc, preserving the scheme from the first URL per domain
+        seen: set[str] = set()
+        seed_urls: list[str] = []
+        for url in self.spider.start_urls:
+            parsed = urlparse(url)
+            if parsed.netloc not in seen:
+                seen.add(parsed.netloc)
+                seed_urls.append(f"{parsed.scheme}://{parsed.netloc}/")
+
+        await self._robots_manager.prefetch(seed_urls, self.session_manager.default_session_id)
+
     async def crawl(self) -> CrawlStats:
         """Run the spider and return CrawlStats."""
         self._running = True
@@ -227,6 +301,9 @@ class CrawlerEngine:
         self._pause_requested = False
         self._force_stop = False
         self.stats = CrawlStats(start_time=anyio.current_time())
+        self._domain_limiters.clear()
+        if self._robots_manager:
+            self._domain_delays.clear()
 
         # Check for existing checkpoint
         resuming = (await self._restore_from_checkpoint()) if self._checkpoint_system_enabled else False
@@ -237,6 +314,8 @@ class CrawlerEngine:
             self.stats.concurrent_requests_per_domain = self.spider.concurrent_requests_per_domain
             self.stats.download_delay = self.spider.download_delay
             await self.spider.on_start(resuming=resuming)
+
+            await self._prefetch_robots_txt()
 
             try:
                 if not resuming:

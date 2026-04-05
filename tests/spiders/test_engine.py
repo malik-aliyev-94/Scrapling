@@ -8,6 +8,7 @@ import pytest
 
 from scrapling.spiders.engine import CrawlerEngine, _dump
 from scrapling.spiders.request import Request
+from scrapling.spiders.robotstxt import RobotsTxtManager
 from scrapling.spiders.session import SessionManager
 from scrapling.spiders.result import CrawlStats, ItemList
 from scrapling.spiders.checkpoint import CheckpointData
@@ -22,10 +23,11 @@ from scrapling.core._types import Any, Dict, Set, AsyncGenerator
 class MockResponse:
     """Minimal Response stand-in."""
 
-    def __init__(self, status: int = 200, body: bytes = b"ok", url: str = "https://example.com"):
+    def __init__(self, status: int = 200, body: bytes = b"ok", url: str = "https://example.com", encoding: str = "utf-8"):
         self.status = status
         self.body = body
         self.url = url
+        self.encoding = encoding
         self.request: Any = None
         self.meta: Dict[str, Any] = {}
 
@@ -83,6 +85,8 @@ class MockSpider:
         is_blocked_fn=None,
         on_scraped_item_fn=None,
         retry_blocked_request_fn=None,
+        robots_txt_obey: bool = False,
+        start_urls: list[str] | None = None,
     ):
         self.concurrent_requests = concurrent_requests
         self.concurrent_requests_per_domain = concurrent_requests_per_domain
@@ -93,6 +97,8 @@ class MockSpider:
         self.fp_include_headers = fp_include_headers
         self.fp_keep_fragments = fp_keep_fragments
         self.name = "test_spider"
+        self.robots_txt_obey = robots_txt_obey
+        self.start_urls = start_urls or []
 
         # Tracking lists
         self.on_start_calls: list[dict] = []
@@ -912,3 +918,71 @@ class TestPauseDuringCrawl:
         await engine.crawl()
 
         assert engine.paused is False
+
+
+# ---------------------------------------------------------------------------
+# Tests: _prefetch_robots_txt
+# ---------------------------------------------------------------------------
+
+
+class TestPrefetchRobotsTxt:
+    """_prefetch_robots_txt warms the robots.txt cache before the crawl loop."""
+
+    @staticmethod
+    def _make_counting_fetch():
+        """Return (fetch_fn, calls_list) where calls_list records every (url, sid) pair."""
+        calls: list[tuple[str, str]] = []
+
+        async def _fetch(url: str, sid: str):
+            calls.append((url, sid))
+            return MockResponse(status=200, body=b"", url=url)
+
+        return _fetch, calls
+
+    @pytest.mark.asyncio
+    async def test_prefetch_uses_start_urls(self):
+        fetch_fn, calls = self._make_counting_fetch()
+        spider = MockSpider(robots_txt_obey=True, start_urls=["https://example.com/page1"])
+        engine = _make_engine(spider=spider)
+        engine._robots_manager = RobotsTxtManager(fetch_fn)
+
+        await engine._prefetch_robots_txt()
+
+        assert len(calls) == 1
+        assert calls[0][0] == "https://example.com/robots.txt"
+
+    @pytest.mark.asyncio
+    async def test_prefetch_noop_when_robots_disabled(self):
+        fetch_fn, calls = self._make_counting_fetch()
+        spider = MockSpider(robots_txt_obey=False)
+        engine = _make_engine(spider=spider)
+
+        assert engine._robots_manager is None
+
+        await engine._prefetch_robots_txt()
+
+        assert calls == []
+
+    @pytest.mark.asyncio
+    async def test_prefetch_noop_when_start_urls_empty(self):
+        fetch_fn, calls = self._make_counting_fetch()
+        spider = MockSpider(robots_txt_obey=True, start_urls=[])
+        engine = _make_engine(spider=spider)
+        engine._robots_manager = RobotsTxtManager(fetch_fn)
+
+        await engine._prefetch_robots_txt()
+
+        assert calls == []
+
+    @pytest.mark.asyncio
+    async def test_prefetch_deduplicates_same_domain_in_start_urls(self):
+        fetch_fn, calls = self._make_counting_fetch()
+        spider = MockSpider(robots_txt_obey=True, start_urls=["https://example.com/a", "https://example.com/b"])
+        engine = _make_engine(spider=spider)
+        engine._robots_manager = RobotsTxtManager(fetch_fn)
+
+        await engine._prefetch_robots_txt()
+
+        # set of Request.domain values deduplicates to one task per domain
+        assert len(calls) == 1
+        assert calls[0][0] == "https://example.com/robots.txt"

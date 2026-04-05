@@ -48,9 +48,8 @@ from scrapling.engines.constants import STEALTH_ARGS, HARMFUL_ARGS, DEFAULT_ARGS
 class SyncSession:
     _config: "PlaywrightConfig | StealthConfig"
     _context_options: Dict[str, Any]
-
-    def _build_context_with_proxy(self, proxy: Optional[ProxyType] = None) -> Dict[str, Any]:
-        raise NotImplementedError  # pragma: no cover
+    if TYPE_CHECKING:
+        _build_context_with_proxy: Callable[..., Dict[str, Any]]
 
     def __init__(self, max_pages: int = 1):
         self.max_pages = max_pages
@@ -197,11 +196,14 @@ class SyncSession:
             context_options = self._build_context_with_proxy(proxy)
             context: BrowserContext = self.browser.new_context(**context_options)
 
+            page_info = None
             try:
                 context = self._initialize_context(self._config, context)
                 page_info = self._get_page(timeout, extra_headers, disable_resources, blocked_domains, context=context)
                 yield page_info
             finally:
+                if page_info is not None and page_info in self.page_pool.pages:
+                    self.page_pool.pages.remove(page_info)
                 context.close()
         else:
             # Standard mode: use PagePool with persistent context
@@ -216,9 +218,8 @@ class SyncSession:
 class AsyncSession:
     _config: "PlaywrightConfig | StealthConfig"
     _context_options: Dict[str, Any]
-
-    def _build_context_with_proxy(self, proxy: Optional[ProxyType] = None) -> Dict[str, Any]:
-        raise NotImplementedError  # pragma: no cover
+    if TYPE_CHECKING:
+        _build_context_with_proxy: Callable[..., Dict[str, Any]]
 
     def __init__(self, max_pages: int = 1):
         self.max_pages = max_pages
@@ -382,6 +383,7 @@ class AsyncSession:
             context_options = self._build_context_with_proxy(proxy)
             context: AsyncBrowserContext = await self.browser.new_context(**context_options)
 
+            page_info = None
             try:
                 context = await self._initialize_context(self._config, context)
                 page_info = await self._get_page(
@@ -389,6 +391,8 @@ class AsyncSession:
                 )
                 yield page_info
             finally:
+                if page_info is not None and page_info in self.page_pool.pages:
+                    self.page_pool.pages.remove(page_info)
                 await context.close()
         else:
             # Standard mode: use PagePool with persistent context

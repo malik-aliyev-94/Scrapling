@@ -17,6 +17,7 @@ The spider system uses three class attributes to control how aggressively it cra
 | `concurrent_requests`            | `4`     | Maximum number of requests being processed at the same time      |
 | `concurrent_requests_per_domain` | `0`     | Maximum concurrent requests per domain (0 = no per-domain limit) |
 | `download_delay`                 | `0.0`   | Seconds to wait before each request                              |
+| `robots_txt_obey`               | `False` | Respect robots.txt rules (Disallow, Crawl-delay, Request-rate)   |
 
 ```python
 class PoliteSpider(Spider):
@@ -234,6 +235,7 @@ print(f"Requests: {stats.requests_count}")
 print(f"Failed: {stats.failed_requests_count}")
 print(f"Blocked: {stats.blocked_requests_count}")
 print(f"Offsite filtered: {stats.offsite_requests_count}")
+print(f"Robots.txt disallowed: {stats.robots_disallowed_count}")
 print(f"Items scraped: {stats.items_scraped}")
 print(f"Items dropped: {stats.items_dropped}")
 print(f"Response bytes: {stats.response_bytes}")

@@ -250,6 +250,7 @@ class _SyncSessionLogic(_ConfigurationLogic):
                 request_args = self._merge_request_args(stealth=stealth, proxy=proxy, **kwargs)
                 try:
                     response = session.request(method, **request_args)
+                    assert response is not None
                     result = ResponseFactory.from_http_request(response, selector_config, meta={"proxy": proxy})
                     return result
                 except CurlError as e:  # pragma: no cover

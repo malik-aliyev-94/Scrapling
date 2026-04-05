@@ -209,6 +209,7 @@ MySpider().start()
 - 💾 **Pause & Resume**: Persistencia de rastreo basada en Checkpoint. Presiona Ctrl+C para un cierre ordenado; reinicia para continuar desde donde lo dejaste.
 - 📡 **Modo Streaming**: Transmite elementos extraídos a medida que llegan con `async for item in spider.stream()` con estadísticas en tiempo real - ideal para UI, pipelines y rastreos de larga duración.
 - 🛡️ **Detección de Solicitudes Bloqueadas**: Detección automática y reintento de solicitudes bloqueadas con lógica personalizable.
+- 🤖 **Cumplimiento de robots.txt**: Flag opcional `robots_txt_obey` que respeta las directivas `Disallow`, `Crawl-delay` y `Request-rate` con caché por dominio.
 - 📦 **Exportación Integrada**: Exporta resultados a través de hooks y tu propio pipeline o el JSON/JSONL integrado con `result.items.to_json()` / `result.items.to_jsonl()` respectivamente.
 
 ### Obtención Avanzada de Sitios Web con Soporte de Session

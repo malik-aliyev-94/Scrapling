@@ -209,6 +209,7 @@ MySpider().start()
 - 💾 **일시정지 & 재개**: 체크포인트 기반의 크롤링 영속화. Ctrl+C로 정상 종료하고, 재시작하면 중단된 지점부터 이어갑니다.
 - 📡 **스트리밍 모드**: `async for item in spider.stream()`으로 스크레이핑된 아이템을 실시간 통계와 함께 스트리밍으로 수신 - UI, 파이프라인, 장시간 크롤링에 적합합니다.
 - 🛡️ **차단된 요청 감지**: 커스텀 로직을 통한 차단된 요청의 자동 감지 및 재시도를 지원합니다.
+- 🤖 **robots.txt 준수**: 선택적 `robots_txt_obey` 플래그로 `Disallow`, `Crawl-delay`, `Request-rate` 지시문을 도메인별 캐싱과 함께 준수합니다.
 - 📦 **내장 내보내기**: 훅이나 자체 파이프라인, 또는 내장 JSON/JSONL로 결과를 내보냅니다. 각각 `result.items.to_json()` / `result.items.to_jsonl()`을 사용합니다.
 
 ### 세션을 지원하는 고급 웹사이트 가져오기
