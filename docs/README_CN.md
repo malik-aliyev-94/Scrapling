@@ -209,6 +209,7 @@ MySpider().start()
 - 💾 **暂停与恢复**：基于 Checkpoint 的爬取持久化。按 Ctrl+C 优雅关闭；重启后从上次停止的地方继续。
 - 📡 **Streaming 模式**：通过 `async for item in spider.stream()` 以实时统计 Streaming 抓取的数据--非常适合 UI、管道和长时间运行的爬取。
 - 🛡️ **被阻止请求检测**：自动检测并重试被阻止的请求，支持自定义逻辑。
+- 🤖 **robots.txt 合规**：可选的 `robots_txt_obey` 标志，支持 `Disallow`、`Crawl-delay` 和 `Request-rate` 指令，并按域名缓存。
 - 📦 **内置导出**：通过钩子和您自己的管道导出结果，或使用内置的 JSON/JSONL，分别通过 `result.items.to_json()`/`result.items.to_jsonl()`。
 
 ### 支持 Session 的高级网站获取

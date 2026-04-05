@@ -209,6 +209,7 @@ MySpider().start()
 - 💾 **Pause & Resume**: Checkpoint-basierte Crawl-Persistenz. Drücken Sie Strg+C für ein kontrolliertes Herunterfahren; starten Sie neu, um dort fortzufahren, wo Sie aufgehört haben.
 - 📡 **Streaming-Modus**: Gescrapte Elemente in Echtzeit streamen über `async for item in spider.stream()` mit Echtzeit-Statistiken -- ideal für UI, Pipelines und lang laufende Crawls.
 - 🛡️ **Erkennung blockierter Anfragen**: Automatische Erkennung und Wiederholung blockierter Anfragen mit anpassbarer Logik.
+- 🤖 **robots.txt-Konformität**: Optionales `robots_txt_obey`-Flag, das `Disallow`-, `Crawl-delay`- und `Request-rate`-Direktiven mit domainbasiertem Caching respektiert.
 - 📦 **Integrierter Export**: Ergebnisse über Hooks und Ihre eigene Pipeline oder den integrierten JSON/JSONL-Export mit `result.items.to_json()` / `result.items.to_jsonl()` exportieren.
 
 ### Erweitertes Website-Abrufen mit Session-Unterstützung

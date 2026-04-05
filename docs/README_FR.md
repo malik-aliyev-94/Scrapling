@@ -209,6 +209,7 @@ MySpider().start()
 - 💾 **Pause & Reprise** : Persistance du crawl basée sur des checkpoints. Appuyez sur Ctrl+C pour un arrêt gracieux ; redémarrez pour reprendre là où vous vous étiez arrêté.
 - 📡 **Mode streaming** : Diffusez les éléments scrapés en temps réel via `async for item in spider.stream()` avec des statistiques en temps réel - idéal pour les UI, pipelines et crawls de longue durée.
 - 🛡️ **Détection des requêtes bloquées** : Détection automatique et réessai des requêtes bloquées avec une logique personnalisable.
+- 🤖 **Conformité robots.txt** : Flag optionnel `robots_txt_obey` qui respecte les directives `Disallow`, `Crawl-delay` et `Request-rate` avec mise en cache par domaine.
 - 📦 **Export intégré** : Exportez les résultats via des hooks et votre propre pipeline ou l'export JSON/JSONL intégré avec `result.items.to_json()` / `result.items.to_jsonl()` respectivement.
 
 ### Récupération avancée de sites web avec support de sessions

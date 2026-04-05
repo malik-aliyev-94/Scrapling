@@ -209,6 +209,7 @@ MySpider().start()
 - 💾 **Pause & Resume**：Checkpoint ベースのクロール永続化。Ctrl+C で正常にシャットダウン；再起動すると中断したところから再開。
 - 📡 **Streaming モード**：`async for item in spider.stream()` でリアルタイム統計とともにスクレイプされたアイテムを Streaming で受信 - UI、パイプライン、長時間実行クロールに最適。
 - 🛡️ **ブロックされたリクエストの検出**：カスタマイズ可能なロジックによるブロックされたリクエストの自動検出とリトライ。
+- 🤖 **robots.txt 準拠**：オプションの `robots_txt_obey` フラグで `Disallow`、`Crawl-delay`、`Request-rate` ディレクティブをドメインごとのキャッシュで遵守。
 - 📦 **組み込みエクスポート**：フックや独自のパイプライン、または組み込みの JSON/JSONL で結果をエクスポート。それぞれ`result.items.to_json()` / `result.items.to_jsonl()`を使用。
 
 ### Session サポート付き高度なウェブサイト取得
