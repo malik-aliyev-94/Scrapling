@@ -27,6 +27,7 @@ from scrapling.core._types import (
     SetCookieParam,
     extraction_types,
     SelectorWaitStates,
+    FollowRedirects,
 )
 
 SessionType = Literal["dynamic", "stealthy"]
@@ -262,7 +263,7 @@ class ScraplingMCPServer:
         headers: Optional[Mapping[str, Optional[str]]] = None,
         cookies: Optional[Dict[str, str]] = None,
         timeout: Optional[int | float] = 30,
-        follow_redirects: bool = True,
+        follow_redirects: FollowRedirects = "safe",
         max_redirects: int = 30,
         retries: Optional[int] = 3,
         retry_delay: Optional[int] = 1,
@@ -289,7 +290,7 @@ class ScraplingMCPServer:
         :param headers: Headers to include in the request.
         :param cookies: Cookies to use in the request.
         :param timeout: Number of seconds to wait before timing out.
-        :param follow_redirects: Whether to follow redirects. Defaults to True.
+        :param follow_redirects: Whether to follow redirects. Defaults to "safe", which follows redirects but rejects those targeting internal/private IPs (SSRF protection). Pass True to follow all redirects without restriction.
         :param max_redirects: Maximum number of redirects. Default 30, use -1 for unlimited.
         :param retries: Number of retry attempts. Defaults to 3.
         :param retry_delay: Number of seconds to wait between retry attempts. Defaults to 1 second.
@@ -335,7 +336,7 @@ class ScraplingMCPServer:
         headers: Optional[Mapping[str, Optional[str]]] = None,
         cookies: Optional[Dict[str, str]] = None,
         timeout: Optional[int | float] = 30,
-        follow_redirects: bool = True,
+        follow_redirects: FollowRedirects = "safe",
         max_redirects: int = 30,
         retries: Optional[int] = 3,
         retry_delay: Optional[int] = 1,
@@ -362,7 +363,7 @@ class ScraplingMCPServer:
         :param headers: Headers to include in the request.
         :param cookies: Cookies to use in the request.
         :param timeout: Number of seconds to wait before timing out.
-        :param follow_redirects: Whether to follow redirects. Defaults to True.
+        :param follow_redirects: Whether to follow redirects. Defaults to "safe", which follows redirects but rejects those targeting internal/private IPs (SSRF protection). Pass True to follow all redirects without restriction.
         :param max_redirects: Maximum number of redirects. Default 30, use -1 for unlimited.
         :param retries: Number of retry attempts. Defaults to 3.
         :param retry_delay: Number of seconds to wait between retry attempts. Defaults to 1 second.

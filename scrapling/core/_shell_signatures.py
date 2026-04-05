@@ -8,6 +8,7 @@ from scrapling.core._types import (
     Optional,
     SetCookieParam,
     SelectorWaitStates,
+    FollowRedirects,
 )
 
 # Parameter definitions for shell function signatures (defined once at module level)
@@ -26,7 +27,7 @@ _REQUESTS_PARAMS = {
     "headers": Any,
     "retries": Optional[int],
     "retry_delay": Optional[int],
-    "follow_redirects": Optional[bool],
+    "follow_redirects": Optional[FollowRedirects],
     "max_redirects": Optional[int],
     "verify": Optional[bool],
     "cert": Optional[str | Tuple[str, str]],
