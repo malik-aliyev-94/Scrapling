@@ -69,6 +69,10 @@ When a request comes in, the Session Manager routes it to the correct session ba
 
 An optional system that, if enabled, saves the crawler's state (pending requests + seen URL fingerprints) to a pickle file on disk. Writes are atomic (temp file + rename) to prevent corruption. Checkpoints are saved periodically at a configurable interval and on graceful shutdown. Upon successful completion (not paused), checkpoint files are automatically cleaned up.
 
+### Response Cache
+
+An optional cache that, when development mode is enabled, stores every fetched response on disk and replays it on subsequent runs. Each response is keyed by request fingerprint and serialized as JSON (with the body base64-encoded so binary content survives). It's meant for iterating on `parse()` logic without re-hitting the target servers, not for production use.
+
 ### Output
 
 Scraped items are collected in an `ItemList` (a list subclass with `to_json()` and `to_jsonl()` export methods). Crawl statistics are tracked in a `CrawlStats` dataclass which contains a lot of useful info.
