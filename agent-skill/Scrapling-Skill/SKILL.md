@@ -302,6 +302,8 @@ QuotesSpider(crawldir="./crawl_data").start()
 ```
 Press Ctrl+C to pause gracefully - progress is saved automatically. Later, when you start the spider again, pass the same `crawldir`, and it will resume from where it stopped.
 
+While iterating on a spider's `parse()` logic, set `development_mode = True` on the spider class to cache responses to disk on the first run and replay them on subsequent runs - so you can re-run the spider as many times as you want without re-hitting the target servers. The cache lives in `.scrapling_cache/{spider.name}/` by default and can be overridden with `development_cache_dir`. Don't ship a spider with this enabled.
+
 ### Advanced Parsing & Navigation
 ```python
 from scrapling.fetchers import Fetcher
