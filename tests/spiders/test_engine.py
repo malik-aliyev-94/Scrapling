@@ -98,6 +98,8 @@ class MockSpider:
         self.fp_keep_fragments = fp_keep_fragments
         self.name = "test_spider"
         self.robots_txt_obey = robots_txt_obey
+        self.development_mode = False
+        self.development_cache_dir = None
         self.start_urls = start_urls or []
 
         # Tracking lists

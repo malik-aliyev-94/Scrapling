@@ -76,6 +76,8 @@ class SlowSpider:
         self.fp_include_headers = False
         self.fp_keep_fragments = False
         self.robots_txt_obey = False
+        self.development_mode = False
+        self.development_cache_dir = None
         self.start_urls = []
         self.name = "slow_spider"
         self._log_counter = _LogCounterStub()
