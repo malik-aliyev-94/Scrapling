@@ -40,6 +40,7 @@ SelectorWaitStates = Literal["attached", "detached", "hidden", "visible"]
 PageLoadStates = Literal["commit", "domcontentloaded", "load", "networkidle"]
 extraction_types = Literal["text", "html", "markdown"]
 StrOrBytes = Union[str, bytes]
+FollowRedirects = Union[bool, Literal["safe", "all", "obeycode", "firstonly"]]
 
 
 # Copied from `playwright._impl._api_structures.SetCookieParam`

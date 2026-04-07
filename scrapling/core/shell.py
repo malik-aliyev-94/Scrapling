@@ -294,7 +294,7 @@ class CurlParser:
             headers=headers,
             cookies=cookies,
             proxy=proxies,
-            follow_redirects=True,  # Scrapling default is True
+            follow_redirects="safe",  # Follows redirects but rejects those to internal/private IPs
         )
 
     def convert2fetcher(self, curl_command: Request | str) -> Optional[Response]:

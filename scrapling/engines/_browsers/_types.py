@@ -19,6 +19,7 @@ from scrapling.core._types import (
     TypeAlias,
     SetCookieParam,
     SelectorWaitStates,
+    FollowRedirects,
 )
 from scrapling.engines.toolbelt.proxy_rotation import ProxyRotator
 
@@ -39,7 +40,7 @@ class RequestsSession(TypedDict, total=False):
     headers: Optional[Mapping[str, Optional[str]]]
     retries: Optional[int]
     retry_delay: Optional[int]
-    follow_redirects: Optional[bool]
+    follow_redirects: Optional[FollowRedirects]
     max_redirects: Optional[int]
     verify: Optional[bool]
     cert: Optional[str | Tuple[str, str]]

@@ -210,6 +210,7 @@ MySpider().start()
 - 📡 **Modo Streaming**: Transmite elementos extraídos a medida que llegan con `async for item in spider.stream()` con estadísticas en tiempo real - ideal para UI, pipelines y rastreos de larga duración.
 - 🛡️ **Detección de Solicitudes Bloqueadas**: Detección automática y reintento de solicitudes bloqueadas con lógica personalizable.
 - 🤖 **Cumplimiento de robots.txt**: Flag opcional `robots_txt_obey` que respeta las directivas `Disallow`, `Crawl-delay` y `Request-rate` con caché por dominio.
+- 🧪 **Modo de Desarrollo**: Almacena las respuestas en disco en la primera ejecución y las reproduce en ejecuciones posteriores - itera sobre tu lógica de `parse()` sin volver a consultar los servidores objetivo.
 - 📦 **Exportación Integrada**: Exporta resultados a través de hooks y tu propio pipeline o el JSON/JSONL integrado con `result.items.to_json()` / `result.items.to_jsonl()` respectivamente.
 
 ### Obtención Avanzada de Sitios Web con Soporte de Session
