@@ -179,6 +179,16 @@ MySpider().start()
     <a href="http://mangoproxy.com/?utm_source=D4Vinci&utm_medium=GitHub&utm_campaign=D4Vinci" target="_blank">Des proxys stables</a> pour le scraping, l'automatisation et la gestion multi-comptes. Des IPs propres, une réponse rapide et des performances fiables sous charge. Conçu pour des flux de travail évolutifs.
     </td>
   </tr>
+  <tr>
+    <td width="200">
+      <a href="https://www.swiftproxy.net/?ref=D4Vinci" target="_blank" title="Scalable Solutions for Web Data Access">
+        <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/SwiftProxy.png">
+      </a>
+    </td>
+    <td>
+    <a href="https://www.swiftproxy.net/?ref=D4Vinci" target="_blank">Swiftproxy</a> propose des proxys résidentiels évolutifs avec plus de 80 millions d'IPs dans plus de 195 pays, offrant des connexions rapides et fiables, une rotation automatique et de solides performances anti-blocage. Essai gratuit disponible.
+    </td>
+  </tr>
 </table>
 
 <i><sub>Vous souhaitez afficher votre publicité ici ? Cliquez [ici](https://github.com/sponsors/D4Vinci/sponsorships?tier_id=586646)</sub></i>
