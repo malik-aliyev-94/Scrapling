@@ -47,7 +47,7 @@ class SelectorsGeneration:
                     if counter[target.tag] > 1:
                         part += f":nth-of-type({counter[target.tag]})" if css else f"[{counter[target.tag]}]"
 
-                selectorPath.append(part)
+                    selectorPath.append(part)
                 target = target.parent
                 if target is None or target.tag == "html":
                     return " > ".join(reversed(selectorPath)) if css else "//" + "/".join(reversed(selectorPath))
