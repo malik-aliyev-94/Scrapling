@@ -342,6 +342,11 @@ def test_full_path_selector_no_duplicate_ids():
     assert len(result) == 1
     assert result.first.text == "Hello"
 
+    # The generated XPath selector should also select the correct element
+    result = page.xpath(xpath_full)
+    assert len(result) == 1, f"XPath '{xpath_full}' selected {len(result)} elements, expected 1"
+    assert result.first.text == "Hello"
+
 
 def test_full_path_selector_mixed_id_and_no_id():
     """Test full path selectors with a mix of elements with and without ids"""
