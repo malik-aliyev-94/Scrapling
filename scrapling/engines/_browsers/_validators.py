@@ -85,6 +85,7 @@ class PlaywrightConfig(Struct, kw_only=True, frozen=False, weakref=True):
     useragent: Optional[str] = None
     extra_flags: Optional[List[str]] = None
     blocked_domains: Optional[Set[str]] = None
+    block_ads: bool = False
     retries: RetriesCount = 3
     retry_delay: Seconds = 1
     capture_xhr: str | None = None
@@ -126,6 +127,14 @@ class PlaywrightConfig(Struct, kw_only=True, frozen=False, weakref=True):
             validation_msg = _is_invalid_file_path(self.executable_path)
             if validation_msg:
                 raise ValueError(validation_msg)
+
+        if self.block_ads:
+            from scrapling.engines.toolbelt.ad_domains import AD_DOMAINS
+
+            if self.blocked_domains:
+                self.blocked_domains = self.blocked_domains | set(AD_DOMAINS)
+            else:
+                self.blocked_domains = set(AD_DOMAINS)
 
 
 class StealthConfig(PlaywrightConfig, kw_only=True, frozen=False, weakref=True):

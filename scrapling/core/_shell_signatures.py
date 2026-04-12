@@ -58,6 +58,7 @@ _FETCH_PARAMS = {
     "cdp_url": Optional[str],
     "useragent": Optional[str],
     "extra_flags": Optional[List[str]],
+    "block_ads": bool,
 }
 
 _STEALTHY_FETCH_PARAMS = {
@@ -84,6 +85,7 @@ _STEALTHY_FETCH_PARAMS = {
     "cdp_url": Optional[str],
     "useragent": Optional[str],
     "extra_flags": Optional[List[str]],
+    "block_ads": bool,
     "allow_webgl": bool,
     "hide_canvas": bool,
     "block_webrtc": bool,

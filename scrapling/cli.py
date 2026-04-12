@@ -309,6 +309,11 @@ def _common_browser_options(f):
             default=True,
             help="Run browser in headless mode (default: True)",
         ),
+        option(
+            "--block-ads/--no-block-ads",
+            default=False,
+            help="Block requests to known ad and tracker domains (default: False)",
+        ),
     ]
     for decorator in decorators:
         f = decorator(f)
@@ -498,6 +503,7 @@ def __build_browser_kwargs(
     real_chrome,
     proxy,
     parsed_headers,
+    block_ads,
 ) -> Dict[str, Any]:
     """Build shared kwargs dict for browser-based commands."""
     kwargs: Dict[str, Any] = {
@@ -507,6 +513,7 @@ def __build_browser_kwargs(
         "timeout": timeout,
         "locale": locale,
         "real_chrome": real_chrome,
+        "block_ads": block_ads,
     }
     if wait > 0:
         kwargs["wait"] = wait
@@ -538,6 +545,7 @@ def fetch(
     proxy,
     extra_headers,
     ai_targeted,
+    block_ads,
 ):
     """Opens up a browser and fetch content using DynamicFetcher."""
     parsed_headers, _ = _ParseHeaders(extra_headers, False)
@@ -552,6 +560,7 @@ def fetch(
         real_chrome,
         proxy,
         parsed_headers,
+        block_ads,
     )
     from scrapling.fetchers import DynamicFetcher
 
@@ -597,6 +606,7 @@ def stealthy_fetch(
     allow_webgl,
     hide_canvas,
     ai_targeted,
+    block_ads,
 ):
     """Opens up a browser with advanced stealth features and fetch content using StealthyFetcher."""
     parsed_headers, _ = _ParseHeaders(extra_headers, False)
@@ -611,6 +621,7 @@ def stealthy_fetch(
         real_chrome,
         proxy,
         parsed_headers,
+        block_ads,
     )
     kwargs.update(
         {
