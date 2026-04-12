@@ -2,6 +2,7 @@ from scrapling.core._types import (
     Any,
     Dict,
     List,
+    Set,
     Tuple,
     Sequence,
     Callable,
@@ -58,7 +59,12 @@ _FETCH_PARAMS = {
     "cdp_url": Optional[str],
     "useragent": Optional[str],
     "extra_flags": Optional[List[str]],
+    "blocked_domains": Optional[Set[str]],
     "block_ads": bool,
+    "retries": int,
+    "retry_delay": int | float,
+    "capture_xhr": str | None,
+    "executable_path": Optional[str],
 }
 
 _STEALTHY_FETCH_PARAMS = {
@@ -85,7 +91,12 @@ _STEALTHY_FETCH_PARAMS = {
     "cdp_url": Optional[str],
     "useragent": Optional[str],
     "extra_flags": Optional[List[str]],
+    "blocked_domains": Optional[Set[str]],
     "block_ads": bool,
+    "retries": int,
+    "retry_delay": int | float,
+    "capture_xhr": str | None,
+    "executable_path": Optional[str],
     "allow_webgl": bool,
     "hide_canvas": bool,
     "block_webrtc": bool,
