@@ -90,6 +90,7 @@ class PlaywrightConfig(Struct, kw_only=True, frozen=False, weakref=True):
     retry_delay: Seconds = 1
     capture_xhr: str | None = None
     executable_path: Optional[str] = None
+    dns_over_https: bool = False
 
     def __post_init__(self):  # pragma: no cover
         """Custom validation after msgspec validation"""

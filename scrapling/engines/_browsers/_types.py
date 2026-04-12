@@ -93,6 +93,7 @@ class PlaywrightSession(TypedDict, total=False):
     retry_delay: int | float
     capture_xhr: str | None
     executable_path: Optional[str]
+    dns_over_https: bool
 
 
 class PlaywrightFetchParams(TypedDict, total=False):

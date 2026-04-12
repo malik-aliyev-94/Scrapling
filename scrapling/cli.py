@@ -310,6 +310,11 @@ def _common_browser_options(f):
             help="Run browser in headless mode (default: True)",
         ),
         option(
+            "--dns-over-https/--no-dns-over-https",
+            default=False,
+            help="Route DNS through Cloudflare's DoH to prevent DNS leaks when using proxies (default: False)",
+        ),
+        option(
             "--block-ads/--no-block-ads",
             default=False,
             help="Block requests to known ad and tracker domains (default: False)",
@@ -503,6 +508,7 @@ def __build_browser_kwargs(
     real_chrome,
     proxy,
     parsed_headers,
+    dns_over_https,
     block_ads,
 ) -> Dict[str, Any]:
     """Build shared kwargs dict for browser-based commands."""
@@ -513,6 +519,7 @@ def __build_browser_kwargs(
         "timeout": timeout,
         "locale": locale,
         "real_chrome": real_chrome,
+        "dns_over_https": dns_over_https,
         "block_ads": block_ads,
     }
     if wait > 0:
@@ -545,6 +552,7 @@ def fetch(
     proxy,
     extra_headers,
     ai_targeted,
+    dns_over_https,
     block_ads,
 ):
     """Opens up a browser and fetch content using DynamicFetcher."""
@@ -560,6 +568,7 @@ def fetch(
         real_chrome,
         proxy,
         parsed_headers,
+        dns_over_https,
         block_ads,
     )
     from scrapling.fetchers import DynamicFetcher
@@ -606,6 +615,7 @@ def stealthy_fetch(
     allow_webgl,
     hide_canvas,
     ai_targeted,
+    dns_over_https,
     block_ads,
 ):
     """Opens up a browser with advanced stealth features and fetch content using StealthyFetcher."""
@@ -621,6 +631,7 @@ def stealthy_fetch(
         real_chrome,
         proxy,
         parsed_headers,
+        dns_over_https,
         block_ads,
     )
     kwargs.update(

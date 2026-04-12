@@ -65,6 +65,7 @@ _FETCH_PARAMS = {
     "retry_delay": int | float,
     "capture_xhr": str | None,
     "executable_path": Optional[str],
+    "dns_over_https": bool,
 }
 
 _STEALTHY_FETCH_PARAMS = {
@@ -97,6 +98,7 @@ _STEALTHY_FETCH_PARAMS = {
     "retry_delay": int | float,
     "capture_xhr": str | None,
     "executable_path": Optional[str],
+    "dns_over_https": bool,
     "allow_webgl": bool,
     "hide_canvas": bool,
     "block_webrtc": bool,
