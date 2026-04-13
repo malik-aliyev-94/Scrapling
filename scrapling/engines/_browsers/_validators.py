@@ -71,6 +71,7 @@ class PlaywrightConfig(Struct, kw_only=True, frozen=False, weakref=True):
     wait: Seconds = 0
     timezone_id: str | None = ""
     page_action: Optional[Callable] = None
+    page_setup: Optional[Callable] = None
     proxy: Optional[str | Dict[str, str] | Tuple] = None  # The default value for proxy in Playwright's source is `None`
     proxy_rotator: Optional[ProxyRotator] = None
     extra_headers: Optional[Dict[str, str]] = None
@@ -96,6 +97,8 @@ class PlaywrightConfig(Struct, kw_only=True, frozen=False, weakref=True):
         """Custom validation after msgspec validation"""
         if self.page_action and not callable(self.page_action):
             raise TypeError(f"page_action must be callable, got {type(self.page_action).__name__}")
+        if self.page_setup and not callable(self.page_setup):
+            raise TypeError(f"page_setup must be callable, got {type(self.page_setup).__name__}")
         if self.proxy and self.proxy_rotator:
             raise ValueError(
                 "Cannot use 'proxy_rotator' together with 'proxy'. "
@@ -160,6 +163,7 @@ class _fetch_params:
     timeout: Seconds
     wait: Seconds
     page_action: Optional[Callable]
+    page_setup: Optional[Callable]
     extra_headers: Optional[Dict[str, str]]
     disable_resources: bool
     wait_selector: Optional[str]
