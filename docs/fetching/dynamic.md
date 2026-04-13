@@ -72,7 +72,8 @@ Scrapling provides many options with this fetcher and its session classes. To ma
 |      load_dom       | Enabled by default, wait for all JavaScript on page(s) to fully load and execute (wait for the `domcontentloaded` state).                                                                                                           |    ✔️    |
 |       timeout       | The timeout (milliseconds) used in all operations and waits through the page. The default is 30,000 ms (30 seconds).                                                                                                                |    ✔️    |
 |        wait         | The time (milliseconds) the fetcher will wait after everything finishes before closing the page and returning the `Response` object.                                                                                                |    ✔️    |
-|     page_action     | Added for automation. Pass a function that takes the `page` object and does the necessary automation.                                                                                                                               |    ✔️    |
+|     page_action     | Added for automation. Pass a function that takes the `page` object, runs after navigation, and does the necessary automation.                                                                                                       |    ✔️    |
+|     page_setup      | A function that takes the `page` object, runs before navigation. Use it to register event listeners or routes that must be set up before the page loads.                                                                            |    ✔️    |
 |    wait_selector    | Wait for a specific css selector to be in a specific state.                                                                                                                                                                         |    ✔️    |
 |     init_script     | An absolute path to a JavaScript file to be executed on page creation for all pages in this session.                                                                                                                                |    ✔️    |
 | wait_selector_state | Scrapling will wait for the given state to be fulfilled for the selector given with `wait_selector`. _Default state is `attached`._                                                                                                 |    ✔️    |
@@ -96,7 +97,7 @@ Scrapling provides many options with this fetcher and its session classes. To ma
 |     capture_xhr     | Pass a regex URL pattern string to capture XHR/fetch requests matching it during page load. Captured responses are available via `response.captured_xhr`. Defaults to `None` (disabled).                                             |    ✔️    |
 |   executable_path   | Absolute path to a custom browser executable to use instead of the bundled Chromium. Useful for non-standard installations or custom browser builds.                                                                                |    ✔️    |
 
-In session classes, all these arguments can be set globally for the session. Still, you can configure each request individually by passing some of the arguments here that can be configured on the browser tab level like: `google_search`, `timeout`, `wait`, `page_action`, `extra_headers`, `disable_resources`, `wait_selector`, `wait_selector_state`, `network_idle`, `load_dom`, `blocked_domains`, `proxy`, and `selector_config`.
+In session classes, all these arguments can be set globally for the session. Still, you can configure each request individually by passing some of the arguments here that can be configured on the browser tab level like: `google_search`, `timeout`, `wait`, `page_action`, `page_setup`, `extra_headers`, `disable_resources`, `wait_selector`, `wait_selector_state`, `network_idle`, `load_dom`, `blocked_domains`, `proxy`, and `selector_config`.
 
 !!! note "Notes:"
 
@@ -171,6 +172,29 @@ with open(file='main_cover.png', mode='wb') as f:
 ```
 
 The `body` attribute of the `Response` object always returns `bytes`.
+
+### Pre-Navigation Setup
+If you need to set up event listeners, routes, or scripts that must be registered before the page navigates, use `page_setup`. This function receives the `page` object and runs before `page.goto()` is called.
+
+```python
+from playwright.sync_api import Page
+
+def capture_websockets(page: Page):
+    page.on("websocket", lambda ws: print(f"WebSocket opened: {ws.url}"))
+
+page = DynamicFetcher.fetch('https://example.com', page_setup=capture_websockets)
+```
+Async version:
+```python
+from playwright.async_api import Page
+
+async def capture_websockets(page: Page):
+    page.on("websocket", lambda ws: print(f"WebSocket opened: {ws.url}"))
+
+page = await DynamicFetcher.async_fetch('https://example.com', page_setup=capture_websockets)
+```
+
+You can combine it with `page_action` -- `page_setup` runs before navigation, `page_action` runs after.
 
 ### Browser Automation
 This is where your knowledge about [Playwright's Page API](https://playwright.dev/python/docs/api/class-page) comes into play. The function you pass here takes the page object from Playwright's API, performs the desired action, and then the fetcher continues.
