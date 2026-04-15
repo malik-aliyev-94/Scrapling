@@ -179,7 +179,9 @@ class ScraplingMCPServer:
         """
         session_id = session_id or uuid4().hex[:12]
         if session_id in self._sessions:
-            raise ValueError(f"Session '{session_id}' already exists. Use a different ID or close the existing session first.")
+            raise ValueError(
+                f"Session '{session_id}' already exists. Use a different ID or close the existing session first."
+            )
 
         common_kwargs: Dict[str, Any] = dict(
             wait=wait,
