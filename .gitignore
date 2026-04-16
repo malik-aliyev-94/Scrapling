@@ -16,7 +16,6 @@ __pycache__/
 .*.sw[po]
 .build
 .ve
-.env
 .pytest
 .benchmarks
 .bootstrap
@@ -108,3 +107,5 @@ output/*/index.html
 docs/_build
 public/
 web/
+config.bat
+node_modules

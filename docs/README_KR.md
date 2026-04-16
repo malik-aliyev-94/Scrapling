@@ -161,16 +161,6 @@ MySpider().start()
   </tr>
   <tr>
     <td width="200">
-      <a href="https://proxy-seller.com/?partner=CU9CAA5TBYFFT2" target="_blank" title="Proxy-Seller provides reliable proxy infrastructure for Web Scraping">
-        <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/ProxySeller.png">
-      </a>
-    </td>
-    <td>
-    <a href="https://proxy-seller.com/?partner=CU9CAA5TBYFFT2" target="_blank">Proxy-Seller</a>는 웹 스크래핑을 위한 안정적인 프록시 인프라를 제공합니다. IPv4, IPv6, ISP, 주거용 및 모바일 프록시를 지원하며, 안정적인 성능, 광범위한 지역 커버리지, 기업 규모의 데이터 수집을 위한 유연한 요금제를 갖추고 있습니다.
-    </td>
-  </tr>
-  <tr>
-    <td width="200">
       <a href="http://mangoproxy.com/?utm_source=D4Vinci&utm_medium=GitHub&utm_campaign=D4Vinci" target="_blank" title="Proxies You Can Rely On: Residential, Server, and Mobile">
         <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/MangoProxy.png">
       </a>
