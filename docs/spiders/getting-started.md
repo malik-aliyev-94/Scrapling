@@ -149,6 +149,31 @@ Subdomains are matched automatically, so setting `allowed_domains = {"example.co
 
 When a request is filtered out, it's counted in `stats.offsite_requests_count` so you can see how many were dropped.
 
+## Robots.txt Compliance
+
+Set `robots_txt_obey = True` to make the spider respect robots.txt rules before crawling any domain:
+
+```python
+class PoliteSpider(Spider):
+    name = "polite"
+    start_urls = ["https://example.com"]
+    robots_txt_obey = True
+
+    async def parse(self, response: Response):
+        for link in response.css("a::attr(href)").getall():
+            yield response.follow(link, callback=self.parse)
+```
+
+When enabled, the spider will:
+
+1. **Pre-fetch robots.txt** for all domains in `start_urls` before the crawl begins (concurrently).
+2. **Check every request** against the domain's robots.txt `Disallow` rules. Disallowed requests are silently dropped and counted in `stats.robots_disallowed_count`.
+3. **Respect `Crawl-delay` and `Request-rate` directives** by taking the maximum of the directive and your configured `download_delay`. This means robots.txt delays never reduce your configured delay, only increase it when needed.
+
+Robots.txt files are fetched using the spider's default session and cached per domain for the entire crawl. Domains discovered mid-crawl (not in `start_urls`) have their robots.txt fetched on the first request to that domain.
+
+**Note:** `robots_txt_obey` is turned off by default to avoid surprising behavior. If you enable it, it does not affect your concurrency settings (`concurrent_requests`, `concurrent_requests_per_domain`) -- only the delay between requests is adjusted.
+
 ## What's Next
 
 Now that you have the basics, you can explore:

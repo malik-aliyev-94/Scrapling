@@ -20,6 +20,7 @@ from scrapling.core._types import (
     Optional,
     Awaitable,
     SUPPORTED_HTTP_METHODS,
+    FollowRedirects,
 )
 
 from .toolbelt.custom import Response
@@ -77,7 +78,7 @@ class _ConfigurationLogic(ABC):
         self._default_headers = kwargs.get("headers") or {}
         self._default_retries = kwargs.get("retries", 3)
         self._default_retry_delay = kwargs.get("retry_delay", 1)
-        self._default_follow_redirects = kwargs.get("follow_redirects", True)
+        self._default_follow_redirects = kwargs.get("follow_redirects", "safe")
         self._default_max_redirects = kwargs.get("max_redirects", 30)
         self._default_verify = kwargs.get("verify", True)
         self._default_cert = kwargs.get("cert") or None
@@ -250,6 +251,7 @@ class _SyncSessionLogic(_ConfigurationLogic):
                 request_args = self._merge_request_args(stealth=stealth, proxy=proxy, **kwargs)
                 try:
                     response = session.request(method, **request_args)
+                    assert response is not None
                     result = ResponseFactory.from_http_request(response, selector_config, meta={"proxy": proxy})
                     return result
                 except CurlError as e:  # pragma: no cover
@@ -284,7 +286,7 @@ class _SyncSessionLogic(_ConfigurationLogic):
             - headers: Headers to include in the request.
             - cookies: Cookies to use in the request.
             - timeout: Number of seconds to wait before timing out.
-            - follow_redirects: Whether to follow redirects. Defaults to True.
+            - follow_redirects: Whether to follow redirects. Defaults to "safe" (rejects redirects to internal/private IPs).
             - max_redirects: Maximum number of redirects. Default 30, use -1 for unlimited.
             - retries: Number of retry attempts. Defaults to 3.
             - retry_delay: Number of seconds to wait between retry attempts. Defaults to 1 second.
@@ -316,7 +318,7 @@ class _SyncSessionLogic(_ConfigurationLogic):
             - headers: Headers to include in the request.
             - cookies: Cookies to use in the request.
             - timeout: Number of seconds to wait before timing out.
-            - follow_redirects: Whether to follow redirects. Defaults to True.
+            - follow_redirects: Whether to follow redirects. Defaults to "safe" (rejects redirects to internal/private IPs).
             - max_redirects: Maximum number of redirects. Default 30, use -1 for unlimited.
             - retries: Number of retry attempts. Defaults to 3.
             - retry_delay: Number of seconds to wait between retry attempts. Defaults to 1 second.
@@ -348,7 +350,7 @@ class _SyncSessionLogic(_ConfigurationLogic):
             - headers: Headers to include in the request.
             - cookies: Cookies to use in the request.
             - timeout: Number of seconds to wait before timing out.
-            - follow_redirects: Whether to follow redirects. Defaults to True.
+            - follow_redirects: Whether to follow redirects. Defaults to "safe" (rejects redirects to internal/private IPs).
             - max_redirects: Maximum number of redirects. Default 30, use -1 for unlimited.
             - retries: Number of retry attempts. Defaults to 3.
             - retry_delay: Number of seconds to wait between retry attempts. Defaults to 1 second.
@@ -380,7 +382,7 @@ class _SyncSessionLogic(_ConfigurationLogic):
             - headers: Headers to include in the request.
             - cookies: Cookies to use in the request.
             - timeout: Number of seconds to wait before timing out.
-            - follow_redirects: Whether to follow redirects. Defaults to True.
+            - follow_redirects: Whether to follow redirects. Defaults to "safe" (rejects redirects to internal/private IPs).
             - max_redirects: Maximum number of redirects. Default 30, use -1 for unlimited.
             - retries: Number of retry attempts. Defaults to 3.
             - retry_delay: Number of seconds to wait between retry attempts. Defaults to 1 second.
@@ -501,7 +503,7 @@ class _ASyncSessionLogic(_ConfigurationLogic):
             - headers: Headers to include in the request.
             - cookies: Cookies to use in the request.
             - timeout: Number of seconds to wait before timing out.
-            - follow_redirects: Whether to follow redirects. Defaults to True.
+            - follow_redirects: Whether to follow redirects. Defaults to "safe" (rejects redirects to internal/private IPs).
             - max_redirects: Maximum number of redirects. Default 30, use -1 for unlimited.
             - retries: Number of retry attempts. Defaults to 3.
             - retry_delay: Number of seconds to wait between retry attempts. Defaults to 1 second.
@@ -533,7 +535,7 @@ class _ASyncSessionLogic(_ConfigurationLogic):
             - headers: Headers to include in the request.
             - cookies: Cookies to use in the request.
             - timeout: Number of seconds to wait before timing out.
-            - follow_redirects: Whether to follow redirects. Defaults to True.
+            - follow_redirects: Whether to follow redirects. Defaults to "safe" (rejects redirects to internal/private IPs).
             - max_redirects: Maximum number of redirects. Default 30, use -1 for unlimited.
             - retries: Number of retry attempts. Defaults to 3.
             - retry_delay: Number of seconds to wait between retry attempts. Defaults to 1 second.
@@ -565,7 +567,7 @@ class _ASyncSessionLogic(_ConfigurationLogic):
             - headers: Headers to include in the request.
             - cookies: Cookies to use in the request.
             - timeout: Number of seconds to wait before timing out.
-            - follow_redirects: Whether to follow redirects. Defaults to True.
+            - follow_redirects: Whether to follow redirects. Defaults to "safe" (rejects redirects to internal/private IPs).
             - max_redirects: Maximum number of redirects. Default 30, use -1 for unlimited.
             - retries: Number of retry attempts. Defaults to 3.
             - retry_delay: Number of seconds to wait between retry attempts. Defaults to 1 second.
@@ -597,7 +599,7 @@ class _ASyncSessionLogic(_ConfigurationLogic):
             - headers: Headers to include in the request.
             - cookies: Cookies to use in the request.
             - timeout: Number of seconds to wait before timing out.
-            - follow_redirects: Whether to follow redirects. Defaults to True.
+            - follow_redirects: Whether to follow redirects. Defaults to "safe" (rejects redirects to internal/private IPs).
             - max_redirects: Maximum number of redirects. Default 30, use -1 for unlimited.
             - retries: Number of retry attempts. Defaults to 3.
             - retry_delay: Number of seconds to wait between retry attempts. Defaults to 1 second.
@@ -662,7 +664,7 @@ class FetcherSession:
         headers: Optional[Dict[str, str]] = None,
         retries: Optional[int] = 3,
         retry_delay: Optional[int] = 1,
-        follow_redirects: bool = True,
+        follow_redirects: FollowRedirects = "safe",
         max_redirects: int = 30,
         verify: bool = True,
         cert: Optional[str | Tuple[str, str]] = None,
@@ -681,7 +683,7 @@ class FetcherSession:
         :param headers: Headers to include in the session with every request.
         :param retries: Number of retry attempts. Defaults to 3.
         :param retry_delay: Number of seconds to wait between retry attempts. Defaults to 1 second.
-        :param follow_redirects: Whether to follow redirects. Defaults to True.
+        :param follow_redirects: Whether to follow redirects. Defaults to "safe", which follows redirects but rejects those targeting internal/private IPs (SSRF protection). Pass True to follow all redirects without restriction.
         :param max_redirects: Maximum number of redirects. Default 30, use -1 for unlimited.
         :param verify: Whether to verify HTTPS certificates. Defaults to True.
         :param cert: Tuple of (cert, key) filenames for the client certificate.

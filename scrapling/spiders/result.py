@@ -47,6 +47,9 @@ class CrawlStats:
     concurrent_requests_per_domain: int = 0
     failed_requests_count: int = 0
     offsite_requests_count: int = 0
+    robots_disallowed_count: int = 0
+    cache_hits: int = 0
+    cache_misses: int = 0
     response_bytes: int = 0
     items_scraped: int = 0
     items_dropped: int = 0
@@ -95,6 +98,9 @@ class CrawlStats:
             "sessions_requests_count": self.sessions_requests_count,
             "failed_requests_count": self.failed_requests_count,
             "offsite_requests_count": self.offsite_requests_count,
+            "robots_disallowed_count": self.robots_disallowed_count,
+            "cache_hits": self.cache_hits,
+            "cache_misses": self.cache_misses,
             "blocked_requests_count": self.blocked_requests_count,
             "response_status_count": self.response_status_count,
             "response_bytes": self.response_bytes,

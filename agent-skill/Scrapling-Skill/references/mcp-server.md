@@ -27,7 +27,7 @@ Fast HTTP GET with browser fingerprint impersonation (TLS, headers). Suitable fo
 | `retry_delay`       | int                                | 1            | Seconds between retries                                            |
 | `stealthy_headers`  | bool                               | true         | Generate realistic browser headers and Google referer       |
 | `http3`             | bool                               | false        | Use HTTP/3 (may conflict with `impersonate`)                       |
-| `follow_redirects`  | bool                               | true         | Follow HTTP redirects                                              |
+| `follow_redirects`  | bool or "safe"                     | "safe"       | Follow redirects. "safe" rejects redirects to internal/private IPs |
 | `max_redirects`     | int                                | 30           | Max redirects (-1 for unlimited)                                   |
 | `headers`           | dict or null                       | null         | Custom request headers                                             |
 | `cookies`           | dict or null                       | null         | Request cookies                                                    |
@@ -163,6 +163,10 @@ When `main_content_only=true` (the default), the server automatically sanitizes 
 - Zero-width unicode characters
 
 Keep `main_content_only=true` for maximum protection.
+
+## Ad blocking
+
+All browser-based tools (`fetch`, `bulk_fetch`, `stealthy_fetch`, `bulk_stealthy_fetch`) and persistent sessions (`open_session`) automatically block requests to ~3,500 known ad and tracker domains. This is always enabled in the MCP server to save tokens and speed up page loads. No configuration needed.
 
 ## Setup
 

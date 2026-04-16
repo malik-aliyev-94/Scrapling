@@ -9,6 +9,7 @@ The spider system uses three class attributes to control how aggressively it cra
 | `concurrent_requests`            | `4`     | Maximum number of requests being processed at the same time      |
 | `concurrent_requests_per_domain` | `0`     | Maximum concurrent requests per domain (0 = no per-domain limit) |
 | `download_delay`                 | `0.0`   | Seconds to wait before each request                              |
+| `robots_txt_obey`               | `False` | Respect robots.txt rules (Disallow, Crawl-delay, Request-rate)   |
 
 ```python
 class PoliteSpider(Spider):
@@ -83,6 +84,49 @@ async def on_start(self, resuming: bool = False):
     else:
         self.logger.info("Starting fresh crawl")
 ```
+
+## Development Mode
+
+When you're iterating on a spider's `parse()` logic, re-hitting the target servers on every run is slow and noisy. Development mode caches every response to disk on the first run and replays them from disk on subsequent runs, so you can tweak your selectors and re-run the spider as many times as you want without making a single network request.
+
+Enable it by setting `development_mode = True` on your spider:
+
+```python
+class MySpider(Spider):
+    name = "my_spider"
+    start_urls = ["https://example.com"]
+    development_mode = True
+
+    async def parse(self, response: Response):
+        yield {"title": response.css("title::text").get("")}
+```
+
+The first run fetches normally and stores each response on disk. Every subsequent run serves the same requests from the cache, skipping the network entirely.
+
+### Cache Location
+
+By default, responses are cached in `.scrapling_cache/{spider.name}/` relative to the current working directory (where you ran the spider from, **not** where the spider script lives). You can override the location with `development_cache_dir`:
+
+```python
+class MySpider(Spider):
+    name = "my_spider"
+    start_urls = ["https://example.com"]
+    development_mode = True
+    development_cache_dir = "/tmp/my_spider_cache"
+```
+
+### How It Works
+
+1. **Cache key**: Each response is keyed by the request's fingerprint, so any change to fingerprint-affecting attributes (`fp_include_kwargs`, `fp_include_headers`, `fp_keep_fragments`) will produce a fresh fetch.
+2. **Storage format**: One JSON file per response, named `{fingerprint_hex}.json`. The body is base64-encoded so binary content is preserved exactly. Writes are atomic (temp file + rename).
+3. **Replay**: On a cache hit, the engine skips the network entirely, including `download_delay`, rate limiting, and the `is_blocked()` retry path. The cached response goes straight to your callback.
+4. **Stats**: Cached requests still count toward `requests_count`, `response_bytes`, and the per-status counters, so your stat output looks the same as a normal crawl. Two extra counters, `cache_hits` and `cache_misses`, let you see how the cache performed.
+
+### Clearing the Cache
+
+There's no automatic expiration. To force a fresh crawl, delete the cache directory or call the manager's `clear()` method directly.
+
+**Warning:** Development mode is meant for development, not production. Cached responses never expire, and replay bypasses rate limiting and blocked-request retries. Don't ship a spider with `development_mode = True`.
 
 ## Streaming
 
@@ -218,6 +262,9 @@ print(f"Requests: {stats.requests_count}")
 print(f"Failed: {stats.failed_requests_count}")
 print(f"Blocked: {stats.blocked_requests_count}")
 print(f"Offsite filtered: {stats.offsite_requests_count}")
+print(f"Robots.txt disallowed: {stats.robots_disallowed_count}")
+print(f"Cache hits: {stats.cache_hits}")
+print(f"Cache misses: {stats.cache_misses}")
 print(f"Items scraped: {stats.items_scraped}")
 print(f"Items dropped: {stats.items_dropped}")
 print(f"Response bytes: {stats.response_bytes}")

@@ -169,6 +169,26 @@ MySpider().start()
     <a href="https://proxy-seller.com/?partner=CU9CAA5TBYFFT2" target="_blank">Proxy-Seller</a> 提供可靠的网页抓取代理基础设施，包括 IPv4、IPv6、ISP、住宅和移动代理，具备稳定性能、广泛的地理覆盖和灵活的企业级数据采集方案。
     </td>
   </tr>
+  <tr>
+    <td width="200">
+      <a href="http://mangoproxy.com/?utm_source=D4Vinci&utm_medium=GitHub&utm_campaign=D4Vinci" target="_blank" title="Proxies You Can Rely On: Residential, Server, and Mobile">
+        <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/MangoProxy.png">
+      </a>
+    </td>
+    <td>
+    <a href="http://mangoproxy.com/?utm_source=D4Vinci&utm_medium=GitHub&utm_campaign=D4Vinci" target="_blank">稳定的代理</a>，适用于数据抓取、自动化和多账号管理。干净的 IP、快速响应、高负载下可靠的性能。专为可扩展的工作流程而构建。
+    </td>
+  </tr>
+  <tr>
+    <td width="200">
+      <a href="https://www.swiftproxy.net/?ref=D4Vinci" target="_blank" title="Scalable Solutions for Web Data Access">
+        <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/SwiftProxy.png">
+      </a>
+    </td>
+    <td>
+    <a href="https://www.swiftproxy.net/?ref=D4Vinci" target="_blank">Swiftproxy</a> 提供可扩展的住宅代理，覆盖 195+ 国家/地区的 8000 万+ IP，提供快速可靠的连接、自动轮换和强大的反屏蔽性能。提供免费试用。
+    </td>
+  </tr>
 </table>
 
 <i><sub>想在这里展示您的广告吗？点击 [这里](https://github.com/sponsors/D4Vinci/sponsorships?tier_id=586646)</sub></i>
@@ -181,7 +201,9 @@ MySpider().start()
 <a href="https://hasdata.com/?utm_source=github&utm_medium=banner&utm_campaign=D4Vinci" target="_blank" title="The web scraping service that actually beats anti-bot systems!"><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/hasdata.png"></a>
 <a href="https://proxyempire.io/?ref=scrapling&utm_source=scrapling" target="_blank" title="Collect The Data Your Project Needs with the Best Residential Proxies"><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/ProxyEmpire.png"></a>
 <a href="https://www.webshare.io/?referral_code=48r2m2cd5uz1" target="_blank" title="The Most Reliable Proxy with Unparalleled Performance"><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/webshare.png"></a>
-<a href="https://browser.cash/?utm_source=D4Vinci&utm_medium=referral" target="_blank" title="Browser Automation & AI Browser Agent Platform"><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/browserCash.png"></a>
+<a href="https://www.crawleo.dev/?utm_source=github&utm_medium=sponsor&utm_campaign=scrapling" target="_blank" title="Supercharge your AI with Real-Time Web Intelligence"><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/crawleo.png"></a>
+<a href="https://www.rapidproxy.io/?ref=d4v" target="_blank" title="Affordable Access to the Proxy World – bypass CAPTCHAs blocks, and avoid additional costs."><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/rapidproxy.jpg"></a>
+
 
 <!-- /sponsors -->
 
@@ -198,6 +220,8 @@ MySpider().start()
 - 💾 **暂停与恢复**：基于 Checkpoint 的爬取持久化。按 Ctrl+C 优雅关闭；重启后从上次停止的地方继续。
 - 📡 **Streaming 模式**：通过 `async for item in spider.stream()` 以实时统计 Streaming 抓取的数据--非常适合 UI、管道和长时间运行的爬取。
 - 🛡️ **被阻止请求检测**：自动检测并重试被阻止的请求，支持自定义逻辑。
+- 🤖 **robots.txt 合规**：可选的 `robots_txt_obey` 标志，支持 `Disallow`、`Crawl-delay` 和 `Request-rate` 指令，并按域名缓存。
+- 🧪 **开发模式**：首次运行时将响应缓存到磁盘，后续运行时直接回放 - 在不重新请求目标服务器的情况下迭代你的 `parse()` 逻辑。
 - 📦 **内置导出**：通过钩子和您自己的管道导出结果，或使用内置的 JSON/JSONL，分别通过 `result.items.to_json()`/`result.items.to_jsonl()`。
 
 ### 支持 Session 的高级网站获取
@@ -206,7 +230,8 @@ MySpider().start()
 - **反机器人绕过**：使用 `StealthyFetcher` 的高级隐秘功能和 fingerprint 伪装。可以轻松自动绕过所有类型的 Cloudflare Turnstile/Interstitial。
 - **Session 管理**：使用 `FetcherSession`、`StealthySession` 和 `DynamicSession` 类实现持久化 Session 支持，用于跨请求的 cookie 和状态管理。
 - **Proxy 轮换**：内置 `ProxyRotator`，支持轮询或自定义策略，适用于所有 Session 类型，并支持按请求覆盖 Proxy。
-- **域名屏蔽**：在基于浏览器的 Fetcher 中屏蔽对特定域名（及其子域名）的请求。
+- **域名和广告屏蔽**：在基于浏览器的 Fetcher 中屏蔽对特定域名（及其子域名）的请求，或启用内置广告屏蔽（约 3,500 个已知广告/追踪域名）。
+- **DNS 泄漏防护**：可选的 DNS-over-HTTPS 支持，通过 Cloudflare 的 DoH 路由 DNS 查询，防止使用代理时的 DNS 泄漏。
 - **Async 支持**：所有 Fetcher 和专用 async Session 类的完整 async 支持。
 
 ### 自适应抓取和 AI 集成

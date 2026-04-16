@@ -169,6 +169,26 @@ MySpider().start()
     <a href="https://proxy-seller.com/?partner=CU9CAA5TBYFFT2" target="_blank">Proxy-Seller</a> fournit une infrastructure proxy fiable pour le web scraping, avec des proxys IPv4, IPv6, ISP, résidentiels et mobiles offrant des performances stables, une large couverture géographique et des plans flexibles pour la collecte de données à l'échelle entreprise.
     </td>
   </tr>
+  <tr>
+    <td width="200">
+      <a href="http://mangoproxy.com/?utm_source=D4Vinci&utm_medium=GitHub&utm_campaign=D4Vinci" target="_blank" title="Proxies You Can Rely On: Residential, Server, and Mobile">
+        <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/MangoProxy.png">
+      </a>
+    </td>
+    <td>
+    <a href="http://mangoproxy.com/?utm_source=D4Vinci&utm_medium=GitHub&utm_campaign=D4Vinci" target="_blank">Des proxys stables</a> pour le scraping, l'automatisation et la gestion multi-comptes. Des IPs propres, une réponse rapide et des performances fiables sous charge. Conçu pour des flux de travail évolutifs.
+    </td>
+  </tr>
+  <tr>
+    <td width="200">
+      <a href="https://www.swiftproxy.net/?ref=D4Vinci" target="_blank" title="Scalable Solutions for Web Data Access">
+        <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/SwiftProxy.png">
+      </a>
+    </td>
+    <td>
+    <a href="https://www.swiftproxy.net/?ref=D4Vinci" target="_blank">Swiftproxy</a> propose des proxys résidentiels évolutifs avec plus de 80 millions d'IPs dans plus de 195 pays, offrant des connexions rapides et fiables, une rotation automatique et de solides performances anti-blocage. Essai gratuit disponible.
+    </td>
+  </tr>
 </table>
 
 <i><sub>Vous souhaitez afficher votre publicité ici ? Cliquez [ici](https://github.com/sponsors/D4Vinci/sponsorships?tier_id=586646)</sub></i>
@@ -181,7 +201,9 @@ MySpider().start()
 <a href="https://hasdata.com/?utm_source=github&utm_medium=banner&utm_campaign=D4Vinci" target="_blank" title="The web scraping service that actually beats anti-bot systems!"><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/hasdata.png"></a>
 <a href="https://proxyempire.io/?ref=scrapling&utm_source=scrapling" target="_blank" title="Collect The Data Your Project Needs with the Best Residential Proxies"><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/ProxyEmpire.png"></a>
 <a href="https://www.webshare.io/?referral_code=48r2m2cd5uz1" target="_blank" title="The Most Reliable Proxy with Unparalleled Performance"><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/webshare.png"></a>
-<a href="https://browser.cash/?utm_source=D4Vinci&utm_medium=referral" target="_blank" title="Browser Automation & AI Browser Agent Platform"><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/browserCash.png"></a>
+<a href="https://www.crawleo.dev/?utm_source=github&utm_medium=sponsor&utm_campaign=scrapling" target="_blank" title="Supercharge your AI with Real-Time Web Intelligence"><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/crawleo.png"></a>
+<a href="https://www.rapidproxy.io/?ref=d4v" target="_blank" title="Affordable Access to the Proxy World – bypass CAPTCHAs blocks, and avoid additional costs."><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/rapidproxy.jpg"></a>
+
 
 <!-- /sponsors -->
 
@@ -198,6 +220,8 @@ MySpider().start()
 - 💾 **Pause & Reprise** : Persistance du crawl basée sur des checkpoints. Appuyez sur Ctrl+C pour un arrêt gracieux ; redémarrez pour reprendre là où vous vous étiez arrêté.
 - 📡 **Mode streaming** : Diffusez les éléments scrapés en temps réel via `async for item in spider.stream()` avec des statistiques en temps réel - idéal pour les UI, pipelines et crawls de longue durée.
 - 🛡️ **Détection des requêtes bloquées** : Détection automatique et réessai des requêtes bloquées avec une logique personnalisable.
+- 🤖 **Conformité robots.txt** : Flag optionnel `robots_txt_obey` qui respecte les directives `Disallow`, `Crawl-delay` et `Request-rate` avec mise en cache par domaine.
+- 🧪 **Mode développement** : Mettez les réponses en cache sur le disque lors de la première exécution et rejouez-les lors des exécutions suivantes - itérez sur votre logique `parse()` sans solliciter à nouveau les serveurs cibles.
 - 📦 **Export intégré** : Exportez les résultats via des hooks et votre propre pipeline ou l'export JSON/JSONL intégré avec `result.items.to_json()` / `result.items.to_jsonl()` respectivement.
 
 ### Récupération avancée de sites web avec support de sessions
@@ -206,7 +230,8 @@ MySpider().start()
 - **Contournement anti-bot** : Capacités de furtivité avancées avec `StealthyFetcher` et usurpation d'empreinte. Peut facilement contourner tous les types de Turnstile/Interstitial de Cloudflare avec l'automatisation.
 - **Gestion de sessions** : Support de sessions persistantes avec les classes `FetcherSession`, `StealthySession` et `DynamicSession` pour la gestion des cookies et de l'état entre les requêtes.
 - **Rotation de proxy** : `ProxyRotator` intégré avec des stratégies de rotation cycliques ou personnalisées sur tous les types de sessions, plus des surcharges de proxy par requête.
-- **Blocage de domaines** : Bloquez les requêtes vers des domaines spécifiques (et leurs sous-domaines) dans les fetchers basés sur navigateur.
+- **Blocage de domaines et publicités** : Bloquez les requêtes vers des domaines spécifiques (et leurs sous-domaines) ou activez le blocage de publicités intégré (~3 500 domaines publicitaires/traceurs connus) dans les fetchers basés sur navigateur.
+- **Prévention des fuites DNS** : Support optionnel de DNS-over-HTTPS pour router les requêtes DNS via le DoH de Cloudflare, empêchant les fuites DNS lors de l'utilisation de proxies.
 - **Support async** : Support async complet sur tous les fetchers et classes de sessions async dédiées.
 
 ### Scraping adaptatif & Intégration IA

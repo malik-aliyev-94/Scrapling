@@ -169,6 +169,26 @@ MySpider().start()
     <a href="https://proxy-seller.com/?partner=CU9CAA5TBYFFT2" target="_blank">Proxy-Seller</a> は Web スクレイピング向けの信頼性の高いプロキシインフラを提供しています。IPv4、IPv6、ISP、レジデンシャル、モバイルプロキシに対応し、安定したパフォーマンス、幅広い地理的カバレッジ、企業規模のデータ収集に柔軟なプランを備えています。
     </td>
   </tr>
+  <tr>
+    <td width="200">
+      <a href="http://mangoproxy.com/?utm_source=D4Vinci&utm_medium=GitHub&utm_campaign=D4Vinci" target="_blank" title="Proxies You Can Rely On: Residential, Server, and Mobile">
+        <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/MangoProxy.png">
+      </a>
+    </td>
+    <td>
+    <a href="http://mangoproxy.com/?utm_source=D4Vinci&utm_medium=GitHub&utm_campaign=D4Vinci" target="_blank">安定したプロキシ</a>。スクレイピング、自動化、マルチアカウント管理に対応。クリーンな IP、高速レスポンス、高負荷時でも信頼性の高いパフォーマンス。スケーラブルなワークフロー向けに設計。
+    </td>
+  </tr>
+  <tr>
+    <td width="200">
+      <a href="https://www.swiftproxy.net/?ref=D4Vinci" target="_blank" title="Scalable Solutions for Web Data Access">
+        <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/SwiftProxy.png">
+      </a>
+    </td>
+    <td>
+    <a href="https://www.swiftproxy.net/?ref=D4Vinci" target="_blank">Swiftproxy</a> は195カ国以上、8,000万以上のIPを備えたスケーラブルな住宅用プロキシを提供し、高速で信頼性の高い接続、自動ローテーション、強力なブロック回避性能を実現します。無料トライアルあり。
+    </td>
+  </tr>
 </table>
 
 <i><sub>ここに広告を表示したいですか？[こちら](https://github.com/sponsors/D4Vinci/sponsorships?tier_id=586646)をクリック</sub></i>
@@ -181,7 +201,9 @@ MySpider().start()
 <a href="https://hasdata.com/?utm_source=github&utm_medium=banner&utm_campaign=D4Vinci" target="_blank" title="The web scraping service that actually beats anti-bot systems!"><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/hasdata.png"></a>
 <a href="https://proxyempire.io/?ref=scrapling&utm_source=scrapling" target="_blank" title="Collect The Data Your Project Needs with the Best Residential Proxies"><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/ProxyEmpire.png"></a>
 <a href="https://www.webshare.io/?referral_code=48r2m2cd5uz1" target="_blank" title="The Most Reliable Proxy with Unparalleled Performance"><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/webshare.png"></a>
-<a href="https://browser.cash/?utm_source=D4Vinci&utm_medium=referral" target="_blank" title="Browser Automation & AI Browser Agent Platform"><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/browserCash.png"></a>
+<a href="https://www.crawleo.dev/?utm_source=github&utm_medium=sponsor&utm_campaign=scrapling" target="_blank" title="Supercharge your AI with Real-Time Web Intelligence"><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/crawleo.png"></a>
+<a href="https://www.rapidproxy.io/?ref=d4v" target="_blank" title="Affordable Access to the Proxy World – bypass CAPTCHAs blocks, and avoid additional costs."><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/rapidproxy.jpg"></a>
+
 
 <!-- /sponsors -->
 
@@ -198,6 +220,8 @@ MySpider().start()
 - 💾 **Pause & Resume**：Checkpoint ベースのクロール永続化。Ctrl+C で正常にシャットダウン；再起動すると中断したところから再開。
 - 📡 **Streaming モード**：`async for item in spider.stream()` でリアルタイム統計とともにスクレイプされたアイテムを Streaming で受信 - UI、パイプライン、長時間実行クロールに最適。
 - 🛡️ **ブロックされたリクエストの検出**：カスタマイズ可能なロジックによるブロックされたリクエストの自動検出とリトライ。
+- 🤖 **robots.txt 準拠**：オプションの `robots_txt_obey` フラグで `Disallow`、`Crawl-delay`、`Request-rate` ディレクティブをドメインごとのキャッシュで遵守。
+- 🧪 **開発モード**：初回実行時にレスポンスをディスクにキャッシュし、以降の実行ではそれを再生 - ターゲットサーバーに再リクエストすることなく `parse()` ロジックを反復開発できます。
 - 📦 **組み込みエクスポート**：フックや独自のパイプライン、または組み込みの JSON/JSONL で結果をエクスポート。それぞれ`result.items.to_json()` / `result.items.to_jsonl()`を使用。
 
 ### Session サポート付き高度なウェブサイト取得
@@ -206,7 +230,8 @@ MySpider().start()
 - **アンチボット回避**：`StealthyFetcher` と fingerprint 偽装による高度なステルス機能。自動化で Cloudflare の Turnstile/Interstitial のすべてのタイプを簡単に回避。
 - **Session 管理**：リクエスト間で Cookie と状態を管理するための `FetcherSession`、`StealthySession`、`DynamicSession` クラスによる永続的な Session サポート。
 - **Proxy 回転**：すべての Session タイプに対応したラウンドロビンまたはカスタム戦略の組み込み `ProxyRotator`、さらにリクエストごとの Proxy オーバーライド。
-- **ドメインブロック**：ブラウザベースの Fetcher で特定のドメイン（およびそのサブドメイン）へのリクエストをブロック。
+- **ドメイン＆広告ブロック**：ブラウザベースの Fetcher で特定のドメイン（およびそのサブドメイン）へのリクエストをブロック、または内蔵広告ブロック（約3,500の既知の広告/トラッカードメイン）を有効化。
+- **DNS リーク防止**：Proxy 使用時の DNS リークを防ぐため、Cloudflare の DoH 経由で DNS クエリをルーティングするオプションの DNS-over-HTTPS サポート。
 - **async サポート**：すべての Fetcher および専用 async Session クラス全体での完全な async サポート。
 
 ### 適応型スクレイピングと AI 統合

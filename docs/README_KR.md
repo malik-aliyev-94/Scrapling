@@ -169,6 +169,26 @@ MySpider().start()
     <a href="https://proxy-seller.com/?partner=CU9CAA5TBYFFT2" target="_blank">Proxy-Seller</a>는 웹 스크래핑을 위한 안정적인 프록시 인프라를 제공합니다. IPv4, IPv6, ISP, 주거용 및 모바일 프록시를 지원하며, 안정적인 성능, 광범위한 지역 커버리지, 기업 규모의 데이터 수집을 위한 유연한 요금제를 갖추고 있습니다.
     </td>
   </tr>
+  <tr>
+    <td width="200">
+      <a href="http://mangoproxy.com/?utm_source=D4Vinci&utm_medium=GitHub&utm_campaign=D4Vinci" target="_blank" title="Proxies You Can Rely On: Residential, Server, and Mobile">
+        <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/MangoProxy.png">
+      </a>
+    </td>
+    <td>
+    <a href="http://mangoproxy.com/?utm_source=D4Vinci&utm_medium=GitHub&utm_campaign=D4Vinci" target="_blank">안정적인 프록시</a>. 스크래핑, 자동화, 멀티 계정 관리에 적합합니다. 깨끗한 IP, 빠른 응답, 높은 부하에서도 신뢰할 수 있는 성능. 확장 가능한 워크플로우를 위해 설계되었습니다.
+    </td>
+  </tr>
+  <tr>
+    <td width="200">
+      <a href="https://www.swiftproxy.net/?ref=D4Vinci" target="_blank" title="Scalable Solutions for Web Data Access">
+        <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/SwiftProxy.png">
+      </a>
+    </td>
+    <td>
+    <a href="https://www.swiftproxy.net/?ref=D4Vinci" target="_blank">Swiftproxy</a>는 195개국 이상에서 8천만 개 이상의 IP를 갖춘 확장 가능한 주거용 프록시를 제공하며, 빠르고 안정적인 연결, 자동 회전, 강력한 차단 방지 성능을 제공합니다. 무료 체험판 이용 가능.
+    </td>
+  </tr>
 </table>
 
 <i><sub>여기에 광고를 게재하고 싶으신가요? [여기](https://github.com/sponsors/D4Vinci/sponsorships?tier_id=586646)를 클릭하세요</sub></i>
@@ -181,7 +201,9 @@ MySpider().start()
 <a href="https://hasdata.com/?utm_source=github&utm_medium=banner&utm_campaign=D4Vinci" target="_blank" title="The web scraping service that actually beats anti-bot systems!"><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/hasdata.png"></a>
 <a href="https://proxyempire.io/?ref=scrapling&utm_source=scrapling" target="_blank" title="Collect The Data Your Project Needs with the Best Residential Proxies"><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/ProxyEmpire.png"></a>
 <a href="https://www.webshare.io/?referral_code=48r2m2cd5uz1" target="_blank" title="The Most Reliable Proxy with Unparalleled Performance"><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/webshare.png"></a>
-<a href="https://browser.cash/?utm_source=D4Vinci&utm_medium=referral" target="_blank" title="Browser Automation & AI Browser Agent Platform"><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/browserCash.png"></a>
+<a href="https://www.crawleo.dev/?utm_source=github&utm_medium=sponsor&utm_campaign=scrapling" target="_blank" title="Supercharge your AI with Real-Time Web Intelligence"><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/crawleo.png"></a>
+<a href="https://www.rapidproxy.io/?ref=d4v" target="_blank" title="Affordable Access to the Proxy World – bypass CAPTCHAs blocks, and avoid additional costs."><img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/rapidproxy.jpg"></a>
+
 
 <!-- /sponsors -->
 
@@ -198,6 +220,8 @@ MySpider().start()
 - 💾 **일시정지 & 재개**: 체크포인트 기반의 크롤링 영속화. Ctrl+C로 정상 종료하고, 재시작하면 중단된 지점부터 이어갑니다.
 - 📡 **스트리밍 모드**: `async for item in spider.stream()`으로 스크레이핑된 아이템을 실시간 통계와 함께 스트리밍으로 수신 - UI, 파이프라인, 장시간 크롤링에 적합합니다.
 - 🛡️ **차단된 요청 감지**: 커스텀 로직을 통한 차단된 요청의 자동 감지 및 재시도를 지원합니다.
+- 🤖 **robots.txt 준수**: 선택적 `robots_txt_obey` 플래그로 `Disallow`, `Crawl-delay`, `Request-rate` 지시문을 도메인별 캐싱과 함께 준수합니다.
+- 🧪 **개발 모드**: 첫 실행 시 응답을 디스크에 캐싱하고 이후 실행에서는 캐시된 응답을 재생합니다 - 대상 서버에 다시 요청하지 않고 `parse()` 로직을 반복 개발할 수 있습니다.
 - 📦 **내장 내보내기**: 훅이나 자체 파이프라인, 또는 내장 JSON/JSONL로 결과를 내보냅니다. 각각 `result.items.to_json()` / `result.items.to_jsonl()`을 사용합니다.
 
 ### 세션을 지원하는 고급 웹사이트 가져오기
@@ -206,7 +230,8 @@ MySpider().start()
 - **안티봇 우회**: `StealthyFetcher`와 fingerprint 위장을 통한 고급 스텔스 기능. 자동화로 모든 유형의 Cloudflare Turnstile/Interstitial을 손쉽게 우회합니다.
 - **세션 관리**: `FetcherSession`, `StealthySession`, `DynamicSession` 클래스로 요청 간 쿠키와 상태를 관리하는 영속적 세션을 지원합니다.
 - **프록시 로테이션**: 모든 세션 타입에 대응하는 순환 또는 커스텀 전략의 내장 `ProxyRotator`와 요청별 프록시 오버라이드를 제공합니다.
-- **도메인 차단**: 브라우저 기반 Fetcher에서 특정 도메인(및 하위 도메인)으로의 요청을 차단합니다.
+- **도메인 및 광고 차단**: 브라우저 기반 Fetcher에서 특정 도메인(및 하위 도메인)으로의 요청을 차단하거나 내장 광고 차단(약 3,500개의 알려진 광고/트래커 도메인)을 활성화합니다.
+- **DNS 유출 방지**: 프록시 사용 시 DNS 유출을 방지하기 위해 Cloudflare DoH를 통해 DNS 쿼리를 라우팅하는 선택적 DNS-over-HTTPS 지원.
 - **비동기 지원**: 모든 Fetcher와 전용 비동기 세션 클래스에서 완전한 비동기를 지원합니다.
 
 ### 적응형 스크레이핑 & AI 통합
