@@ -716,8 +716,13 @@ class FetcherSession:
             config["selector_config"] = self.selector_config
             config["proxy_rotator"] = self._proxy_rotator
             self._client = _SyncSessionLogic(**config)
+            try:
+                result = self._client.__enter__()
+            except Exception:
+                self._client = None
+                raise
             self._is_alive = True
-            return self._client.__enter__()
+            return result
         raise RuntimeError("This FetcherSession instance already has an active synchronous session.")
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -737,8 +742,13 @@ class FetcherSession:
             config["selector_config"] = self.selector_config
             config["proxy_rotator"] = self._proxy_rotator
             self._client = _ASyncSessionLogic(**config)
+            try:
+                result = await self._client.__aenter__()
+            except Exception:
+                self._client = None
+                raise
             self._is_alive = True
-            return await self._client.__aenter__()
+            return result
         raise RuntimeError("This FetcherSession instance already has an active asynchronous session.")
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
