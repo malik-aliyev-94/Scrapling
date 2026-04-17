@@ -177,6 +177,25 @@ class TestSessionManagement:
         with pytest.raises(ValueError, match="not found"):
             await server.fetch(url=test_url, session_id=session_id)
 
+    @pytest.mark.asyncio
+    async def test_open_session_with_custom_id(self, server):
+        """Test opening a session with a custom session_id"""
+        result = await server.open_session(session_type="dynamic", session_id="my-session", headless=True)
+        assert isinstance(result, SessionCreatedModel)
+        assert result.session_id == "my-session"
+
+        await server.close_session("my-session")
+
+    @pytest.mark.asyncio
+    async def test_open_session_duplicate_id_raises(self, server):
+        """Test that opening a session with a duplicate session_id raises an error"""
+        await server.open_session(session_type="dynamic", session_id="dupe", headless=True)
+
+        with pytest.raises(ValueError, match="already exists"):
+            await server.open_session(session_type="dynamic", session_id="dupe", headless=True)
+
+        await server.close_session("dupe")
+
 
 class TestNormalizeCredentials:
     """Test the _normalize_credentials helper"""
