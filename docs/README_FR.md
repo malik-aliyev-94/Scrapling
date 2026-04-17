@@ -95,18 +95,6 @@ MySpider().start()
   </tr>
   <tr>
     <td width="200">
-      <a href="https://birdproxies.com/t/scrapling" target="_blank" title="At Bird Proxies, we eliminate your pains such as banned IPs, geo restriction, and high costs so you can focus on your work.">
-        <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/BirdProxies.jpg">
-      </a>
-    </td>
-    <td>Nous avons créé <a href="https://birdproxies.com/t/scrapling">
-        <b>BirdProxies</b>
-      </a> parce que les proxies ne devraient pas être compliqués ni trop chers. Des proxies résidentiels et ISP rapides dans plus de 195 localisations, des prix équitables et un vrai support. <br />
-      <b>Essayez notre jeu FlappyBird sur la page d'accueil pour des données gratuites !</b>
-    </td>
-  </tr>
-  <tr>
-    <td width="200">
       <a href="https://evomi.com?utm_source=github&utm_medium=banner&utm_campaign=d4vinci-scrapling" target="_blank" title="Evomi is your Swiss Quality Proxy Provider, starting at $0.49/GB">
         <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/evomi.png">
       </a>
@@ -157,16 +145,6 @@ MySpider().start()
     </td>
     <td>
     Lisez une critique complète de <a href="https://substack.thewebscraping.club/p/scrapling-hands-on-guide?utm_source=github&utm_medium=repo&utm_campaign=scrapling" target="_blank">Scrapling sur The Web Scraping Club</a> (nov. 2025), la newsletter n°1 dédiée au Web Scraping.
-    </td>
-  </tr>
-  <tr>
-    <td width="200">
-      <a href="https://proxy-seller.com/?partner=CU9CAA5TBYFFT2" target="_blank" title="Proxy-Seller provides reliable proxy infrastructure for Web Scraping">
-        <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/ProxySeller.png">
-      </a>
-    </td>
-    <td>
-    <a href="https://proxy-seller.com/?partner=CU9CAA5TBYFFT2" target="_blank">Proxy-Seller</a> fournit une infrastructure proxy fiable pour le web scraping, avec des proxys IPv4, IPv6, ISP, résidentiels et mobiles offrant des performances stables, une large couverture géographique et des plans flexibles pour la collecte de données à l'échelle entreprise.
     </td>
   </tr>
   <tr>
