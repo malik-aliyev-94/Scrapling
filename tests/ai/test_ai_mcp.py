@@ -1,5 +1,12 @@
+import base64
+import struct
+from contextlib import contextmanager
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from threading import Thread
+
 import pytest
 import pytest_httpbin
+from mcp.types import ImageContent, TextContent
 
 from scrapling.core.ai import (
     ScraplingMCPServer,
@@ -195,6 +202,118 @@ class TestSessionManagement:
             await server.open_session(session_type="dynamic", session_id="dupe", headless=True)
 
         await server.close_session("dupe")
+
+
+def _png_height(data: bytes) -> int:
+    """Read the height field from a PNG IHDR chunk."""
+    return struct.unpack(">I", data[20:24])[0]
+
+
+@contextmanager
+def _serve_html(body: bytes):
+    """Serve a fixed HTML body on localhost, yielding its URL."""
+
+    class _Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *args, **kwargs):
+            pass
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), _Handler)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield f"http://127.0.0.1:{server.server_address[1]}/"
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
+@pytest_httpbin.use_class_based_httpbin
+class TestScreenshot:
+    """Test the screenshot tool"""
+
+    @pytest.fixture(scope="class")
+    def test_url(self, httpbin):
+        return f"{httpbin.url}/html"
+
+    @pytest.fixture
+    def server(self):
+        return ScraplingMCPServer()
+
+    @pytest.mark.asyncio
+    async def test_screenshot_png_with_dynamic_session(self, server, test_url):
+        """PNG screenshot via a dynamic session returns image and url content blocks"""
+        opened = await server.open_session(session_type="dynamic", headless=True)
+        try:
+            result = await server.screenshot(url=test_url, session_id=opened.session_id)
+            assert isinstance(result, list) and len(result) == 2
+            assert isinstance(result[0], ImageContent)
+            assert result[0].mimeType == "image/png"
+            assert isinstance(result[1], TextContent)
+            assert result[1].text == test_url
+        finally:
+            await server.close_session(opened.session_id)
+
+    @pytest.mark.asyncio
+    async def test_screenshot_jpeg_with_quality(self, server, test_url):
+        """JPEG screenshot with quality parameter via a dynamic session"""
+        opened = await server.open_session(session_type="dynamic", headless=True)
+        try:
+            result = await server.screenshot(url=test_url, session_id=opened.session_id, image_type="jpeg", quality=80)
+            assert isinstance(result[0], ImageContent)
+            assert result[0].mimeType == "image/jpeg"
+        finally:
+            await server.close_session(opened.session_id)
+
+    @pytest.mark.asyncio
+    async def test_screenshot_with_stealthy_session(self, server, test_url):
+        """PNG screenshot via a stealthy session"""
+        opened = await server.open_session(session_type="stealthy", headless=True)
+        try:
+            result = await server.screenshot(url=test_url, session_id=opened.session_id)
+            assert isinstance(result[0], ImageContent)
+            assert result[0].mimeType == "image/png"
+        finally:
+            await server.close_session(opened.session_id)
+
+    @pytest.mark.asyncio
+    async def test_screenshot_full_page_taller_than_viewport(self, server):
+        """full_page=True produces an image taller than the viewport-only capture"""
+        tall_html = b"<html><body><div style='height:5000px;background:#abc'></div></body></html>"
+        with _serve_html(tall_html) as tall_url:
+            opened = await server.open_session(session_type="dynamic", headless=True)
+            try:
+                viewport_result = await server.screenshot(url=tall_url, session_id=opened.session_id, full_page=False)
+                full_result = await server.screenshot(url=tall_url, session_id=opened.session_id, full_page=True)
+
+                viewport_png = base64.b64decode(viewport_result[0].data)
+                full_png = base64.b64decode(full_result[0].data)
+
+                assert _png_height(full_png) > _png_height(viewport_png)
+            finally:
+                await server.close_session(opened.session_id)
+
+    @pytest.mark.asyncio
+    async def test_screenshot_invalid_session_id_raises(self, server, test_url):
+        """Unknown session_id raises ValueError"""
+        with pytest.raises(ValueError, match="not found"):
+            await server.screenshot(url=test_url, session_id="does-not-exist")
+
+    @pytest.mark.asyncio
+    async def test_screenshot_quality_with_png_raises(self, server, test_url):
+        """quality is rejected when image_type is png"""
+        opened = await server.open_session(session_type="dynamic", headless=True)
+        try:
+            with pytest.raises(ValueError, match="quality"):
+                await server.screenshot(url=test_url, session_id=opened.session_id, image_type="png", quality=90)
+        finally:
+            await server.close_session(opened.session_id)
 
 
 class TestNormalizeCredentials:

@@ -3,7 +3,8 @@ from asyncio import gather
 from datetime import datetime, timezone
 from dataclasses import dataclass, field
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp import FastMCP, Image
+from mcp.types import ImageContent, TextContent
 from pydantic import BaseModel, Field
 
 from scrapling.core.shell import Convertor
@@ -31,6 +32,7 @@ from scrapling.core._types import (
 )
 
 SessionType = Literal["dynamic", "stealthy"]
+ScreenshotType = Literal["png", "jpeg"]
 
 
 class ResponseModel(BaseModel):
@@ -106,14 +108,14 @@ class ScraplingMCPServer:
     def __init__(self):
         self._sessions: Dict[str, _SessionEntry] = {}
 
-    def _get_session(self, session_id: str, expected_type: SessionType) -> _SessionEntry:
-        """Look up a session by ID and validate its type."""
+    def _get_session(self, session_id: str, expected_type: Optional[SessionType]) -> _SessionEntry:
+        """Look up a session by ID, optionally validating its type. Pass `None` to skip the type check."""
         entry = self._sessions.get(session_id)
         if entry is None:
             raise ValueError(f"Session '{session_id}' not found. Use list_sessions to see active sessions.")
         if not entry.session._is_alive:
             raise ValueError(f"Session '{session_id}' is no longer alive. Open a new session.")
-        if entry.session_type != expected_type:
+        if expected_type is not None and entry.session_type != expected_type:
             raise ValueError(
                 f"Session '{session_id}' is a '{entry.session_type}' session, but this tool requires a "
                 f"'{expected_type}' session. Use the matching fetch tool for your session type."
@@ -260,6 +262,69 @@ class ScraplingMCPServer:
             for sid, entry in self._sessions.items()
         ]
 
+    async def screenshot(
+        self,
+        url: str,
+        session_id: str,
+        image_type: ScreenshotType = "png",
+        full_page: bool = False,
+        quality: Optional[int] = None,
+        wait: int | float = 0,
+        wait_selector: Optional[str] = None,
+        wait_selector_state: SelectorWaitStates = "attached",
+        network_idle: bool = False,
+        timeout: int | float = 30000,
+    ) -> List[ImageContent | TextContent]:
+        """Capture a screenshot of a web page using an existing browser session and return it as an image.
+        A browser session must be opened first with `open_session` (either `dynamic` or `stealthy`); the session ID is then passed here.
+
+        :param url: The URL to navigate to and capture.
+        :param session_id: ID of an open browser session created with `open_session`.
+        :param image_type: Image format. Defaults to "png". Use "jpeg" for smaller file sizes.
+        :param full_page: When True, captures the full scrollable page instead of just the viewport. Defaults to False.
+        :param quality: Image quality (0-100) for JPEG only. Raises if passed with `image_type="png"`.
+        :param wait: Time in milliseconds to wait after page load before capturing. Defaults to 0.
+        :param wait_selector: Optional CSS selector to wait for before capturing.
+        :param wait_selector_state: State to wait for the selector. Defaults to "attached".
+        :param network_idle: Wait for the page until there are no network connections for at least 500 ms.
+        :param timeout: Timeout in milliseconds for page operations. Defaults to 30,000.
+        """
+        if quality is not None and image_type != "jpeg":
+            raise ValueError("'quality' is only valid when 'image_type' is 'jpeg'.")
+
+        entry = self._get_session(session_id, expected_type=None)
+
+        screenshot_kwargs: Dict[str, Any] = {"type": image_type, "full_page": full_page}
+        if quality is not None:
+            screenshot_kwargs["quality"] = quality
+
+        captured: Dict[str, Any] = {}
+
+        async def _capture(page: Any) -> None:
+            try:
+                captured["bytes"] = await page.screenshot(**screenshot_kwargs)
+                captured["url"] = page.url
+            except Exception as exc:
+                captured["error"] = exc
+
+        await entry.session.fetch(
+            url,
+            wait=wait,
+            timeout=timeout,
+            network_idle=network_idle,
+            wait_selector=wait_selector,
+            wait_selector_state=wait_selector_state,
+            page_action=_capture,
+        )
+
+        if "error" in captured:
+            raise captured["error"]
+        if "bytes" not in captured:
+            raise RuntimeError(f"Failed to capture screenshot for {url}")
+
+        image = Image(data=captured["bytes"], format=image_type).to_image_content()
+        return [image, TextContent(type="text", text=captured["url"])]
+
     @staticmethod
     async def get(
         url: str,
@@ -298,7 +363,8 @@ class ScraplingMCPServer:
         :param headers: Headers to include in the request.
         :param cookies: Cookies to use in the request.
         :param timeout: Number of seconds to wait before timing out.
-        :param follow_redirects: Whether to follow redirects. Defaults to "safe", which follows redirects but rejects those targeting internal/private IPs (SSRF protection). Pass True to follow all redirects without restriction.
+        :param follow_redirects: Whether to follow redirects. Defaults to "safe", which follows redirects but rejects those targeting internal/private IPs (SSRF protection).
+            Pass True to follow all redirects without restriction.
         :param max_redirects: Maximum number of redirects. Default 30, use -1 for unlimited.
         :param retries: Number of retry attempts. Defaults to 3.
         :param retry_delay: Number of seconds to wait between retry attempts. Defaults to 1 second.
@@ -371,7 +437,8 @@ class ScraplingMCPServer:
         :param headers: Headers to include in the request.
         :param cookies: Cookies to use in the request.
         :param timeout: Number of seconds to wait before timing out.
-        :param follow_redirects: Whether to follow redirects. Defaults to "safe", which follows redirects but rejects those targeting internal/private IPs (SSRF protection). Pass True to follow all redirects without restriction.
+        :param follow_redirects: Whether to follow redirects. Defaults to "safe", which follows redirects but rejects those targeting internal/private IPs (SSRF protection).
+            Pass True to follow all redirects without restriction.
         :param max_redirects: Maximum number of redirects. Default 30, use -1 for unlimited.
         :param retries: Number of retry attempts. Defaults to 3.
         :param retry_delay: Number of seconds to wait between retry attempts. Defaults to 1 second.
@@ -835,4 +902,6 @@ class ScraplingMCPServer:
             description=self.bulk_stealthy_fetch.__doc__,
             structured_output=True,
         )
+        # Screenshot tool (returns image + url content blocks, not structured JSON)
+        server.add_tool(self.screenshot, title="screenshot", description=self.screenshot.__doc__)
         server.run(transport="stdio" if not http else "streamable-http")
