@@ -123,6 +123,7 @@ class ScraplingMCPServer:
     async def open_session(
         self,
         session_type: SessionType,
+        session_id: Optional[str] = None,
         headless: bool = True,
         google_search: bool = True,
         real_chrome: bool = False,
@@ -152,6 +153,7 @@ class ScraplingMCPServer:
         Use close_session to close the session when done, and list_sessions to see all active sessions.
 
         :param session_type: The type of session to open. Use "dynamic" for standard Playwright browser, or "stealthy" for anti-bot bypass with fingerprint spoofing.
+        :param session_id: Optional custom session ID. If not provided, a random 12-character hex ID will be generated. Useful for naming sessions for easier management.
         :param headless: Run the browser in headless/hidden (default), or headful/visible mode.
         :param google_search: Enabled by default, Scrapling will set a Google referer header.
         :param real_chrome: If you have a Chrome browser installed on your device, enable this, and the Fetcher will launch an instance of your browser and use it.
@@ -175,6 +177,12 @@ class ScraplingMCPServer:
         :param solve_cloudflare: (Stealthy only) Solves all types of the Cloudflare's Turnstile/Interstitial challenges.
         :param additional_args: (Stealthy only) Additional arguments to be passed to Playwright's context as additional settings.
         """
+        session_id = session_id or uuid4().hex[:12]
+        if session_id in self._sessions:
+            raise ValueError(
+                f"Session '{session_id}' already exists. Use a different ID or close the existing session first."
+            )
+
         common_kwargs: Dict[str, Any] = dict(
             wait=wait,
             proxy=proxy,
@@ -211,7 +219,6 @@ class ScraplingMCPServer:
 
         await session.start()
 
-        session_id = uuid4().hex[:12]
         entry = _SessionEntry(session=session, session_type=session_type)
         self._sessions[session_id] = entry
 
