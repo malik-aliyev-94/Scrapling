@@ -6,7 +6,7 @@ The **Scrapling MCP Server** is a new feature that brings Scrapling's powerful W
 
 ## Features
 
-The Scrapling MCP Server provides nine powerful tools for web scraping:
+The Scrapling MCP Server provides ten powerful tools for web scraping:
 
 ### 🚀 Basic HTTP Scraping
 - **`get`**: Fast HTTP requests with browser fingerprint impersonation, generating real browser headers matching the TLS version, HTTP/3, and more!
@@ -19,6 +19,9 @@ The Scrapling MCP Server provides nine powerful tools for web scraping:
 ### 🔒 Stealth Scraping
 - **`stealthy_fetch`**: Uses our Stealthy browser to bypass Cloudflare Turnstile/Interstitial and other anti-bot systems with complete control over the request/browser!
 - **`bulk_stealthy_fetch`**: An async version of the above tool that allows stealth scraping of multiple URLs in different browser tabs at the same time!
+
+### 📸 Screenshots
+- **`screenshot`**: Capture a PNG or JPEG screenshot of a page using an open browser session, returned as an image content block the model can actually see (not a base64 string blob). Supports full-page captures, JPEG quality, and the usual readiness controls (`wait`, `wait_selector`, `network_idle`).
 
 ### 🔌 Session Management
 - **`open_session`**: Create a persistent browser session (dynamic or stealthy) that stays open across multiple fetch calls, avoiding the overhead of launching a new browser each time.
@@ -331,6 +334,14 @@ This protection runs automatically on all MCP tool responses. Keep `main_content
 - Always close sessions with `close_session` when done to free resources
 - Use `list_sessions` to check which sessions are still active
 - A `session_id` from a dynamic session can only be used with `fetch`/`bulk_fetch`, and a stealthy session can only be used with `stealthy_fetch`/`bulk_stealthy_fetch`
+- Pass a custom `session_id` to `open_session` to give sessions meaningful names (e.g. `"search"`, `"checkout"`) instead of the random hex default. `open_session` raises if the chosen ID is already in use, so you can detect collisions up front
+
+### 7. Capturing Screenshots
+- `screenshot` only works through an existing browser session, so call `open_session` first (either `dynamic` or `stealthy` works)
+- The image is returned as a real `ImageContent` block, not a base64 string in JSON, so the model sees the page directly
+- Use `full_page=True` when you need everything below the fold; the default captures only the visible viewport
+- Pick `image_type="jpeg"` with a `quality` value (0-100) for smaller payloads when pixel-perfect color isn't needed
+- The same `wait`, `wait_selector`, `network_idle`, and `timeout` controls used by `fetch` are available here too
 
 ## Legal and Ethical Considerations
 
