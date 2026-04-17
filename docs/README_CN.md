@@ -95,18 +95,6 @@ MySpider().start()
   </tr>
   <tr>
     <td width="200">
-      <a href="https://birdproxies.com/t/scrapling" target="_blank" title="At Bird Proxies, we eliminate your pains such as banned IPs, geo restriction, and high costs so you can focus on your work.">
-        <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/BirdProxies.jpg">
-      </a>
-    </td>
-    <td>嘿，我们创建了 <a href="https://birdproxies.com/t/scrapling">
-        <b>BirdProxies</b>
-      </a>，因为代理不应该复杂或昂贵。 <br /> 覆盖 195+ 地区的快速住宅和 ISP 代理，公平定价，真正的支持。 <br />
-      <b>在落地页试试我们的 FlappyBird 游戏，获取免费流量！</b>
-    </td>
-  </tr>
-  <tr>
-    <td width="200">
       <a href="https://evomi.com?utm_source=github&utm_medium=banner&utm_campaign=d4vinci-scrapling" target="_blank" title="Evomi is your Swiss Quality Proxy Provider, starting at $0.49/GB">
         <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/evomi.png">
       </a>
@@ -157,16 +145,6 @@ MySpider().start()
     </td>
     <td>
     阅读 <a href="https://substack.thewebscraping.club/p/scrapling-hands-on-guide?utm_source=github&utm_medium=repo&utm_campaign=scrapling" target="_blank">The Web Scraping Club 上关于 Scrapling 的完整评测</a>（2025 年 11 月），这是排名第一的网页抓取专业通讯。
-    </td>
-  </tr>
-  <tr>
-    <td width="200">
-      <a href="https://proxy-seller.com/?partner=CU9CAA5TBYFFT2" target="_blank" title="Proxy-Seller provides reliable proxy infrastructure for Web Scraping">
-        <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/ProxySeller.png">
-      </a>
-    </td>
-    <td>
-    <a href="https://proxy-seller.com/?partner=CU9CAA5TBYFFT2" target="_blank">Proxy-Seller</a> 提供可靠的网页抓取代理基础设施，包括 IPv4、IPv6、ISP、住宅和移动代理，具备稳定性能、广泛的地理覆盖和灵活的企业级数据采集方案。
     </td>
   </tr>
   <tr>

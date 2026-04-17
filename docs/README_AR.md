@@ -95,18 +95,6 @@ MySpider().start()
   </tr>
   <tr>
     <td width="200">
-      <a href="https://birdproxies.com/t/scrapling" target="_blank" title="At Bird Proxies, we eliminate your pains such as banned IPs, geo restriction, and high costs so you can focus on your work.">
-        <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/BirdProxies.jpg">
-      </a>
-    </td>
-    <td>مرحباً، لقد بنينا <a href="https://birdproxies.com/t/scrapling">
-        <b>BirdProxies</b>
-      </a> لأن البروكسيات لا يجب أن تكون معقدة أو باهظة الثمن. <br /> بروكسيات سكنية و ISP سريعة في أكثر من 195 موقعاً، أسعار عادلة، ودعم حقيقي. <br />
-      <b>جرّب لعبة FlappyBird على صفحة الهبوط للحصول على بيانات مجانية!</b>
-    </td>
-  </tr>
-  <tr>
-    <td width="200">
       <a href="https://evomi.com?utm_source=github&utm_medium=banner&utm_campaign=d4vinci-scrapling" target="_blank" title="Evomi is your Swiss Quality Proxy Provider, starting at $0.49/GB">
         <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/evomi.png">
       </a>
@@ -157,16 +145,6 @@ MySpider().start()
     </td>
     <td>
     اقرأ مراجعة كاملة عن <a href="https://substack.thewebscraping.club/p/scrapling-hands-on-guide?utm_source=github&utm_medium=repo&utm_campaign=scrapling" target="_blank">Scrapling على The Web Scraping Club</a> (نوفمبر 2025)، النشرة الإخبارية الأولى المخصصة لكشط الويب.
-    </td>
-  </tr>
-  <tr>
-    <td width="200">
-      <a href="https://proxy-seller.com/?partner=CU9CAA5TBYFFT2" target="_blank" title="Proxy-Seller provides reliable proxy infrastructure for Web Scraping">
-        <img src="https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/ProxySeller.png">
-      </a>
-    </td>
-    <td>
-    <a href="https://proxy-seller.com/?partner=CU9CAA5TBYFFT2" target="_blank">Proxy-Seller</a> يوفر بنية تحتية موثوقة للبروكسي لكشط الويب، بما في ذلك بروكسيات IPv4 وIPv6 وISP والسكنية والمحمولة مع أداء مستقر وتغطية جغرافية واسعة وخطط مرنة لجمع البيانات على نطاق الأعمال.
     </td>
   </tr>
   <tr>
