@@ -15,7 +15,7 @@ As with [DynamicFetcher](dynamic.md#introduction), you will need some knowledge 
 You have one primary way to import this Fetcher, which is the same for all fetchers.
 
 ```python
->>> from scrapling.fetchers import StealthyFetcher
+ from scrapling.fetchers import StealthyFetcher
 ```
 Check out how to configure the parsing options [here](choosing.md#parser-configuration-in-all-fetchers)
 

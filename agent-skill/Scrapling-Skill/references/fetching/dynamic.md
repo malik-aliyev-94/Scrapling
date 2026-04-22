@@ -8,7 +8,7 @@ As we will explain later, to automate the page, you need some knowledge of [Play
 You have one primary way to import this Fetcher, which is the same for all fetchers.
 
 ```python
->>> from scrapling.fetchers import DynamicFetcher
+from scrapling.fetchers import DynamicFetcher
 ```
 Check out how to configure the parsing options [here](choosing.md#parser-configuration-in-all-fetchers)
 
