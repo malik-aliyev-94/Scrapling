@@ -90,6 +90,7 @@ features = [
     "search.share",
     "search.suggest",
     "search.highlight",
+    "content.code.copy",
 ]
 
 [[project.theme.palette]]
