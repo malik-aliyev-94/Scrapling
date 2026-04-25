@@ -77,7 +77,7 @@ Scrapling provides many options with this fetcher and its session classes. To ma
 |    wait_selector    | Wait for a specific css selector to be in a specific state.                                                                                                                                                                         |    ✔️    |
 |     init_script     | An absolute path to a JavaScript file to be executed on page creation for all pages in this session.                                                                                                                                |    ✔️    |
 | wait_selector_state | Scrapling will wait for the given state to be fulfilled for the selector given with `wait_selector`. _Default state is `attached`._                                                                                                 |    ✔️    |
-|    google_search    | Enabled by default, Scrapling will set a Google referer header.                                                                                                                                                                      |    ✔️    |
+|    google_search    | Enabled by default, Scrapling will set a Google referer header.                                                                                                                                                                     |    ✔️    |
 |    extra_headers    | A dictionary of extra headers to add to the request. _The referer set by `google_search` takes priority over the referer set here if used together._                                                                                |    ✔️    |
 |        proxy        | The proxy to be used with requests. It can be a string or a dictionary with only the keys 'server', 'username', and 'password'.                                                                                                     |    ✔️    |
 |     real_chrome     | If you have a Chrome browser installed on your device, enable this, and the Fetcher will launch and use an instance of your browser.                                                                                                |    ✔️    |
@@ -89,12 +89,12 @@ Scrapling provides many options with this fetcher and its session classes. To ma
 |   additional_args   | Additional arguments to be passed to Playwright's context as additional settings, and they take higher priority than Scrapling's settings.                                                                                          |    ✔️    |
 |   selector_config   | A dictionary of custom parsing arguments to be used when creating the final `Selector`/`Response` class.                                                                                                                            |    ✔️    |
 |   blocked_domains   | A set of domain names to block requests to. Subdomains are also matched (e.g., `"example.com"` blocks `"sub.example.com"` too).                                                                                                     |    ✔️    |
-|     block_ads       | Block requests to ~3,500 known ad/tracking domains. Can be combined with `blocked_domains`.                                                                                                                                         |    ✔️    |
+|      block_ads      | Block requests to ~3,500 known ad/tracking domains. Can be combined with `blocked_domains`.                                                                                                                                         |    ✔️    |
 |   dns_over_https    | Route DNS queries through Cloudflare's DNS-over-HTTPS to prevent DNS leaks when using proxies.                                                                                                                                      |    ✔️    |
 |    proxy_rotator    | A `ProxyRotator` instance for automatic proxy rotation. Cannot be combined with `proxy`.                                                                                                                                            |    ✔️    |
 |       retries       | Number of retry attempts for failed requests. Defaults to 3.                                                                                                                                                                        |    ✔️    |
 |     retry_delay     | Seconds to wait between retry attempts. Defaults to 1.                                                                                                                                                                              |    ✔️    |
-|     capture_xhr     | Pass a regex URL pattern string to capture XHR/fetch requests matching it during page load. Captured responses are available via `response.captured_xhr`. Defaults to `None` (disabled).                                             |    ✔️    |
+|     capture_xhr     | Pass a regex URL pattern string to capture XHR/fetch requests matching it during page load. Captured responses are available via `response.captured_xhr`. Defaults to `None` (disabled).                                            |    ✔️    |
 |   executable_path   | Absolute path to a custom browser executable to use instead of the bundled Chromium. Useful for non-standard installations or custom browser builds.                                                                                |    ✔️    |
 
 In session classes, all these arguments can be set globally for the session. Still, you can configure each request individually by passing some of the arguments here that can be configured on the browser tab level like: `google_search`, `timeout`, `wait`, `page_action`, `page_setup`, `extra_headers`, `disable_resources`, `wait_selector`, `wait_selector_state`, `network_idle`, `load_dom`, `blocked_domains`, `proxy`, and `selector_config`.
@@ -105,6 +105,65 @@ In session classes, all these arguments can be set globally for the session. Sti
     2. The `google_search` argument is enabled by default for all requests, setting the referer to `https://www.google.com/`. If used together with `extra_headers`, it takes priority over the referer set there.
     3. Since version 0.3.13, the `stealth` option has been removed here in favor of the `StealthyFetcher` class, and the `hide_canvas` option has been moved to it. The `disable_webgl` argument has been moved to the `StealthyFetcher` class and renamed as `allow_webgl`.
     4. If you didn't set a user agent and enabled headless mode, the fetcher will generate a real user agent for the same browser version and use it. If you didn't set a user agent and didn't enable headless mode, the fetcher will use the browser's default user agent, which is the same as in standard browsers in the latest versions.
+
+
+## Session Management
+
+To keep the browser open until you make multiple requests with the same configuration, use `DynamicSession`/`AsyncDynamicSession` classes. Those classes can accept all the arguments that the `fetch` function can take, which enables you to specify a config for the entire session.
+
+```python
+from scrapling.fetchers import DynamicSession
+
+# Create a session with default configuration
+with DynamicSession(
+    headless=True,
+    disable_resources=True,
+    real_chrome=True
+) as session:
+    # Make multiple requests with the same browser instance
+    page1 = session.fetch('https://example1.com')
+    page2 = session.fetch('https://example2.com')
+    page3 = session.fetch('https://dynamic-site.com')
+    
+    # All requests reuse the same tab on the same browser instance
+```
+
+### Async Session Usage
+
+```python
+import asyncio
+from scrapling.fetchers import AsyncDynamicSession
+
+async def scrape_multiple_sites():
+    async with AsyncDynamicSession(
+        network_idle=True,
+        timeout=30000,
+        max_pages=3
+    ) as session:
+        # Make async requests with shared browser configuration
+        pages = await asyncio.gather(
+            session.fetch('https://spa-app1.com'),
+            session.fetch('https://spa-app2.com'),
+            session.fetch('https://dynamic-content.com')
+        )
+        return pages
+```
+
+You may have noticed the `max_pages` argument. This is a new argument that enables the fetcher to create a **rotating pool of Browser tabs**. Instead of using a single tab for all your requests, you set a limit on the maximum number of pages that can be displayed at once. With each request, the library will close all tabs that have finished their task and check if the number of the current tabs is lower than the maximum allowed number of pages/tabs, then:
+
+1. If you are within the allowed range, the fetcher will create a new tab for you, and then all is as normal.
+2. Otherwise, it will keep checking every subsecond if creating a new tab is allowed or not for 60 seconds, then raise `TimeoutError`. This can happen when the website you are fetching becomes unresponsive.
+
+This logic allows for multiple URLs to be fetched at the same time in the same browser, which saves a lot of resources, but most importantly, is so fast :)
+
+In versions 0.3 and 0.3.1, the pool was reusing finished tabs to save more resources/time. That logic proved flawed, as it's nearly impossible to protect pages/tabs from contamination by the previous configuration used in the request before this one.
+
+### Session Benefits
+
+- **Browser reuse**: Much faster subsequent requests by reusing the same browser instance.
+- **Cookie persistence**: Automatic cookie and session state handling as any browser does automatically.
+- **Consistent fingerprint**: Same browser fingerprint across all requests.
+- **Memory efficiency**: Better resource usage compared to launching new browsers with each fetch.
 
 
 ## Examples
@@ -137,35 +196,10 @@ page = DynamicFetcher.fetch('https://example.com', timeout=30000)  # 30 seconds
 page = DynamicFetcher.fetch('https://example.com', proxy='http://username:password@host:port')
 ```
 
-### Proxy Rotation
-
-```python
-from scrapling.fetchers import DynamicSession, ProxyRotator
-
-# Set up proxy rotation
-rotator = ProxyRotator([
-    "http://proxy1:8080",
-    "http://proxy2:8080",
-    "http://proxy3:8080",
-])
-
-# Use with session - rotates proxy automatically with each request
-with DynamicSession(proxy_rotator=rotator, headless=True) as session:
-    page1 = session.fetch('https://example1.com')
-    page2 = session.fetch('https://example2.com')
-
-    # Override rotator for a specific request
-    page3 = session.fetch('https://example3.com', proxy='http://specific-proxy:8080')
-```
-
-!!! warning
-
-    Remember that by default, all browser-based fetchers and sessions use a persistent browser context with a pool of tabs. However, since browsers can't set a proxy per tab, when you use a `ProxyRotator`, the fetcher will automatically open a separate context for each proxy, with one tab per context. Once the tab's job is done, both the tab and its context are closed.
-
 ### Downloading Files
 
 ```python
-page = DynamicFetcher.fetch('https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/main_cover.png')
+page = DynamicFetcher.fetch('https://raw.githubusercontent.com/D4Vinci/Scrapling/main/docs/assets/main_cover.png')
 
 with open(file='main_cover.png', mode='wb') as f:
     f.write(page.body)
@@ -229,8 +263,8 @@ page = await DynamicFetcher.async_fetch('https://example.com', page_action=scrol
 ```python
 # Wait for the selector
 page = DynamicFetcher.fetch(
-    'https://example.com',
-    wait_selector='h1',
+    'https://quotes.toscrape.com/js-delayed/',
+    wait_selector='.quote',
     wait_selector_state='visible'
 )
 ```
@@ -297,63 +331,30 @@ def scrape_dynamic_content():
     }
 ```
 
-## Session Management
-
-To keep the browser open until you make multiple requests with the same configuration, use `DynamicSession`/`AsyncDynamicSession` classes. Those classes can accept all the arguments that the `fetch` function can take, which enables you to specify a config for the entire session.
+### Proxy Rotation
 
 ```python
-from scrapling.fetchers import DynamicSession
+from scrapling.fetchers import DynamicSession, ProxyRotator
 
-# Create a session with default configuration
-with DynamicSession(
-    headless=True,
-    disable_resources=True,
-    real_chrome=True
-) as session:
-    # Make multiple requests with the same browser instance
+# Set up proxy rotation
+rotator = ProxyRotator([
+    "http://proxy1:8080",
+    "http://proxy2:8080",
+    "http://proxy3:8080",
+])
+
+# Use with session - rotates proxy automatically with each request
+with DynamicSession(proxy_rotator=rotator, headless=True) as session:
     page1 = session.fetch('https://example1.com')
     page2 = session.fetch('https://example2.com')
-    page3 = session.fetch('https://dynamic-site.com')
-    
-    # All requests reuse the same tab on the same browser instance
+
+    # Override rotator for a specific request
+    page3 = session.fetch('https://example3.com', proxy='http://specific-proxy:8080')
 ```
 
-### Async Session Usage
+!!! warning
 
-```python
-import asyncio
-from scrapling.fetchers import AsyncDynamicSession
-
-async def scrape_multiple_sites():
-    async with AsyncDynamicSession(
-        network_idle=True,
-        timeout=30000,
-        max_pages=3
-    ) as session:
-        # Make async requests with shared browser configuration
-        pages = await asyncio.gather(
-            session.fetch('https://spa-app1.com'),
-            session.fetch('https://spa-app2.com'),
-            session.fetch('https://dynamic-content.com')
-        )
-        return pages
-```
-
-You may have noticed the `max_pages` argument. This is a new argument that enables the fetcher to create a **rotating pool of Browser tabs**. Instead of using a single tab for all your requests, you set a limit on the maximum number of pages that can be displayed at once. With each request, the library will close all tabs that have finished their task and check if the number of the current tabs is lower than the maximum allowed number of pages/tabs, then:
-
-1. If you are within the allowed range, the fetcher will create a new tab for you, and then all is as normal.
-2. Otherwise, it will keep checking every subsecond if creating a new tab is allowed or not for 60 seconds, then raise `TimeoutError`. This can happen when the website you are fetching becomes unresponsive.
-
-This logic allows for multiple URLs to be fetched at the same time in the same browser, which saves a lot of resources, but most importantly, is so fast :)
-
-In versions 0.3 and 0.3.1, the pool was reusing finished tabs to save more resources/time. That logic proved flawed, as it's nearly impossible to protect pages/tabs from contamination by the previous configuration used in the request before this one.
-
-### Session Benefits
-
-- **Browser reuse**: Much faster subsequent requests by reusing the same browser instance.
-- **Cookie persistence**: Automatic cookie and session state handling as any browser does automatically.
-- **Consistent fingerprint**: Same browser fingerprint across all requests.
-- **Memory efficiency**: Better resource usage compared to launching new browsers with each fetch.
+    Remember that by default, all browser-based fetchers and sessions use a persistent browser context with a pool of tabs. However, since browsers can't set a proxy per tab, when you use a `ProxyRotator`, the fetcher will automatically open a separate context for each proxy, with one tab per context. Once the tab's job is done, both the tab and its context are closed.
 
 ## When to Use
 

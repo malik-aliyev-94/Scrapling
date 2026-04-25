@@ -292,12 +292,12 @@ We have you covered if you deal with dynamic websites like most today!
 The `DynamicFetcher` class (formerly `PlayWrightFetcher`) offers many options for fetching and loading web pages using Chromium-based browsers.
 ```python
 from scrapling.fetchers import DynamicFetcher
-page = DynamicFetcher.fetch('https://www.google.com/search?q=%22Scrapling%22', disable_resources=True)  # Vanilla Playwright option
-page.css("#search a::attr(href)").get()  # -> 'https://github.com/D4Vinci/Scrapling'
+page = DynamicFetcher.fetch('https://quotes.toscrape.com/js/', disable_resources=True, block_ads=True)
+print(len(page.css(".quote")))  # -> 10
 
 # The async version of fetch
-page = await DynamicFetcher.async_fetch('https://www.google.com/search?q=%22Scrapling%22', disable_resources=True)
-page.css("#search a::attr(href)").get()  # -> 'https://github.com/D4Vinci/Scrapling'
+page = await DynamicFetcher.async_fetch('https://quotes.toscrape.com/js/', disable_resources=True, block_ads=True)
+print(len(page.css(".quote")))  # -> 10
 ```
 It's built on top of [Playwright](https://playwright.dev/python/), and it's currently providing two main run options that can be mixed as you want:
 
@@ -329,7 +329,7 @@ page.status == 200  # -> True
 page = StealthyFetcher.fetch('https://nopecha.com/demo/cloudflare', solve_cloudflare=True)  # Solve Cloudflare captcha automatically if presented
 page.status == 200  # -> True
 
-page = StealthyFetcher.fetch('https://www.browserscan.net/bot-detection', humanize=True, os_randomize=True) # and the rest of arguments...
+page = StealthyFetcher.fetch('https://www.browserscan.net/bot-detection', block_webrtc=True, hide_canvas=True, dns_over_https=True) # and the rest of arguments...
 # The async version of fetch
 page = await StealthyFetcher.async_fetch('https://www.browserscan.net/bot-detection')
 page.status == 200  # -> True

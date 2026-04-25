@@ -149,7 +149,7 @@ with DynamicSession(proxy_rotator=rotator, headless=True) as session:
 ### Downloading Files
 
 ```python
-page = DynamicFetcher.fetch('https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/main_cover.png')
+page = DynamicFetcher.fetch('https://raw.githubusercontent.com/D4Vinci/Scrapling/main/docs/assets/main_cover.png')
 
 with open(file='main_cover.png', mode='wb') as f:
     f.write(page.body)

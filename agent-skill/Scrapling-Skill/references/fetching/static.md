@@ -301,7 +301,7 @@ def scrape_products():
 ```python
 from scrapling.fetchers import Fetcher
 
-page = Fetcher.get('https://raw.githubusercontent.com/D4Vinci/Scrapling/main/images/main_cover.png')
+page = Fetcher.get('https://raw.githubusercontent.com/D4Vinci/Scrapling/main/docs/assets/main_cover.png')
 with open(file='main_cover.png', mode='wb') as f:
    f.write(page.body)
 ```
