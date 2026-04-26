@@ -97,15 +97,19 @@ class Request:
         }
 
         if include_kwargs:
-            kwargs = (key.lower() for key in self._session_kwargs.keys() if key.lower() not in ("data", "json"))
-            data["kwargs"] = "".join(set(_convert_to_bytes(key).hex() for key in kwargs))
+            filtered_kwargs = {
+                key.lower(): str(value)
+                for key, value in self._session_kwargs.items()
+                if key.lower() not in ("data", "json")
+            }
+            data["kwargs"] = tuple(sorted(filtered_kwargs.items()))
 
         if include_headers:
             headers = self._session_kwargs.get("headers") or self._session_kwargs.get("extra_headers") or {}
             processed_headers = {}
             # Some header normalization
             for key, value in headers.items():
-                processed_headers[_convert_to_bytes(key.lower()).hex()] = _convert_to_bytes(value.lower()).hex()
+                processed_headers[_convert_to_bytes(key.lower()).hex()] = _convert_to_bytes(value).hex()
             data["headers"] = tuple(processed_headers.items())
 
         fp = hashlib.sha1(orjson.dumps(data, option=orjson.OPT_SORT_KEYS), usedforsecurity=False).digest()
