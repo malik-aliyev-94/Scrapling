@@ -99,6 +99,20 @@ class TestRequestProperties:
         r2 = Request("https://example.com/page2")
         assert r1.update_fingerprint() != r2.update_fingerprint()
 
+    def test_fingerprint_include_kwargs_uses_kwarg_values(self):
+        """Test kwargs with different values produce different fingerprints."""
+        r1 = Request("https://example.com", timeout=1)
+        r2 = Request("https://example.com", timeout=2)
+
+        assert r1.update_fingerprint(include_kwargs=True) != r2.update_fingerprint(include_kwargs=True)
+
+    def test_fingerprint_include_headers_preserves_header_value_case(self):
+        """Test header values are fingerprinted without lowercasing."""
+        r1 = Request("https://example.com", headers={"X-Test": "A"})
+        r2 = Request("https://example.com", headers={"X-Test": "a"})
+
+        assert r1.update_fingerprint(include_headers=True) != r2.update_fingerprint(include_headers=True)
+
 
 class TestRequestCopy:
     """Test Request copy functionality."""
