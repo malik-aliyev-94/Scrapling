@@ -22,6 +22,13 @@ def _convert_to_bytes(value: str | bytes) -> bytes:
     return value.encode(encoding="utf-8", errors="ignore")
 
 
+def _stable_value_repr(value: Any) -> str:
+    try:
+        return orjson.dumps(value, option=orjson.OPT_SORT_KEYS, default=repr).decode()
+    except TypeError:
+        return repr(value)
+
+
 class Request:
     def __init__(
         self,
@@ -98,7 +105,7 @@ class Request:
 
         if include_kwargs:
             filtered_kwargs = {
-                key.lower(): str(value)
+                key.lower(): _stable_value_repr(value)
                 for key, value in self._session_kwargs.items()
                 if key.lower() not in ("data", "json")
             }
