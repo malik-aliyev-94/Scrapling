@@ -306,6 +306,25 @@ Press Ctrl+C to pause gracefully - progress is saved automatically. Later, when 
 
 While iterating on a spider's `parse()` logic, set `development_mode = True` on the spider class to cache responses to disk on the first run and replay them on subsequent runs - so you can re-run the spider as many times as you want without re-hitting the target servers. The cache lives in `.scrapling_cache/{spider.name}/` by default and can be overridden with `development_cache_dir`. Don't ship a spider with this enabled.
 
+For rules-based crawls (follow links matching a regex), use `CrawlSpider` instead of writing the link-extraction loop yourself:
+```python
+from scrapling.spiders import CrawlSpider, CrawlRule, LinkExtractor
+
+class BlogCrawler(CrawlSpider):
+    name = "blog"
+    start_urls = ["https://example.com"]
+
+    def rules(self):
+        return [
+            CrawlRule(LinkExtractor(allow=r"/posts/"), callback=self.parse_post),
+            CrawlRule(LinkExtractor(allow=r"/page/\d+/")),  # follow pagination, no callback
+        ]
+
+    async def parse_post(self, response):
+        yield {"title": response.css("h1::text").get()}
+```
+For sitemap-driven crawls, use `SitemapSpider` with the same `rules()` API. It fetches `sitemap_urls`, descends into sitemap indexes, and dispatches each URL through your rules. Put a `robots.txt` URL directly in `sitemap_urls` and the spider extracts each `Sitemap:` directive from it automatically. See `references/spiders/generic-templates.md` for the full reference, including `LinkExtractor`'s allow/deny/restrict_css/canonicalize options.
+
 ### Advanced Parsing & Navigation
 ```python
 from scrapling.fetchers import Fetcher
