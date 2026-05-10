@@ -65,7 +65,7 @@ class CrawlSpider(Spider):
         for rule in self.rules():
             for url in rule.link_extractor.extract(response):
                 req = response.follow(url, callback=rule.callback)
-                if rule.priority:
+                if rule.priority is not None:
                     req.priority = rule.priority
                 if rule.process_request is not None:
                     req = rule.process_request(req, response)
