@@ -35,6 +35,7 @@ nav = [
             {"Requests & Responses" = "spiders/requests-responses.md"},
             {"Sessions" = "spiders/sessions.md"},
             {"Proxy management & Blocking" = "spiders/proxy-blocking.md"},
+            {"Generic crawlers" = "spiders/generic-templates.md"},
             {"Advanced features" = "spiders/advanced.md"}
         ]},
         {"Command Line Interface" = [
@@ -90,6 +91,7 @@ features = [
     "search.share",
     "search.suggest",
     "search.highlight",
+    "content.code.copy",
 ]
 
 [[project.theme.palette]]

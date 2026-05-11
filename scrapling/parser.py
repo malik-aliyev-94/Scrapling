@@ -519,7 +519,7 @@ class Selector(SelectorsGeneration):
     def relocate(
         self,
         element: Union[Dict, HtmlElement, "Selector"],
-        percentage: int = 0,
+        percentage: int = 40,
         selector_type: bool = False,
     ) -> Union[List[HtmlElement], "Selectors"]:
         """This function will search again for the element in the page tree, used automatically on page structure change
@@ -559,6 +559,10 @@ class Selector(SelectorsGeneration):
                 if not selector_type:
                     return score_table[highest_probability]
                 return self.__elements_convertor(score_table[highest_probability])
+            log.warning(
+                f"Adaptive relocation found no element above the {percentage}% threshold "
+                f"(top score: {highest_probability}%). Lower `percentage` if this is the right element."
+            )
         return []
 
     def css(
@@ -567,7 +571,7 @@ class Selector(SelectorsGeneration):
         identifier: str = "",
         adaptive: bool = False,
         auto_save: bool = False,
-        percentage: int = 0,
+        percentage: int = 40,
     ) -> "Selectors":
         """Search the current tree with CSS3 selectors
 
@@ -627,7 +631,7 @@ class Selector(SelectorsGeneration):
         identifier: str = "",
         adaptive: bool = False,
         auto_save: bool = False,
-        percentage: int = 0,
+        percentage: int = 40,
         **kwargs: Any,
     ) -> "Selectors":
         """Search the current tree with XPath selectors
@@ -1220,7 +1224,7 @@ class Selectors(List[Selector]):
         selector: str,
         identifier: str = "",
         auto_save: bool = False,
-        percentage: int = 0,
+        percentage: int = 40,
         **kwargs: Any,
     ) -> "Selectors":
         """
@@ -1251,7 +1255,7 @@ class Selectors(List[Selector]):
         selector: str,
         identifier: str = "",
         auto_save: bool = False,
-        percentage: int = 0,
+        percentage: int = 40,
     ) -> "Selectors":
         """
         Call the ``.css()`` method for each element in this list and return
