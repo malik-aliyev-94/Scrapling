@@ -221,7 +221,7 @@ class TestCrawlRule:
     def test_default_callback_is_none(self):
         rule = CrawlRule(LinkExtractor())
         assert rule.callback is None
-        assert rule.follow is None
+        assert rule.priority is None
         assert rule.process_request is None
 
     def test_callback_accepts_callable(self):

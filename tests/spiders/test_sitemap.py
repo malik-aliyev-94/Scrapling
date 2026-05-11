@@ -1,4 +1,4 @@
-"""Tests for `SitemapParser` and `SitemapSpider`."""
+"""Tests for `SitemapSpider`."""
 
 import gzip
 import pickle
@@ -8,9 +8,9 @@ import pytest
 from scrapling.engines.toolbelt.custom import Response
 from scrapling.spiders.links import LinkExtractor
 from scrapling.spiders.request import Request
-from scrapling.spiders.sitemap import SitemapParser, SitemapResult, SitemapSpider, SitemapUrl
+from scrapling.spiders.templates.sitemap import SitemapSpider
 from scrapling.spiders.templates import CrawlRule
-from scrapling.core._types import Any, AsyncGenerator, Dict, Union
+from scrapling.core._types import AsyncGenerator
 
 
 URLSET_XML = b"""<?xml version="1.0" encoding="UTF-8"?>
@@ -50,127 +50,6 @@ INDEX_XML = b"""<?xml version="1.0" encoding="UTF-8"?>
 </sitemapindex>
 """
 
-# Sitemap without the standard namespace (some sites do this)
-URLSET_NO_NS = b"""<?xml version="1.0"?>
-<urlset>
-  <url><loc>https://example.com/x</loc></url>
-</urlset>
-"""
-
-
-class TestSitemapParserUrlset:
-    def test_parse_urlset_with_full_metadata(self):
-        result = SitemapParser().parse(URLSET_XML)
-        assert len(result.urls) == 3
-        assert result.sitemaps == []
-        first = result.urls[0]
-        assert first.loc == "https://example.com/posts/1"
-        assert first.lastmod == "2026-01-15"
-        assert first.changefreq == "daily"
-        assert first.priority == 0.8
-
-    def test_parse_handles_partial_metadata(self):
-        result = SitemapParser().parse(URLSET_XML)
-        second = result.urls[1]
-        assert second.lastmod == "2026-02-20"
-        assert second.changefreq is None
-        assert second.priority is None
-
-    def test_parse_handles_no_namespace(self):
-        result = SitemapParser().parse(URLSET_NO_NS)
-        assert len(result.urls) == 1
-        assert result.urls[0].loc == "https://example.com/x"
-
-
-class TestSitemapParserAlternates:
-    def test_alternate_links_off_by_default(self):
-        result = SitemapParser().parse(URLSET_WITH_ALTERNATES)
-        assert result.urls[0].alternates == []
-
-    def test_alternate_links_on_collects_them(self):
-        result = SitemapParser(alternate_links=True).parse(URLSET_WITH_ALTERNATES)
-        assert result.urls[0].alternates == [
-            "https://example.com/fr/page",
-            "https://example.com/de/page",
-        ]
-
-
-class TestSitemapParserIndex:
-    def test_parse_sitemapindex_returns_child_sitemaps(self):
-        result = SitemapParser().parse(INDEX_XML)
-        assert result.urls == []
-        assert result.sitemaps == [
-            "https://example.com/posts-sitemap.xml",
-            "https://example.com/products-sitemap.xml",
-            "https://example.com/skip-sitemap.xml",
-        ]
-
-
-class TestSitemapParserDecompression:
-    def test_gz_body_via_magic_bytes(self):
-        compressed = gzip.compress(URLSET_XML)
-        result = SitemapParser().parse(compressed)
-        assert len(result.urls) == 3
-
-    def test_gz_body_via_content_type_hint(self):
-        compressed = gzip.compress(URLSET_XML)
-        result = SitemapParser().parse(compressed, content_type="application/x-gzip")
-        assert len(result.urls) == 3
-
-    def test_corrupt_gz_logged_not_raised(self):
-        # Body starts with gzip magic but is not valid gzip
-        body = b"\x1f\x8b" + b"junk data"
-        result = SitemapParser().parse(body)
-        assert result == SitemapResult()
-
-
-class TestSitemapParserMalformed:
-    def test_invalid_xml_returns_empty_result(self):
-        result = SitemapParser().parse(b"<not valid xml")
-        assert result == SitemapResult()
-
-    def test_unknown_root_returns_empty_result(self):
-        result = SitemapParser().parse(b"<?xml version='1.0'?><foo><bar/></foo>")
-        assert result == SitemapResult()
-
-
-class TestFromRobotsTxt:
-    def test_extracts_sitemap_directives(self):
-        body = """
-        User-agent: *
-        Disallow: /admin
-        Sitemap: https://example.com/sitemap.xml
-        Sitemap: https://example.com/posts-sitemap.xml
-        """
-        urls = SitemapParser.from_robots_txt(body)
-        assert urls == [
-            "https://example.com/sitemap.xml",
-            "https://example.com/posts-sitemap.xml",
-        ]
-
-    def test_ignores_comments_and_blank_lines(self):
-        body = """
-        # This is a comment
-        Sitemap: https://example.com/sitemap.xml  # inline comment
-        # Sitemap: https://commented.example.com/sitemap.xml
-        """
-        urls = SitemapParser.from_robots_txt(body)
-        assert urls == ["https://example.com/sitemap.xml"]
-
-    def test_directive_match_is_case_insensitive(self):
-        body = "SITEMAP: https://example.com/sitemap.xml\nsitemap: https://example.com/other.xml"
-        urls = SitemapParser.from_robots_txt(body)
-        assert urls == [
-            "https://example.com/sitemap.xml",
-            "https://example.com/other.xml",
-        ]
-
-    def test_returns_empty_when_no_directives(self):
-        body = "User-agent: *\nDisallow: /admin"
-        urls = SitemapParser.from_robots_txt(body)
-        assert urls == []
-
-
 def _make_response(body: bytes, url: str = "https://example.com/sitemap.xml", headers: dict | None = None) -> Response:
     resp = Response(
         url=url,
@@ -206,11 +85,10 @@ class TestSitemapSpiderFlow:
         out = await _collect(spider._parse_sitemap(_make_response(URLSET_XML)))
         post_reqs = [r for r in out if "/posts/" in r.url]
         about_reqs = [r for r in out if "/about" in r.url]
-        # Two posts dispatched to parse_post; about falls through (callback inherited from None → None)
+        # Two posts dispatched to parse_post; /about is dropped (matches no rule, non-empty rules)
         assert len(post_reqs) == 2
         assert all(r.callback == spider.parse_post for r in post_reqs)
-        assert len(about_reqs) == 1
-        assert about_reqs[0].callback is None
+        assert about_reqs == []
 
     @pytest.mark.asyncio
     async def test_no_rules_means_all_urls_fall_through(self):
@@ -292,31 +170,6 @@ class TestSitemapSpiderStartRequests:
         assert all(r.callback == spider._parse_sitemap for r in out)
 
     @pytest.mark.asyncio
-    async def test_start_requests_falls_back_to_robots_txt(self):
-        class S(SitemapSpider):
-            name = "s"
-            allowed_domains = {"example.com"}
-
-        spider = S()
-        out = [req async for req in spider.start_requests()]
-        assert len(out) == 1
-        assert out[0].url == "https://example.com/robots.txt"
-        assert out[0].callback == spider._parse_robots
-
-    @pytest.mark.asyncio
-    async def test_start_requests_uses_start_urls_if_no_sitemap_urls(self):
-        class S(SitemapSpider):
-            name = "s"
-            start_urls = ["https://example.com/seed"]
-
-        spider = S()
-        out = [req async for req in spider.start_requests()]
-        assert len(out) == 1
-        assert out[0].url == "https://example.com/seed"
-        # Should NOT have _parse_sitemap as callback (start_urls path treats them as regular pages)
-        assert out[0].callback is None
-
-    @pytest.mark.asyncio
     async def test_start_requests_raises_when_nothing_configured(self):
         class S(SitemapSpider):
             name = "s"
@@ -326,29 +179,29 @@ class TestSitemapSpiderStartRequests:
             [req async for req in spider.start_requests()]
 
 
-class TestParseRobots:
+class TestRobotsTxt:
     @pytest.mark.asyncio
-    async def test_parse_robots_yields_sitemap_requests(self):
+    async def test_parse_sitemap_yields_requests_from_robots_directives(self):
         class S(SitemapSpider):
             name = "s"
-            allowed_domains = {"example.com"}
+            sitemap_urls = ["https://example.com/robots.txt"]
 
         spider = S()
         body = b"User-agent: *\nSitemap: https://example.com/sitemap.xml\n"
         resp = _make_response(body, url="https://example.com/robots.txt")
-        out = await _collect(spider._parse_robots(resp))
+        out = await _collect(spider._parse_sitemap(resp))
         assert len(out) == 1
         assert out[0].url == "https://example.com/sitemap.xml"
         assert out[0].callback == spider._parse_sitemap
 
     @pytest.mark.asyncio
-    async def test_parse_robots_with_no_directives_warns(self):
+    async def test_parse_sitemap_robots_with_no_directives_warns(self):
         # Spider's logger has propagate=False, so we attach our own handler to it.
         import logging
 
         class S(SitemapSpider):
             name = "s"
-            allowed_domains = {"example.com"}
+            sitemap_urls = ["https://example.com/robots.txt"]
 
         spider = S()
         records: list[logging.LogRecord] = []
@@ -361,9 +214,9 @@ class TestParseRobots:
 
         body = b"User-agent: *\nDisallow: /\n"
         resp = _make_response(body, url="https://example.com/robots.txt")
-        out = await _collect(spider._parse_robots(resp))
+        out = await _collect(spider._parse_sitemap(resp))
         assert out == []
-        assert any("No Sitemap:" in r.getMessage() for r in records if r.levelno == logging.WARNING)
+        assert any("No Sitemaps" in r.getMessage() for r in records if r.levelno == logging.WARNING)
 
 
 class TestSitemapSpiderPickle:
