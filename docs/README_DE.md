@@ -51,7 +51,7 @@
 
 Scrapling ist ein adaptives Web-Scraping-Framework, das alles abdeckt -- von einer einzelnen Anfrage bis hin zu einem umfassenden Crawl.
 
-Sein Parser lernt aus Website-Änderungen und lokalisiert Ihre Elemente automatisch neu, wenn sich Seiten aktualisieren. Seine Fetcher umgehen Anti-Bot-Systeme wie Cloudflare Turnstile direkt ab Werk. Und sein Spider-Framework ermöglicht es Ihnen, auf parallele Multi-Session-Crawls mit Pause & Resume und automatischer Proxy-Rotation hochzuskalieren -- alles in wenigen Zeilen Python. Eine Bibliothek, keine Kompromisse.
+Sein Parser lernt aus Website-Änderungen und lokalisiert Ihre Elemente automatisch neu, wenn sich Seiten aktualisieren. Seine Fetcher umgehen Anti-Bot-Systeme wie Cloudflare Turnstile direkt ab Werk. Und sein Spider-Framework ermöglicht es Ihnen, auf parallele Multi-Session-Crawls mit Pause & Resume, automatischer Proxy-Rotation und einer Crawl-Geschwindigkeit, die sich daran anpasst, wie schnell jede Website antwortet, und zurückfährt, sobald sie Sie zu blockieren beginnt, hochzuskalieren -- alles in wenigen Zeilen Python. Eine Bibliothek, keine Kompromisse.
 
 Blitzschnelle Crawls mit Echtzeit-Statistiken und Streaming. Von Web Scrapern für Web Scraper und normale Benutzer entwickelt, ist für jeden etwas dabei.
 

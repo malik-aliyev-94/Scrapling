@@ -51,7 +51,7 @@
 
 Scrapling 是一个自适应 Web Scraping 框架，能处理从单个请求到大规模爬取的一切需求。
 
-它的解析器能够从网站变化中学习，并在页面更新时自动重新定位您的元素。它的 Fetcher 能够开箱即用地绕过 Cloudflare Turnstile 等反机器人系统。它的 Spider 框架让您可以扩展到并发、多 Session 爬取，支持暂停/恢复和自动 Proxy 轮换--只需几行 Python 代码。一个库，零妥协。
+它的解析器能够从网站变化中学习，并在页面更新时自动重新定位您的元素。它的 Fetcher 能够开箱即用地绕过 Cloudflare Turnstile 等反机器人系统。它的 Spider 框架让您可以扩展到并发、多 Session 爬取，支持暂停/恢复、自动 Proxy 轮换，以及根据每个网站的响应速度自动调整、并在网站开始封锁时自动减速的爬取速度--只需几行 Python 代码。一个库，零妥协。
 
 极速爬取，实时统计和 Streaming。由 Web Scraper 为 Web Scraper 和普通用户而构建，每个人都能找到适合自己的功能。
 
