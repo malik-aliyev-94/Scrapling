@@ -46,7 +46,8 @@ nav = [
         ]},
         {"Using with AI" = [
             {"MCP server" = "ai/mcp-server.md"},
-            {"Agent skill" = "ai/agent-skill.md"}
+            {"Agent skill" = "ai/agent-skill.md"},
+            {"Building RAG systems" = "ai/building-rag-systems.md"}
         ]},
         {"Integrations and migrations" = [
             {"Integrating into Scrapy" = "integrations/scrapy.md"},

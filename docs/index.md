@@ -203,6 +203,10 @@ pip install scrapling
        ```bash
        pip install "scrapling[ai]"
        ```
+     - Install dependencies for ([building RAG systems](ai/building-rag-systems.md)):
+       ```bash
+       pip install "scrapling[rag]"
+       ```
      - Install shell features (Web Scraping shell and the `extract` command): 
          ```bash
          pip install "scrapling[shell]"
