@@ -2,6 +2,66 @@
 
 All notable changes to Scrapling, taken from the [GitHub releases](https://github.com/D4Vinci/Scrapling/releases).
 
+## [v0.4.15](https://github.com/D4Vinci/Scrapling/releases/tag/v0.4.15) - 2026-08-23
+
+**One of the biggest releases this year: a reworked MCP server, RAG-ready Markdown in one line, an improved Cloudflare solver, and browser tabs that stay open for automation 🚀**
+
+> [!WARNING]
+> **This release introduces breaking changes to the MCP server. Check the [breaking changes](https://scrapling.readthedocs.io/en/latest/ai/mcp-server.html#breaking-changes) section before updating.**
+
+### 🚀 New Stuff and quality of life changes
+
+- **Browser tabs now stay open and get reused across requests** (Check the [docs](https://scrapling.readthedocs.io/en/latest/fetching/dynamic.html#session-management)):
+    - All browser sessions keep their tabs after a request, and the next request reuses a free tab instead of opening a new one.
+    - Every request re-applies its own settings (timeouts, headers, resource blocking) to the tab it gets, so nothing leaks between requests.
+    - Tabs that hit an error are closed and replaced, and the new `close_pages()` method closes every open tab.
+    - The page you fetched stays loaded, so a `page_setup` function on the next request runs on it before navigating away. That's the building block for chaining automation across requests.
+- **Turn any page into clean, LLM-ready Markdown with `Response.markdown()`** (Check the [docs](https://scrapling.readthedocs.io/en/latest/ai/building-rag-systems.html)):
+    ```python
+    from scrapling.fetchers import Fetcher
+
+    markdown = Fetcher.get("https://example.com").markdown(main_content_only=True)
+    ```
+    - Scripts, styles, and hidden prompt-injection content are always stripped first, the same cleaning the MCP server does.
+    - Pass `css_selector` to convert only the elements you need.
+    - Available through the new `rag` extra (`pip install "scrapling[rag]"`), which the `ai`/`shell`/`all` extras include too.
+- **New `SiteToMarkdownSpider` template to crawl a whole website into a Markdown corpus for RAG pipelines** (Check the [docs](https://scrapling.readthedocs.io/en/latest/ai/building-rag-systems.html)):
+    ```python
+    from scrapling.spiders import SiteToMarkdownSpider
+
+    class DocsSpider(SiteToMarkdownSpider):
+        name = "docs"
+        start_urls = ["https://example.com/docs/"]
+        allowed_domains = {"example.com"}
+        output_dir = "docs_markdown"
+
+    result = DocsSpider().start()
+    result.items.to_jsonl("docs.jsonl")
+    ```
+    - Yields one item per page with `url`/`title`/`markdown`, and the optional `output_dir` writes one Markdown file per page.
+    - `max_pages` caps the crawl, and since it builds on `CrawlSpider`, overriding `rules()` gives you full control over which links get followed.
+- **The MCP server is reworked (breaking)** (Check the [breaking changes](https://scrapling.readthedocs.io/en/latest/ai/mcp-server.html#breaking-changes) and the [docs](https://scrapling.readthedocs.io/en/latest/ai/mcp-server.html)):
+    - The 13 tools are now split into two modes: one-shot tools (`fetch`, `bulk_fetch`, `stealthy_fetch`, `bulk_stealthy_fetch`) that always launch their own browser and show their real defaults, and session tools that work through a session opened once.
+    - The new `session_fetch` tool fetches through a browser session, while `open_session` now holds the browser-level settings only and returns the session's effective settings for the AI agent.
+    - The `get` tool is renamed to `make_request`, and it now supports any HTTP method.
+    - The new `open_request_session` and `session_make_request` tools give the AI persistent HTTP sessions that keep cookies and the browser fingerprint between requests.
+    - This also ends fetches resetting the session's settings, first fixed by @Yigtwxx in [#418](https://github.com/D4Vinci/Scrapling/pull/418).
+- **The MCP server's HTTP transport now requires authentication and binds to localhost by default (breaking)** by @yamantaka-singh in [#414](https://github.com/D4Vinci/Scrapling/pull/414) (Fixes [#413](https://github.com/D4Vinci/Scrapling/issues/413), check the [docs](https://scrapling.readthedocs.io/en/latest/ai/mcp-server.html#authentication)):
+    - Pass `--auth-token` (or the `SCRAPLING_MCP_AUTH_TOKEN` environment variable) to require a bearer token, or `--no-auth` to serve it unauthenticated on purpose.
+    - Pass `--host 0.0.0.0` to accept connections from the network.
+
+### 🐛 Bug Fixes
+
+- **Cloudflare Turnstile/Interstitial solving now works regardless of the browser locale, and no longer loops forever on interactive challenges in headless mode**. Stealth pages also stop crashing mid-solve, with contributions by @subediparas5 in [#412](https://github.com/D4Vinci/Scrapling/pull/412). (Fixes [#411](https://github.com/D4Vinci/Scrapling/issues/411) and [#422](https://github.com/D4Vinci/Scrapling/issues/422))
+- **Fixed `find`/`find_all` with `class_` silently missing multi-class elements** by @yetval in [#410](https://github.com/D4Vinci/Scrapling/pull/410), **and blank `class_` values and unescaped CSS string values** by @yamantaka-singh in [#417](https://github.com/D4Vinci/Scrapling/pull/417).
+- **Fixed cached responses in `development_mode` losing the request meta on replay** by @Yigtwxx in [#419](https://github.com/D4Vinci/Scrapling/pull/419).
+- **Fixed HTTP requests with `retries` below 1 failing without sending the request** by @Yigtwxx in [#420](https://github.com/D4Vinci/Scrapling/pull/420).
+
+### Docs
+
+- **The website sections are restructured**: a new "Using with AI" section holds the MCP server, the new [Agent skill](https://scrapling.readthedocs.io/en/latest/ai/agent-skill.html) page, and the [Building RAG systems](https://scrapling.readthedocs.io/en/latest/ai/building-rag-systems.html) guide, and the BeautifulSoup migration guide moved next to the Scrapy integration under "Integrations and migrations".
+- **Added a [CHANGELOG.md](https://github.com/D4Vinci/Scrapling/blob/main/CHANGELOG.md)** to the repository with the notes of every release so far.
+
 ## [v0.4.14](https://github.com/D4Vinci/Scrapling/releases/tag/v0.4.14) - 2026-08-10
 
 **A quick maintenance release to fix installation with `uv` 🔧**
