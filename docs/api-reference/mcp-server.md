@@ -5,7 +5,7 @@ search:
 
 # MCP Server API Reference
 
-The **Scrapling MCP Server** provides nine powerful tools for web scraping through the Model Context Protocol (MCP). This server integrates Scrapling's capabilities directly into AI chatbots and agents, allowing conversational web scraping with advanced anti-bot bypass features.
+The **Scrapling MCP Server** provides eleven powerful tools for web scraping through the Model Context Protocol (MCP). This server integrates Scrapling's capabilities directly into AI chatbots and agents, allowing conversational web scraping with advanced anti-bot bypass features.
 
 You can start the MCP server by running:
 
@@ -19,7 +19,7 @@ Or import the server class directly:
 from scrapling.core.ai import ScraplingMCPServer
 
 server = ScraplingMCPServer()
-server.serve(http=False, host="0.0.0.0", port=8000)
+server.serve(http=False, host="127.0.0.1", port=8000)
 ```
 
 To set a custom Chromium-compatible browser executable for browser-based MCP tools, pass `executable_path`:
